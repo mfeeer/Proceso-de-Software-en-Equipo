@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Vida de Ingeniero — El Libro de tu Historia{% endblock %}
+
+{% block book %}
+    <div class="ribbon">CAP.<b id="ribbon-num">I</b></div>
+
+    <div class="pages">
+      <form id="form-partida" method="POST" action="{% url 'personalizar_partida' %}">
+        {% csrf_token %}
+        <input type="hidden" name="antecedente" id="input-antecedente" value="1">
+        <input type="hidden" name="tema" id="input-tema" value="1">
+
+        <!-- ========== CAPÍTULO I: EL ORIGEN ========== -->
+        <div class="spread active" id="step-1">
+          <div class="page left">
+            <div class="chapter-label">CAPÍTULO I</div>
+            <div class="chapter-title">El Origen</div>
+            <div class="ornament"></div>
+            <p class="story">
+              Todo gran ingeniero fue, alguna vez, el protagonista de una historia aún sin escribir.
+              Antes de que se abra el primer capítulo, el libro te hace una pregunta sencilla:
+              <em>¿de dónde vienes?</em> Tu pasado decidirá con cuánto ánimo y experiencia
+              comienzas el camino.
+            </p>
+            <div class="emblem">🧭</div>
+            <div class="page-num">— 1 —</div>
+          </div>
+
+          <div class="page right">
+            <h2 class="choose-title">Elige tu Origen</h2>
+            <p class="choose-sub">Toca la página que contará tu historia</p>
+
+            <div class="choices">
+              {% for ant in antecedentes %}
+              <div class="choice {% if forloop.first %}selected{% endif %}" onclick="selectAntecedente(this, '{{ ant.id }}', '{{ ant.nombre }}', '{{ ant.hp_base }}', '{{ ant.xp_base }}')">
+                <div class="medallion">{{ forloop.counter }}</div>
+                <div>
+                  <h3>{{ ant.nombre }}</h3>
+                  <p>{{ ant.descripcion }}</p>
+                  <span class="stamp">❤️ HP: {{ ant.hp_base }}</span>
+                  <span class="stamp">⭐ XP: {{ ant.xp_base }}</span>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+
+            <div class="btn-row" style="justify-content: flex-end;">
+              <button type="button" class="book-btn" onclick="nextStep(2)">Pasar la página ➔</button>
+            </div>
+            <div class="page-num">— 2 —</div>
+          </div>
+        </div>
+
+        <!-- ========== CAPÍTULO II: EL SABER ========== -->
+        <div class="spread" id="step-2">
+          <div class="page left">
+            <div class="chapter-label">CAPÍTULO II</div>
+            <div class="chapter-title">El Saber</div>
+            <div class="ornament"></div>
+            <p class="story">
+              Hay historias de ciencia, de máquinas y de código, pero ningún héroe las domina todas
+              de golpe. Elige el tomo que quieres abrir primero: los desafíos y encuentros de tu
+              aventura <em>girarán en torno a ese conocimiento</em>, y cada decisión te enseñará
+              algo nuevo.
+            </p>
+            <div class="emblem">📜</div>
+            <div class="page-num">— 3 —</div>
+          </div>
+
+          <div class="page right">
+            <h2 class="choose-title">Elige tu Módulo de Conocimiento</h2>
+            <p class="choose-sub">Un solo tomo a la vez</p>
+
+            <div class="choices">
+              {% for t in temas %}
+              <div class="choice {% if forloop.first %}selected{% endif %}" onclick="selectTema(this, '{{ t.id }}', '{{ t.titulo }}')">
+                <div class="medallion">{{ forloop.counter }}</div>
+                <div>
+                  <h3>📜 {{ t.titulo }}</h3>
+                  <p>Los eventos y desafíos narrativos se centrarán en este dominio técnico.</p>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+
+            <div class="btn-row">
+              <button type="button" class="book-btn" onclick="nextStep(1)">⬅ Página anterior</button>
+              <button type="button" class="book-btn" onclick="nextStep(3)">Revisar mi hoja ➔</button>
+            </div>
+            <div class="page-num">— 4 —</div>
+          </div>
+        </div>
+
+        <!-- ========== CAPÍTULO III: EL PACTO ========== -->
+        <div class="spread" id="step-3">
+          <div class="page left">
+            <div class="chapter-label">CAPÍTULO III</div>
+            <div class="chapter-title">Hoja de Personaje</div>
+            <div class="ornament"></div>
+
+            <div class="sheet">
+              <div class="sheet-row">
+                <span class="k">Origen</span>
+                <span class="v" id="summary-origin">{% for ant in antecedentes %}{% if forloop.first %}{{ ant.nombre }}{% endif %}{% endfor %}</span>
+              </div>
+              <div class="sheet-row">
+                <span class="k">Módulo</span>
+                <span class="v" id="summary-module">{% for t in temas %}{% if forloop.first %}{{ t.titulo }}{% endif %}{% endfor %}</span>
+              </div>
+            </div>
+
+            <div class="emblem">🪶</div>
+            <div class="page-num">— 5 —</div>
+          </div>
+
+          <div class="page right">
+            <div class="center" style="margin-top: 26px;">
+              <div class="chapter-label">EL PACTO</div>
+              <div class="ornament"></div>
+            </div>
+            <p class="final-note">
+              La tinta aún está fresca y las páginas siguen en blanco.<br>
+              Comenzarás tu travesía como un héroe de la ingeniería, y
+              <em>la aventura aguarda tus decisiones...</em>
+            </p>
+
+            <div class="btn-row" style="margin-top: auto; flex-direction: column; align-items: stretch;">
+              <button type="submit" class="book-btn go">⚔️ ¡Emprender aventura!</button>
+              <button type="button" class="book-btn" onclick="nextStep(2)">⬅ Modificar mi hoja</button>
+            </div>
+            <div class="page-num">— 6 —</div>
+          </div>
+        </div>
+      </form>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    // --- PASAR PÁGINAS ---
+    const romanos = { 1: 'I', 2: 'II', 3: 'III' };
+
+    function nextStep(n) {
+      document.querySelectorAll('.spread').forEach(s => s.classList.remove('active'));
+      document.getElementById('step-' + n).classList.add('active');
+      document.getElementById('ribbon-num').innerText = romanos[n];
+    }
+
+    function selectAntecedente(el, id, nombre, hp, xp) {
+      el.closest('.choices').querySelectorAll('.choice').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('input-antecedente').value = id;
+      document.getElementById('summary-origin').innerText = nombre;
+    }
+
+    function selectTema(el, id, titulo) {
+      el.closest('.choices').querySelectorAll('.choice').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('input-tema').value = id;
+      document.getElementById('summary-module').innerText = titulo;
+    }
+  </script>
+{% endblock %}

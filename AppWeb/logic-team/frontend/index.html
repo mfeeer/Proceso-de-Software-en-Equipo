@@ -1,17 +1,55 @@
-{% load static %}<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Logic Team</title>
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
-</head>
-<body>
-  <main class="card">
-    <h1>Logic Team</h1>
-    <p>Entorno local listo.</p>
-    <p id="status" class="status">Comprobando conexion con el servidor...</p>
-  </main>
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Logic Team{% endblock %}
+
+{% block book %}
+  <div class="ribbon">CAP.<b>I</b></div>
+
+  <div class="pages">
+    <div class="spread active">
+      <!-- Página izquierda: portada de la historia -->
+      <div class="page left">
+        <div class="chapter-label">PRÓLOGO</div>
+        <div class="chapter-title">Logic Team</div>
+        <div class="ornament"></div>
+        <p class="story">
+          Toda gran aventura empieza con un libro que aún no se ha abierto.
+          Este es el cuaderno de Logic Team: un lugar donde cada decisión
+          escribe una página nueva y donde <em>ser ingeniero es, también,
+          ser el protagonista de tu propia historia</em>.
+        </p>
+        <div class="emblem">📖</div>
+        <div class="page-num">— 1 —</div>
+      </div>
+
+      <!-- Página derecha: estado del reino (health check del backend) -->
+      <div class="page right">
+        <h1 class="choose-title">Estado del Reino</h1>
+        <p class="choose-sub">Los guardianes revisan que todo esté en su sitio</p>
+
+        <p class="lead">
+          <span id="status" class="status">Comprobando conexión con el servidor...</span>
+        </p>
+
+        <div class="stamps">
+          <span class="stamp">Django</span>
+          <span class="stamp">PostgreSQL</span>
+          <span class="stamp">Docker</span>
+        </div>
+
+        {% comment %}Cuando exista la vista 'personalizar_partida', el botón de entrada va aquí:
+           <div class="btn-row" style="justify-content: flex-end;">
+             <a class="book-btn go" href="{% url 'personalizar_partida' %}">⚔️ Comenzar la aventura</a>
+           </div>
+        {% endcomment %}
+
+        <div class="page-num">— 2 —</div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
   <script src="{% static 'js/app.js' %}"></script>
-</body>
-</html>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Logic Team{% endblock %}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Cinzel+Decorative:wght@700;900&family=IM+Fell+English:ital@0;1&family=MedievalSharp&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/libro.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Ambiente compartido: biblioteca, luz de vela y luciérnagas -->
+  <div class="shelves"></div>
+  <canvas id="motes"></canvas>
+
+  <div id="loader-overlay">
+    <div class="loader-book">📖</div>
+    <div class="loader-title">{% block loader_title %}Había una vez...{% endblock %}</div>
+    <div class="loader-sub">{% block loader_sub %}abriendo el libro de tu historia{% endblock %}</div>
+  </div>
+
+  <!-- El libro: cada página pone su contenido aquí -->
+  <div class="book" id="main-book">
+    {% block book %}{% endblock %}
+  </div>
+
+  <script src="{% static 'js/libro.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
