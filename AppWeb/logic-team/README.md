@@ -27,3 +27,10 @@ Django + PostgreSQL en Docker Compose, con frontend HTML/CSS/JS servido por Djan
 - `config/`: configuracion del proyecto Django
 - `game/`: app principal (modelos, API JSON, admin)
 - `frontend/`: HTML, CSS y JS Vanilla
+
+## CU01 - Realizar partida
+- Se entra desde CU02: al pulsar "Comenzar Aventura" se crea la partida y se abre `/partida/<id>/`.
+- Para probar sin pasar por CU02: `docker compose exec web python manage.py crear_partida_demo`
+- Escenarios y opciones: `app/data/escenarios/<materia>.json` (un evento normal y uno de probabilidad por subtema).
+- Reglas del juego (bloques 33/33/33, vidas, XP, probabilidad, logros): `app/data/config_juego.json`.
+- Despues de editar los JSON: `docker compose exec web python manage.py validar_escenarios` y refrescar el navegador.

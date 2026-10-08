@@ -12,8 +12,6 @@
   const vacio = document.getElementById("preview-vacio");
   const datos = document.getElementById("preview-datos");
 
-  const NIVELES = { baja: 1, media: 2, alta: 3 };
-
   function ocultarError() {
     error.hidden = true;
     grupo.classList.remove("invalid");
@@ -28,9 +26,15 @@
     grupo.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
-  function pintarNivel(clave, nivel) {
-    document.getElementById("prev-" + clave).textContent = nivel;
-    document.getElementById("meter-" + clave).dataset.n = NIVELES[nivel] || 0;
+  // Atributos con los mismos valores que se usan dentro del juego (CU01)
+  function pintarAtributos(valores) {
+    form.querySelectorAll("[data-atributo]").forEach((el) => {
+      el.textContent = (valores[el.dataset.atributo] || 0) + " / " + el.dataset.max;
+    });
+    form.querySelectorAll("[data-meter]").forEach((el) => {
+      const v = valores[el.dataset.meter] || 0;
+      Array.from(el.children).forEach((rayita, i) => rayita.classList.toggle("on", i < v));
+    });
   }
 
   function actualizar() {
@@ -45,9 +49,9 @@
     const d = elegido.dataset;
     document.getElementById("prev-vidas").textContent = "❤️ " + d.vidas;
     document.getElementById("prev-xp").textContent = "⭐ " + d.xp + " XP";
-    pintarNivel("teoria", d.teoria);
-    pintarNivel("equipo", d.equipo);
-    pintarNivel("inteligencia", d.inteligencia);
+    let valores = {};
+    try { valores = JSON.parse(d.atributos || "{}"); } catch (err) { /* datos inválidos */ }
+    pintarAtributos(valores);
     vacio.hidden = true;
     datos.hidden = false;
   }

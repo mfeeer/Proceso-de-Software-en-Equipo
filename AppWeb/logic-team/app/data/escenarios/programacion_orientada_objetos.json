@@ -1,0 +1,150 @@
+{
+  "_ayuda": "Un archivo por materia (mismos ids que CU-02 en app/views_personalizar.py). eventos_normales = decision de analisis: exactamente una opcion con correcta: true. eventos_probabilidad = prueba de atributos: el exito depende de probabilidad_base + el atributo (teoria, equipo o inteligencia). Cada subtema necesita un evento de cada tipo.",
+  "tema": {
+    "id": "programacion-oo",
+    "nombre": "Programación orientada a objetos",
+    "descripcion": "Clases, objetos y manejo de excepciones."
+  },
+  "subtemas": [
+    {
+      "id": "programacion-oo:0",
+      "nombre": "Clases y objetos"
+    },
+    {
+      "id": "programacion-oo:1",
+      "nombre": "Manejo de excepciones"
+    }
+  ],
+  "eventos_normales": [
+    {
+      "id": "poo-clases-n",
+      "subtema": "programacion-oo:0",
+      "titulo": "La Flotilla de Repartidores",
+      "contexto": "Una app de entregas necesita representar cientos de repartidores, cada uno con nombre, nivel de batería de su moto eléctrica y la capacidad de aceptar pedidos. Un practicante crea una variable suelta por cada dato de cada repartidor. Hay que modelarlo mejor.",
+      "opciones": [
+        {
+          "id": "a",
+          "texto": "Seguir con variables sueltas: nombre1, bateria1, nombre2, bateria2...",
+          "correcta": false,
+          "retroalimentacion": "Las variables sueltas no escalan ni vinculan los datos con su comportamiento; justo eso resuelven las clases.",
+          "desenlace": "Con cientos de variables sueltas, un error de copiado le asigna la batería de un repartidor a otro. La app manda un pedido a alguien con la moto descargada, el cliente espera una hora y cancela. Cada nuevo repartidor implica escribir más variables y el código se vuelve imposible de mantener."
+        },
+        {
+          "id": "b",
+          "texto": "Guardar todos los datos en una sola lista mezclada de textos y números.",
+          "correcta": false,
+          "retroalimentacion": "Mezclar datos sin estructura vuelve el código frágil: depende de posiciones que nadie recuerda y no asocia el comportamiento con los datos.",
+          "desenlace": "Con todo mezclado en una lista, nadie recuerda si la posición 3 era la batería o el apellido. Un cambio pequeño desacomoda las posiciones y la app empieza a mandar pedidos a «87%». Soporte pasa el fin de semana corrigiendo datos a mano mientras tú reescribes la lógica."
+        },
+        {
+          "id": "c",
+          "texto": "Definir una clase Repartidor con atributos y métodos, y crear un objeto por cada repartidor.",
+          "correcta": true,
+          "retroalimentacion": "Una clase agrupa datos y comportamiento; cada objeto es una instancia con su propio estado creada a partir de la misma plantilla.",
+          "desenlace": "Con la clase Repartidor, cada objeto guarda sus propios datos y sabe aceptar pedidos. Agregar un repartidor nuevo es crear un objeto más, sin tocar el resto del código. La app maneja la flotilla sin confusiones y el equipo reutiliza tu clase para los vehículos de entrega."
+        }
+      ]
+    },
+    {
+      "id": "poo-exc-n",
+      "subtema": "programacion-oo:1",
+      "titulo": "El Reporte que Desaparece",
+      "contexto": "Tu programa genera el reporte mensual de ventas leyendo un archivo CSV, pero a veces el archivo todavía no se ha subido y todo el sistema truena con un error en rojo. La gerencia exige que el sistema no se caiga.",
+      "opciones": [
+        {
+          "id": "a",
+          "texto": "Capturar todas las excepciones con un except vacío y no hacer nada.",
+          "correcta": false,
+          "retroalimentacion": "Un except vacío oculta errores reales y dificulta la depuración; se debe capturar la excepción específica y manejar el caso.",
+          "desenlace": "El except vacío esconde el error y el sistema genera un reporte en ceros sin avisar a nadie. La gerencia toma decisiones con ese reporte y recorta presupuesto a una sucursal que en realidad vendía bien. Cuando descubren la falla, nadie sabe desde cuándo pasa porque el error nunca se registró."
+        },
+        {
+          "id": "b",
+          "texto": "Rodear la lectura con try/except, capturar el error de archivo no encontrado y avisar al usuario.",
+          "correcta": true,
+          "retroalimentacion": "Capturar la excepción específica permite recuperarse del error, mantener el programa estable e informar con claridad al usuario.",
+          "desenlace": "Ahora, si el archivo no está, el sistema avisa «aún no se ha subido el archivo de ventas» y sigue funcionando. La persona encargada sube el CSV y el reporte se genera bien al segundo intento. La gerencia deja de recibir pantallas rojas y tu manejo de errores se vuelve el estándar del equipo."
+        },
+        {
+          "id": "c",
+          "texto": "Asumir que el archivo siempre existirá y no hacer nada.",
+          "correcta": false,
+          "retroalimentacion": "Los errores previsibles deben manejarse; confiar en que no ocurrirán deja al sistema expuesto a caídas.",
+          "desenlace": "Un lunes a las 8 a.m. el archivo todavía no se ha subido y el sistema completo se cae en plena junta de resultados. La gerente presenta sin números y el director pregunta quién programó eso. Te toca arreglarlo con prisa y explicar por qué no se previó un error tan común."
+        }
+      ]
+    }
+  ],
+  "eventos_probabilidad": [
+    {
+      "id": "poo-clases-p",
+      "subtema": "programacion-oo:0",
+      "titulo": "La Herencia del Proyecto Viejo",
+      "contexto": "En el estudio de videojuegos donde haces prácticas, el equipo anterior dejó la clase Personaje y ahora necesitas crear Guerrero y Mago sin duplicar código. Si no lo entregas a tiempo, la demo para inversionistas se cancela.",
+      "opciones": [
+        {
+          "id": "a",
+          "texto": "Hacer que Guerrero y Mago hereden de Personaje y extiendan lo necesario.",
+          "atributo": "teoria",
+          "probabilidad_base": 30,
+          "retroalimentacion": "La herencia permite reutilizar atributos y métodos de una clase base y especializar solo lo que cambia.",
+          "desenlace_exito": "Guerrero y Mago heredan todo de Personaje y solo agregan sus habilidades especiales. La demo sale a tiempo y los inversionistas quedan impresionados con lo rápido que se pueden crear personajes nuevos. El estudio decide usar tu jerarquía en todo el juego.",
+          "desenlace_fallo": "Heredas de la clase equivocada y el Guerrero empieza a lanzar hechizos en plena demo. Los inversionistas se ríen, pero preguntan si el código está bajo control. El equipo pasa la noche corrigiendo la jerarquía de clases."
+        },
+        {
+          "id": "b",
+          "texto": "Revisar la clase base y escribir pruebas antes de heredar.",
+          "atributo": "teoria",
+          "probabilidad_base": 30,
+          "retroalimentacion": "Probar la clase base antes de extenderla evita propagar errores a todas las clases hijas.",
+          "desenlace_exito": "Tus pruebas descubren que Personaje calculaba mal la vida máxima. Lo corriges antes de heredar y las clases hijas nacen sin ese error. La demo sale estable y el equipo agrega tus pruebas al proceso de integración.",
+          "desenlace_fallo": "Escribir pruebas para todo te consume la tarde y el Mago no queda listo. La demo se presenta solo con el Guerrero y los inversionistas piden ver más avance en la siguiente reunión. Las pruebas eran buena idea, pero faltó priorizar."
+        },
+        {
+          "id": "c",
+          "texto": "Consultar con el equipo qué comportamientos comparten los personajes.",
+          "atributo": "equipo",
+          "probabilidad_base": 30,
+          "retroalimentacion": "Acordar con el equipo qué es común y qué es específico ayuda a decidir qué pertenece a la clase base.",
+          "desenlace_exito": "El equipo acuerda qué comparten todos los personajes y qué es exclusivo de cada uno. La jerarquía queda clara y cualquier miembro puede crear personajes nuevos sin preguntar. La demo sale a tiempo y el equipo trabaja más coordinado.",
+          "desenlace_fallo": "Hay tantas opiniones que nadie decide qué va en la clase base. La jerarquía queda a medias y cada quien programa a su manera. La demo sale con errores y hay que reorganizar el trabajo desde cero."
+        }
+      ]
+    },
+    {
+      "id": "poo-exc-p",
+      "subtema": "programacion-oo:1",
+      "titulo": "La App que Se Cierra Sola",
+      "contexto": "La app de una calculadora de calificaciones se cierra de golpe cuando un alumno no tiene tareas registradas, porque el promedio divide entre cero. Las calificaciones se publican en una hora.",
+      "opciones": [
+        {
+          "id": "a",
+          "texto": "Agregar un try/except específico para la división entre cero y registrar el error.",
+          "atributo": "inteligencia",
+          "probabilidad_base": 30,
+          "retroalimentacion": "Manejar la excepción concreta y registrarla permite continuar y, además, diagnosticar el problema después.",
+          "desenlace_exito": "Capturas la división entre cero, muestras «aún no hay tareas registradas» y registras el error. La app deja de cerrarse y las calificaciones se publican a tiempo. Gracias al registro, el equipo detecta que otros alumnos tenían el mismo problema.",
+          "desenlace_fallo": "Capturas la excepción equivocada y la app sigue cerrándose cuando falta una tarea. Las calificaciones se publican tarde y los alumnos llenan el chat de soporte. Hay que revisar de nuevo qué error lanza Python en ese caso."
+        },
+        {
+          "id": "b",
+          "texto": "Definir una excepción propia para cada situación de la app.",
+          "atributo": "teoria",
+          "probabilidad_base": 25,
+          "retroalimentacion": "Las excepciones propias comunican mejor los errores del dominio, aunque requieren más diseño y tiempo.",
+          "desenlace_exito": "Tus excepciones propias explican exactamente qué pasó: «alumno sin tareas», «calificación fuera de rango». Corregir los errores se vuelve mucho más fácil y la app queda más robusta. El equipo adopta tus excepciones para el resto del sistema.",
+          "desenlace_fallo": "Creas tantas excepciones que el código se vuelve difícil de seguir y no terminas a tiempo. Las calificaciones se publican tarde y nadie entiende cuál excepción usar en cada caso. Al final el equipo simplifica tu diseño."
+        },
+        {
+          "id": "c",
+          "texto": "Preguntar a los alumnos qué estaban haciendo cuando se cerró la app.",
+          "atributo": "equipo",
+          "probabilidad_base": 35,
+          "retroalimentacion": "Los reportes de usuarios ayudan a reproducir el error, pero no sustituyen el manejo de excepciones en el código.",
+          "desenlace_exito": "Un alumno explica que entró a revisar una materia nueva sin tareas. Con eso reproduces el error al instante y lo corriges antes de la publicación. Además, agregas un formulario de reporte de errores dentro de la app.",
+          "desenlace_fallo": "Nadie recuerda qué hacía cuando se cerró la app y los reportes no ayudan. Sin poder reproducir el error, la app sigue fallando el día de la publicación. Queda claro que hacía falta manejar la excepción en el código."
+        }
+      ]
+    }
+  ]
+}

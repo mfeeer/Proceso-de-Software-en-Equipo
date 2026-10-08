@@ -1,0 +1,150 @@
+{
+  "_ayuda": "Un archivo por materia (mismos ids que CU-02 en app/views_personalizar.py). eventos_normales = decision de analisis: exactamente una opcion con correcta: true. eventos_probabilidad = prueba de atributos: el exito depende de probabilidad_base + el atributo (teoria, equipo o inteligencia). Cada subtema necesita un evento de cada tipo.",
+  "tema": {
+    "id": "logica-algoritmos",
+    "nombre": "Lógica y algoritmos",
+    "descripcion": "Representación de algoritmos, búsqueda y ordenamiento."
+  },
+  "subtemas": [
+    {
+      "id": "logica-algoritmos:0",
+      "nombre": "Representación de algoritmos"
+    },
+    {
+      "id": "logica-algoritmos:1",
+      "nombre": "Algoritmos de búsqueda y ordenamiento"
+    }
+  ],
+  "eventos_normales": [
+    {
+      "id": "la-repr-n",
+      "subtema": "logica-algoritmos:0",
+      "titulo": "La Regla del Envío Gratis",
+      "contexto": "Una tienda en línea quiere documentar cuándo un pedido tiene envío gratis: si el total supera $500 o si el cliente es miembro premium. Necesitas representar el algoritmo para que lo entiendan marketing, ventas y desarrollo.",
+      "opciones": [
+        {
+          "id": "a",
+          "texto": "Pegar en el documento todo el código fuente de la función.",
+          "correcta": false,
+          "retroalimentacion": "El código fuente es una implementación, no una representación: mezcla detalles técnicos que dificultan comunicar la lógica a perfiles no técnicos.",
+          "desenlace": "Marketing abre el documento, ve llaves, paréntesis y un try/except y lo cierra sin leerlo. Como nadie entendió la regla, lanzan una campaña de «envío gratis en todo» que la tienda no puede cubrir. Al final del mes hay pérdidas por envíos y el equipo de desarrollo carga con la culpa de no haber explicado bien."
+        },
+        {
+          "id": "b",
+          "texto": "Dibujar un diagrama de flujo con la decisión y sus dos salidas.",
+          "correcta": true,
+          "retroalimentacion": "Un diagrama de flujo muestra visualmente las decisiones y los caminos del algoritmo, y lo entiende cualquier persona sin conocimientos técnicos.",
+          "desenlace": "Con el diagrama de flujo, ventas, marketing y desarrollo siguen las mismas flechas y llegan a la misma conclusión. La campaña de envío gratis sale con las condiciones correctas y nadie se lleva sorpresas en la caja. Tu diagrama termina pegado en la wiki de la empresa como referencia oficial."
+        },
+        {
+          "id": "c",
+          "texto": "Describirlo con un párrafo largo y sin estructura en el chat del equipo.",
+          "correcta": false,
+          "retroalimentacion": "El lenguaje natural libre es ambiguo; el pseudocódigo o los diagramas reducen las interpretaciones distintas.",
+          "desenlace": "Cada área lee el párrafo a su manera: ventas entiende «más de $500 y premium», marketing entiende «cualquiera de las dos». La tienda termina con tres promociones distintas y clientes molestos porque se les cobró un envío que esperaban gratis. Hay que hacer una junta de emergencia para ponerse de acuerdo."
+        }
+      ]
+    },
+    {
+      "id": "la-busq-n",
+      "subtema": "logica-algoritmos:1",
+      "titulo": "El Millón de Usuarios",
+      "contexto": "La base de datos de una app de música tiene un millón de usuarios ordenados alfabéticamente por nombre de usuario y necesitas encontrar uno rápido. Un compañero propone revisarlos uno por uno desde el inicio; otra opción es empezar por la mitad y descartar la mitad que no sirve en cada paso.",
+      "opciones": [
+        {
+          "id": "a",
+          "texto": "Volver a ordenar toda la lista antes de buscar.",
+          "correcta": false,
+          "retroalimentacion": "Los usuarios ya están ordenados: reordenar es trabajo innecesario que cuesta mucho más que la propia búsqueda.",
+          "desenlace": "Reordenar un millón de usuarios que ya estaban ordenados deja al servidor ocupado varios minutos. Mientras tanto la app se pone lenta para todos, soporte técnico recibe quejas y el usuario que buscabas sigue sin aparecer. Tu líder te recuerda que, si los datos ya tienen orden, hay que aprovecharlo."
+        },
+        {
+          "id": "b",
+          "texto": "Búsqueda lineal: revisar los usuarios uno por uno desde el primero.",
+          "correcta": false,
+          "retroalimentacion": "La búsqueda lineal puede requerir hasta un millón de comparaciones; si los datos están ordenados conviene aprovechar ese orden.",
+          "desenlace": "Revisar usuario por usuario funciona, pero el que buscabas se llama «zzz_beats» y está al final de la lista. Después de casi un millón de comparaciones la búsqueda tarda tanto que la pantalla de la app muestra error por tiempo de espera. Los usuarios piensan que la app se cayó y las calificaciones en la tienda bajan."
+        },
+        {
+          "id": "c",
+          "texto": "Búsqueda binaria: comparar con el usuario del medio y descartar la mitad en cada paso.",
+          "correcta": true,
+          "retroalimentacion": "Con datos ordenados, la búsqueda binaria reduce el problema a la mitad en cada paso: unas 20 comparaciones bastan para un millón de elementos.",
+          "desenlace": "Con búsqueda binaria descartas la mitad de la lista en cada paso y encuentras al usuario en unas 20 comparaciones. La búsqueda responde al instante aunque la base siga creciendo. El equipo adopta tu función para el buscador de canciones y la app se siente mucho más rápida."
+        }
+      ]
+    }
+  ],
+  "eventos_probabilidad": [
+    {
+      "id": "la-repr-p",
+      "subtema": "logica-algoritmos:0",
+      "titulo": "El Algoritmo sin Documentar",
+      "contexto": "El algoritmo que asigna turnos al personal de una cafetería dejó de funcionar y nadie lo documentó: solo hay fragmentos de código con nombres como x2 y temp. El lunes empieza la nueva semana de turnos y debes reconstruirlo y dejarlo claro para todos.",
+      "opciones": [
+        {
+          "id": "a",
+          "texto": "Deducir los pasos faltantes probando casos de ejemplo.",
+          "atributo": "inteligencia",
+          "probabilidad_base": 30,
+          "retroalimentacion": "Probar el algoritmo con casos de ejemplo (prueba de escritorio) permite deducir y comprobar los pasos que faltan.",
+          "desenlace_exito": "Con tres casos de prueba deduces la lógica que asignaba los turnos. El lunes cada persona tiene su turno correcto y nadie se queda doble. El gerente te pide documentar los casos para que el próximo cambio sea más fácil.",
+          "desenlace_fallo": "Tus ejemplos no cubren a quienes trabajan medio tiempo y el algoritmo le asigna tres turnos seguidos a una persona. El lunes hay quejas y el gerente tiene que reacomodar los turnos a mano. Aprendes que las pruebas de escritorio necesitan casos variados."
+        },
+        {
+          "id": "b",
+          "texto": "Rediseñar el algoritmo desde cero con un diagrama.",
+          "atributo": "teoria",
+          "probabilidad_base": 25,
+          "retroalimentacion": "Abstraer el problema y modelarlo desde cero da claridad, aunque cuesta más tiempo que reparar lo existente.",
+          "desenlace_exito": "Rediseñas el algoritmo desde cero con un diagrama claro y justo. El gerente lo imprime para explicarlo al personal y los turnos quedan más equilibrados que antes. La cafetería termina con un sistema mejor que el original.",
+          "desenlace_fallo": "El rediseño se complica y no está listo para el lunes. Los turnos de esa semana se hacen a mano en una libreta y hay confusiones en la entrada de cada turno. Tu diagrama queda a medias y el gerente pide volver a la versión anterior mientras tanto."
+        },
+        {
+          "id": "c",
+          "texto": "Entrevistar a los encargados que usaban el sistema antes.",
+          "atributo": "equipo",
+          "probabilidad_base": 35,
+          "retroalimentacion": "Las personas que conocen el proceso son una fuente valiosa de requisitos, siempre que se les pregunte de forma ordenada.",
+          "desenlace_exito": "Los encargados recuerdan cada regla: quién no puede cerrar, quién estudia en la mañana y quién cubre fines de semana. Con esa información reconstruyes el algoritmo y queda mejor documentado que nunca. El personal siente que por fin alguien tomó en cuenta sus necesidades.",
+          "desenlace_fallo": "Cada encargado recuerda una regla distinta y algunas se contradicen. Terminas con más dudas que al inicio y los turnos del lunes salen con errores. Queda claro que hacía falta una entrevista más ordenada y por escrito."
+        }
+      ]
+    },
+    {
+      "id": "la-busq-p",
+      "subtema": "logica-algoritmos:1",
+      "titulo": "Los Mil Pedidos Revueltos",
+      "contexto": "Por un error en la migración de la base de datos, mil pedidos de una tienda en línea quedaron desordenados y deben salir a paquetería ordenados por fecha antes de medianoche. Hay varias formas de organizarlos, cada una con sus riesgos.",
+      "opciones": [
+        {
+          "id": "a",
+          "texto": "Aplicar un algoritmo de ordenamiento eficiente, como ordenar por mezcla.",
+          "atributo": "inteligencia",
+          "probabilidad_base": 30,
+          "retroalimentacion": "Los algoritmos eficientes de ordenamiento (como mezcla) escalan bien con miles de elementos, a diferencia de los métodos ingenuos.",
+          "desenlace_exito": "Aplicas ordenamiento por mezcla y, antes de medianoche, los mil pedidos están en orden por fecha. La paquetería se los lleva a tiempo y ningún cliente recibe su pedido tarde. El equipo integra tu solución al proceso de migración para la próxima vez.",
+          "desenlace_fallo": "Al combinar dos listas cometes un error en las fechas y varios pedidos quedan fuera de lugar. Algunos clientes reciben su pedido con días de retraso y la tienda tiene que dar cupones de disculpa. El código queda pendiente de revisión."
+        },
+        {
+          "id": "b",
+          "texto": "Repartir los pedidos entre el equipo y juntar las listas ya ordenadas.",
+          "atributo": "equipo",
+          "probabilidad_base": 30,
+          "retroalimentacion": "Dividir el problema entre varias personas y combinar los resultados es la idea de divide y vencerás, pero exige coordinación.",
+          "desenlace_exito": "Cada persona ordena su parte y la combinación final sale en minutos. La paquetería recoge todo a tiempo y el equipo se da cuenta de lo bien que funciona dividir el trabajo. Al día siguiente documentan el método como plan de emergencia.",
+          "desenlace_fallo": "Dos compañeros ordenan con criterios distintos, uno por fecha de compra y otro por fecha de pago. Al juntar las listas nada embona y se pierde la hora de recolección. Varios pedidos salen al día siguiente y los clientes se quejan."
+        },
+        {
+          "id": "c",
+          "texto": "Planear una clasificación por meses antes de tocar un solo pedido.",
+          "atributo": "teoria",
+          "probabilidad_base": 35,
+          "retroalimentacion": "Planificar una clasificación en etapas (por mes, luego por día) simplifica un problema grande en subproblemas manejables.",
+          "desenlace_exito": "Agrupas los pedidos por mes y luego cada grupo por día; el resto es sencillo. Los pedidos salen ordenados a tiempo y el método resulta fácil de explicar al equipo. La tienda lo adopta para sus reportes mensuales.",
+          "desenlace_fallo": "La planeación se lleva tanto tiempo que quedan minutos para ejecutarla. Ordenas la mitad de los pedidos y el resto sale al día siguiente. La lección queda clara: planear sirve, pero también hay que medir el tiempo disponible."
+        }
+      ]
+    }
+  ]
+}
