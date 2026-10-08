@@ -1,0 +1,188 @@
+/* Portada (página principal) — mockup "Opción B · Camino".
+   Solo la carga index.html. No usa libro.css porque ese archivo da estilo de
+   biblioteca al <body>; la portada tiene su propio paisaje.
+   Las preferencias de CU03 (ajustes.css) se siguen aplicando encima de este archivo. */
+
+:root {
+  /* 1 unidad = 1px del mockup de 1280×800, escalada al tamaño de la ventana */
+  --u: min(0.078125vw, 0.125vh);
+  --p-oro: #d4a94a;
+  --p-oro-claro: #f0cf7a;
+  --p-crema: #f3e6c4;
+  --p-vino: #5a1618;
+  --p-sombra: #2b0809;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; height: 100%; }
+body { overflow: hidden; background: #14080d; }
+
+/* ===== Escena ===== */
+.escena {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: linear-gradient(180deg, #14080d 0%, #3a1620 45%, #7a3a30 78%, #a8683e 100%);
+}
+
+.fondo-svg {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  transition: filter 1.1s ease;
+}
+
+/* Luciérnagas (puntos dorados del mockup) */
+.chispas { position: absolute; inset: 0; pointer-events: none; }
+.chispas i {
+  position: absolute;
+  width: var(--d); height: var(--d);
+  border-radius: 50%;
+  background: #e8c46a;
+  box-shadow: 0 0 calc(var(--d) * 3) calc(var(--d) * 1) rgba(232, 196, 106, 0.4);
+  opacity: 0.75;
+  animation: chispa 4.5s ease-in-out infinite;
+  animation-delay: var(--t);
+}
+@keyframes chispa {
+  0%, 100% { opacity: 0.25; transform: translateY(0); }
+  50%      { opacity: 0.9;  transform: translateY(-6px); }
+}
+
+/* Halo que "respira" detrás del libro de la cima */
+.halo-libro {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: halo-libro 4.2s ease-in-out infinite;
+}
+@keyframes halo-libro {
+  0%, 100% { opacity: 0.25; transform: scale(0.88); }
+  50%      { opacity: 0.8;  transform: scale(1.08); }
+}
+
+/* ===== Título, subtítulo y botón ===== */
+.portada-texto {
+  position: absolute;
+  left: 77.34%;            /* 990px del mockup */
+  top: 45.3%;
+  transform: translate(-50%, -50%);
+  width: max(calc(400 * var(--u)), min(92vw, 22rem));
+  text-align: center;
+  transition: opacity 0.5s ease;
+}
+
+.titulo {
+  margin: 0;
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  font-size: max(2.75rem, calc(72 * var(--u)));
+  line-height: 1;
+  color: var(--p-crema);
+  text-shadow: 0 3px 0 #2b0809, 0 6px 18px rgba(0, 0, 0, 0.5);
+}
+
+.divisor {
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px;
+  margin: max(14px, calc(22 * var(--u))) 0 max(10px, calc(14 * var(--u)));
+}
+.divisor span { width: max(2rem, calc(50 * var(--u))); height: 2px; background: var(--p-oro); }
+.divisor i { width: 8px; height: 8px; background: var(--p-oro); transform: rotate(45deg); }
+
+.subtitulo {
+  margin: 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: max(1.15rem, calc(22 * var(--u)));
+  color: #e9dcb8;
+}
+
+.portada-accion { margin-top: max(1.75rem, calc(46 * var(--u))); }
+
+/* ===== Botón: brilla solo para invitar a pulsarlo ===== */
+.btn-aventura {
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 48px;
+  padding: 0.875em 2.1em;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: max(1rem, calc(16 * var(--u)));
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--p-crema);
+  background: var(--p-vino);
+  border: 2px solid var(--p-oro);
+  border-radius: 6px;
+  overflow: hidden;                      /* recorta el destello que lo cruza */
+  cursor: pointer;
+  box-shadow: 0 5px 0 var(--p-sombra);
+  animation: btn-latido 2.8s ease-in-out infinite;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.15s;
+}
+.btn-texto { position: relative; z-index: 1; }
+
+/* Subida de brillo + resplandor dorado */
+@keyframes btn-latido {
+  0%, 100% {
+    box-shadow: 0 5px 0 var(--p-sombra), 0 0 0 0 rgba(240, 207, 122, 0);
+    border-color: var(--p-oro);
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow: 0 5px 0 var(--p-sombra), 0 0 26px 5px rgba(240, 207, 122, 0.55);
+    border-color: var(--p-oro-claro);
+    filter: brightness(1.22);
+  }
+}
+
+/* Destello diagonal que cruza el botón cada pocos segundos */
+.btn-aventura::after {
+  content: "";
+  position: absolute; top: 0; bottom: 0; left: -60%;
+  width: 40%;
+  background: linear-gradient(100deg, transparent, rgba(255, 236, 170, 0.6), transparent);
+  transform: skewX(-20deg);
+  animation: btn-destello 3.6s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes btn-destello {
+  0%, 55% { left: -60%; }
+  100%    { left: 140%; }
+}
+
+.btn-aventura:hover { background: #6e1d20; transform: translateY(-2px); }
+.btn-aventura:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--p-sombra), 0 0 22px 4px rgba(240, 207, 122, 0.5); }
+.btn-aventura:focus-visible { outline: 3px solid #ffd96a; outline-offset: 5px; }
+
+/* ===== Pantallas verticales / estrechas ===== */
+@media (max-aspect-ratio: 6/5) {
+  .portada-texto {
+    inset: 0; left: 0; top: 0;
+    transform: none;
+    width: auto;
+    display: flex; flex-direction: column; justify-content: space-between; align-items: center;
+    padding: 6vh 1.25rem 9vh;
+  }
+  .portada-accion { margin-top: 0; }
+}
+
+/* ===== Preferencias de lectura (CU03) para los textos de la portada ===== */
+html[data-fuente="dislexia"] .titulo,
+html[data-fuente="dislexia"] .subtitulo,
+html[data-fuente="dislexia"] .btn-aventura {
+  font-family: 'OpenDyslexic', 'Comic Sans MS', sans-serif !important;
+  font-style: normal !important;
+}
+html[data-fuente="legible"] .titulo,
+html[data-fuente="legible"] .subtitulo,
+html[data-fuente="legible"] .btn-aventura {
+  font-family: 'Atkinson Hyperlegible', 'Segoe UI', Arial, sans-serif !important;
+}
+html[data-fuente="dislexia"] .titulo { font-size: max(2.25rem, calc(56 * var(--u))); }
+html[data-contraste="alto"] .subtitulo { color: #fff6dc; }
+html[data-contraste="alto"] .btn-aventura { background: #3a0c0e; border-color: #ffe08a; }

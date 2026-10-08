@@ -9,6 +9,18 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Cinzel+Decorative:wght@700;900&family=IM+Fell+English:ital@0;1&family=MedievalSharp&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/libro.css' %}">
+  <link rel="stylesheet" href="{% static 'css/ajustes.css' %}">
+  <!-- CU03: aplica las preferencias guardadas antes de pintar la página (evita parpadeos) -->
+  <script>
+    (function () {
+      try {
+        var s = JSON.parse(localStorage.getItem("logicteam.ajustes") || "{}"), d = document.documentElement;
+        ["tamano", "fuente", "contraste", "movimiento"].forEach(function (k) {
+          if (typeof s[k] === "string") d.dataset[k] = s[k];
+        });
+      } catch (e) {}
+    })();
+  </script>
   {% block extra_head %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
@@ -34,7 +46,11 @@
   </div>
   {% endblock %}
 
+  <!-- CU03: engranaje de ajustes, visible en todas las pantallas -->
+  {% include "ajustes_panel.html" %}
+
   <script src="{% static 'js/libro.js' %}"></script>
+  <script src="{% static 'js/ajustes.js' %}"></script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>

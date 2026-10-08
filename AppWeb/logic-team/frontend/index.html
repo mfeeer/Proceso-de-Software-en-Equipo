@@ -1,53 +1,163 @@
-{% extends "base.html" %}
 {% load static %}
+<!DOCTYPE html>
+<html lang="es">
 
-{% block title %}Logic Team{% endblock %}
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TechTale · Una aventura de ingeniería de software</title>
 
-{% block book %}
-  <div class="ribbon">CAP.<b>I</b></div>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Cormorant+Garamond:ital,wght@0,600;1,500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/portada.css' %}">
+  <link rel="stylesheet" href="{% static 'css/ajustes.css' %}">
+  <!-- CU03: aplica las preferencias guardadas antes de pintar la página (evita parpadeos) -->
+  <script>
+    (function () {
+      try {
+        var s = JSON.parse(localStorage.getItem("logicteam.ajustes") || "{}"), d = document.documentElement;
+        ["tamano", "fuente", "contraste", "movimiento"].forEach(function (k) {
+          if (typeof s[k] === "string") d.dataset[k] = s[k];
+        });
+      } catch (e) { }
+    })();
+  </script>
+</head>
 
-  <div class="pages">
-    <div class="spread active">
-      <!-- Página izquierda: portada de la historia -->
-      <div class="page left">
-        <div class="chapter-label">PRÓLOGO</div>
-        <div class="chapter-title">Logic Team</div>
-        <div class="ornament"></div>
-        <p class="story">
-          Toda gran aventura empieza con un libro que aún no se ha abierto.
-          Este es el cuaderno de Logic Team: un lugar donde cada decisión
-          escribe una página nueva y donde <em>ser ingeniero es, también,
-          ser el protagonista de tu propia historia</em>.
-        </p>
-        <div class="emblem">📖</div>
-        <div class="page-num">— 1 —</div>
+<body>
+
+  <main class="escena" id="escena">
+
+    <!-- Luciérnagas fijas del mockup -->
+    <div class="chispas" aria-hidden="true">
+      <i style="left:40.9%;top:43.8%;--d:2px;--t:0s"></i>
+      <i style="left:19.6%;top:55.6%;--d:3px;--t:.6s"></i>
+      <i style="left:79.7%;top:24.8%;--d:4px;--t:1.2s"></i>
+      <i style="left:17.5%;top:13.5%;--d:3px;--t:1.8s"></i>
+      <i style="left:6.3%;top:56.4%;--d:2px;--t:2.4s"></i>
+      <i style="left:91%;top:42%;--d:3px;--t:.3s"></i>
+      <i style="left:12.5%;top:33.4%;--d:4px;--t:.9s"></i>
+      <i style="left:86.3%;top:73.6%;--d:2px;--t:1.5s"></i>
+      <i style="left:60.7%;top:40.4%;--d:3px;--t:2.1s"></i>
+      <i style="left:30.7%;top:18.5%;--d:2px;--t:2.7s"></i>
+      <i style="left:45%;top:32.4%;--d:3px;--t:.45s"></i>
+      <i style="left:7.2%;top:87%;--d:4px;--t:1.05s"></i>
+    </div>
+
+    <!-- Paisaje del mockup. La clase .fondo-svg lo hace cubrir toda la pantalla -->
+    <svg class="fondo-svg" id="fondo-svg" viewBox="0 0 1280 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true"
+      focusable="false">
+      <defs>
+        <linearGradient id="mist" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#f3e6c4" stop-opacity="0" />
+          <stop offset="1" stop-color="#f3e6c4" stop-opacity=".28" />
+        </linearGradient>
+        <radialGradient id="cielo">
+          <stop offset="0" stop-color="#f0c86e" stop-opacity=".40" />
+          <stop offset=".65" stop-color="#f0c86e" stop-opacity="0" />
+        </radialGradient>
+        <radialGradient id="halo-libro">
+          <stop offset="0" stop-color="#f0c86e" stop-opacity=".9" />
+          <stop offset="1" stop-color="#f0c86e" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+
+      <!-- Resplandor del cielo (en el mockup era un div) -->
+      <ellipse cx="480" cy="290" rx="353" ry="297" fill="url(#cielo)" />
+
+      <polygon
+        points="0,520 120,380 230,470 340,330 470,460 600,360 720,470 860,350 990,460 1120,370 1280,480 1280,800 0,800"
+        fill="#4a2230" opacity=".75" />
+      <polygon points="0,600 160,470 300,570 430,450 560,580 700,480 840,590 1000,470 1140,580 1280,500 1280,800 0,800"
+        fill="#2d1220" opacity=".9" />
+      <rect x="0" y="430" width="1280" height="370" fill="url(#mist)" />
+
+      <!-- Camino -->
+      <polygon
+        points="528,800 526,794 524,788 521,782 519,776 517,770 515,764 512,758 510,752 508,746 506,740 503,734 501,728 499,722 497,716 495,710 492,704 490,698 488,692 486,686 483,680 481,674 479,668 477,662 473,656 469,650 465,644 460,638 456,632 452,626 447,620 443,614 439,608 434,602 430,596 426,590 422,584 417,578 413,572 409,566 404,560 400,554 396,548 391,542 393,536 397,530 400,524 404,518 408,512 412,506 416,500 420,494 424,488 428,482 432,476 436,470 440,464 444,458 448,452 452,446 455,440 459,434 462,428 462,422 462,416 462,410 462,404 462,398 462,392 462,386 462,380 462,374 462,368 462,362 462,356 462,350 462,344 462,338 462,332 463,326 464,320 496,320 497,326 499,332 501,338 504,344 506,350 508,356 511,362 513,368 516,374 518,380 520,386 523,392 525,398 528,404 530,410 532,416 535,422 537,428 537,434 535,440 534,446 532,452 531,458 529,464 528,470 526,476 525,482 523,488 522,494 520,500 519,506 517,512 516,518 514,524 513,530 511,536 512,542 519,548 526,554 532,560 539,566 546,572 552,578 559,584 566,590 573,596 579,602 586,608 593,614 599,620 606,626 613,632 619,638 626,644 633,650 640,656 646,662 650,668 655,674 659,680 664,686 669,692 673,698 678,704 683,710 687,716 692,722 696,728 701,734 706,740 710,746 715,752 720,758 724,764 729,770 733,776 738,782 743,788 747,794 752,800"
+        fill="#8a6a4a" opacity=".9" />
+      <g stroke="#2a1410" stroke-width="2" opacity=".55">
+        <line x1="524" y1="790" x2="744" y2="790" />
+        <line x1="518" y1="773" x2="731" y2="773" />
+        <line x1="512" y1="756" x2="718" y2="756" />
+        <line x1="505" y1="739" x2="705" y2="739" />
+        <line x1="499" y1="722" x2="692" y2="722" />
+        <line x1="493" y1="705" x2="679" y2="705" />
+        <line x1="486" y1="688" x2="666" y2="688" />
+        <line x1="480" y1="671" x2="652" y2="671" />
+        <line x1="472" y1="654" x2="637" y2="654" />
+        <line x1="460" y1="637" x2="618" y2="637" />
+        <line x1="447" y1="620" x2="599" y2="620" />
+        <line x1="435" y1="603" x2="580" y2="603" />
+        <line x1="423" y1="586" x2="561" y2="586" />
+        <line x1="411" y1="569" x2="542" y2="569" />
+        <line x1="399" y1="552" x2="523" y2="552" />
+        <line x1="393" y1="535" x2="511" y2="535" />
+        <line x1="404" y1="518" x2="516" y2="518" />
+        <line x1="416" y1="501" x2="520" y2="501" />
+        <line x1="427" y1="484" x2="524" y2="484" />
+        <line x1="438" y1="467" x2="529" y2="467" />
+        <line x1="449" y1="450" x2="533" y2="450" />
+        <line x1="460" y1="433" x2="537" y2="433" />
+        <line x1="462" y1="416" x2="532" y2="416" />
+        <line x1="462" y1="399" x2="526" y2="399" />
+        <line x1="462" y1="382" x2="519" y2="382" />
+        <line x1="462" y1="365" x2="512" y2="365" />
+        <line x1="462" y1="348" x2="505" y2="348" />
+        <line x1="462" y1="331" x2="498" y2="331" />
+      </g>
+
+      <!-- Libro en la cima: respira con un halo suave para invitar a abrirlo -->
+      <g transform="translate(480 292)">
+        <circle class="halo-libro" cx="0" cy="-26" r="120" fill="url(#halo-libro)" />
+        <g id="libro-cima">
+          <rect x="-52" y="-92" width="104" height="132" rx="4" fill="#4a1012" stroke="#d4a94a" stroke-width="3" />
+          <rect x="-42" y="-82" width="84" height="112" fill="none" stroke="#d4a94a" stroke-width="1.5" opacity=".8" />
+          <path d="M-18 -44 L-34 -28 L-18 -12 M18 -44 L34 -28 L18 -12 M8 -50 L-8 -6" fill="none" stroke="#e8c46a"
+            stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+          <rect x="-52" y="40" width="104" height="8" fill="#f3e6c4" />
+        </g>
+      </g>
+
+      <!-- Roca y viajero -->
+      <polygon points="0,800 0,600 90,570 210,580 330,640 400,800" fill="#0f0709" />
+      <g fill="#0c0508">
+        <circle cx="190" cy="500" r="17" />
+        <path d="M170 510 Q150 600 128 585 L120 585 Q160 520 168 512 Z" />
+        <path d="M172 512 Q150 560 142 585 L240 585 Q220 540 208 512 Z" />
+        <rect x="238" y="430" width="4" height="156" />
+      </g>
+      <path d="M208 512 Q222 540 240 585" stroke="#d4a94a" stroke-width="1.5" fill="none" opacity=".6" />
+    </svg>
+
+    <!-- Título y botón -->
+    <div class="portada-texto" id="portada-texto">
+      <div class="portada-titulo">
+        <h1 class="titulo">TechTale</h1>
+        <div class="divisor" aria-hidden="true"><span></span><i></i><span></span></div>
+        <p class="subtitulo">Una aventura de ingeniería de software</p>
       </div>
 
-      <!-- Página derecha: estado del reino (health check del backend) -->
-      <div class="page right">
-        <h1 class="choose-title">Estado del Reino</h1>
-        <p class="choose-sub">Los guardianes revisan que todo esté en su sitio</p>
-
-        <p class="lead">
-          <span id="status" class="status">Comprobando conexión con el servidor...</span>
-        </p>
-
-        <div class="stamps">
-          <span class="stamp">Django</span>
-          <span class="stamp">PostgreSQL</span>
-          <span class="stamp">Docker</span>
-        </div>
-
-        <div class="btn-row" style="justify-content: center;">
-          <a class="book-btn go" href="{% url 'personalizar_perfil' %}">⚔️ Nueva partida</a>
-        </div>
-
-        <div class="page-num">— 2 —</div>
+      <div class="portada-accion">
+        {% comment %}
+        Mientras 'personalizar_partida' no tenga URL propia, href es la ruta a la que se navega.
+        Cuando exista, cámbiala por: href="{% url 'personalizar_partida' %}".
+        {% endcomment %}
+        <a class="btn-aventura" id="btn-iniciar" href="/personalizar-partida/">
+          <span class="btn-texto">Iniciar partida</span>
+        </a>
       </div>
     </div>
-  </div>
-{% endblock %}
+  </main>
 
-{% block extra_js %}
-  <script src="{% static 'js/app.js' %}"></script>
-{% endblock %}
+  <!-- CU03: engranaje de ajustes, visible en todas las pantallas -->
+  {% include "ajustes_panel.html" %}
+
+  <script src="{% static 'js/portada.js' %}"></script>
+  <script src="{% static 'js/ajustes.js' %}"></script>
+</body>
+
+</html>
