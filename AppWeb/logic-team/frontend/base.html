@@ -23,22 +23,28 @@
   </script>
   {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
 
-  <!-- Ambiente compartido: biblioteca, luz de vela y luciérnagas -->
+  {# Ambiente por defecto: biblioteca, luz de vela y luciérnagas. Una página puede reemplazarlo. #}
+  {% block ambient %}
   <div class="shelves"></div>
   <canvas id="motes"></canvas>
+  {% endblock %}
 
+  {% block loader %}
   <div id="loader-overlay">
     <div class="loader-book">📖</div>
     <div class="loader-title">{% block loader_title %}Había una vez...{% endblock %}</div>
     <div class="loader-sub">{% block loader_sub %}abriendo el libro de tu historia{% endblock %}</div>
   </div>
+  {% endblock %}
 
-  <!-- El libro: cada página pone su contenido aquí -->
+  {# Contenido: por defecto, el libro. Las paginas del libro solo llenan el bloque book. #}
+  {% block page %}
   <div class="book" id="main-book">
     {% block book %}{% endblock %}
   </div>
+  {% endblock %}
 
   <!-- CU03: engranaje de ajustes, visible en todas las pantallas -->
   {% include "ajustes_panel.html" %}

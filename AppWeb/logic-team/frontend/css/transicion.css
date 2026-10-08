@@ -1,0 +1,63 @@
+/* Transición "el libro se abre": el libro del fondo se acerca, se abre en una luz
+   dorada que cubre la pantalla y entonces se pasa a la siguiente página.
+   Se usa desde js/transicion.js (TransicionLibro.abrir). */
+
+/* El contenido de la página se desvanece al empezar */
+body.tr-saliendo .pc-topbar,
+body.tr-saliendo .pc-main {
+  opacity: 0;
+  transform: translateY(-14px) scale(0.985);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+
+.tr-capa { position: fixed; inset: 0; z-index: 100; pointer-events: none; overflow: hidden; }
+
+/* Oscurece el paisaje para que el libro y la luz sean lo único que brilla */
+.tr-velo {
+  position: absolute; inset: 0; opacity: 0;
+  background: radial-gradient(ellipse at 50% 45%, rgba(46, 14, 10, 0.78), rgba(8, 3, 3, 0.95) 80%);
+  transition: opacity 0.9s ease;
+}
+.tr-capa.f1 .tr-velo { opacity: 1; }
+
+/* El libro (réplica del que está en la imagen de fondo) */
+.tr-libro {
+  position: absolute; opacity: 0;
+  transform-origin: 50% 50%;
+  will-change: transform, filter, opacity;
+  filter: drop-shadow(0 0 14px rgba(255, 190, 80, 0.55)) brightness(1);
+  transition:
+    transform 1.45s cubic-bezier(0.6, 0.02, 0.3, 1),
+    filter 1.45s ease,
+    opacity 0.45s ease;
+}
+.tr-libro svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.tr-capa.f1 .tr-libro { opacity: 1; }
+.tr-capa.f2 .tr-libro {
+  filter: drop-shadow(0 0 46px rgba(255, 170, 60, 0.95)) brightness(1.75) saturate(1.35);
+}
+/* Al abrirse, la tapa desaparece dentro de la luz */
+.tr-capa.f3 .tr-libro { opacity: 0; transition: opacity 0.5s ease, transform 1.45s cubic-bezier(0.6, 0.02, 0.3, 1), filter 1.45s ease; }
+
+/* La página interior: un rectángulo de luz blanco-dorada */
+.tr-luz {
+  position: absolute; opacity: 0; border-radius: 4px;
+  background: linear-gradient(180deg, #fffef6, #fff1bd);
+  box-shadow: 0 0 90px 45px rgba(255, 214, 120, 0.85), 0 0 220px 110px rgba(255, 170, 60, 0.45);
+  transform: scale(1);
+  transition: opacity 0.55s ease, transform 1.5s ease-out;
+}
+.tr-capa.f3 .tr-luz { opacity: 1; transform: scale(1.14); }
+
+/* La luz inunda toda la pantalla justo antes de cambiar de página */
+.tr-destello {
+  position: absolute; inset: 0; opacity: 0;
+  background: radial-gradient(circle at 50% 50%, #fffef8, #fff0b8 70%, #ffe08a);
+  transition: opacity 0.65s ease-in;
+}
+.tr-capa.f4 .tr-destello { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  body.tr-saliendo .pc-topbar, body.tr-saliendo .pc-main { transition: none; }
+  .tr-velo, .tr-libro, .tr-luz, .tr-destello { transition: none; }
+}

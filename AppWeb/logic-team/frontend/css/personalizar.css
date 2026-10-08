@@ -1,0 +1,184 @@
+/* Pantalla "Personalizar partida · Perfil" (CU02).
+   Estructura plana del mockup (barra, tarjetas en cuadrícula, botón), pintada con la
+   paleta del libro. Se carga encima de libro.css y usa sus variables y .book-btn / .stamp. */
+
+body.pagina-plana {
+  display: block;
+  padding: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  color: #e9d9b4;
+  font-family: 'IM Fell English', serif;
+  /* Fondo: el camino hacia el libro, oscurecido con un velo para que se lea el contenido */
+  background:
+    linear-gradient(rgba(14, 6, 6, 0.50), rgba(14, 6, 6, 0.64)),
+    url('../img/fondo-camino.jpg') center / cover no-repeat fixed,
+    #140b08;
+}
+/* La imagen ya trae su propio paisaje y su luz: se quitan los lomos de libros y el
+   resplandor de vela del fondo base, y solo queda un borde suave para dar profundidad */
+body.pagina-plana .shelves { display: none; }
+body.pagina-plana::before {
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.4) 100%);
+}
+
+/* El fondo (luz de vela, luciérnagas) vive en z-index 0-2; el contenido va encima */
+.pc-topbar, .pc-main { position: relative; z-index: 10; }
+
+/* ===== Barra superior ===== */
+.pc-topbar {
+  padding: 15px 24px;
+  background: linear-gradient(180deg, #4a1818, #2e0f0f);
+  border-bottom: 2px solid var(--gold);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  font-family: 'MedievalSharp', cursive;
+  font-size: 1rem;
+  letter-spacing: 1px;
+}
+.pc-topbar .file { color: var(--gold-bright); }
+.pc-topbar .ext  { color: #b39a64; }
+
+.pc-main { max-width: 1020px; margin: 0 auto; padding: 38px 24px 60px; }
+
+.pc-title {
+  margin: 0 0 8px;
+  font-family: 'Cinzel', serif; font-weight: 700; font-size: 1.7rem;
+  color: var(--gold-bright);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+}
+.pc-sub { margin: 0 0 26px; font-style: italic; font-size: 1.08rem; color: #c9b48a; }
+
+/* ===== Tarjetas de perfil ===== */
+.perfiles {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px;
+  border: 0; padding: 0; margin: 0; min-width: 0;
+}
+
+.perfil { position: relative; display: block; cursor: pointer; }
+.perfil input {
+  position: absolute; opacity: 0; pointer-events: none;
+  width: 1px; height: 1px; margin: 0;
+}
+
+.perfil-card {
+  position: relative; height: 100%;
+  padding: 18px 20px 20px;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 15% 12%, rgba(255, 255, 255, 0.5), transparent 45%),
+    radial-gradient(circle at 80% 95%, rgba(150, 100, 50, 0.16), transparent 55%),
+    var(--parchment);
+  border: 1.5px solid rgba(110, 70, 30, 0.55);
+  border-radius: 4px 16px 4px 16px;
+  box-shadow: 3px 5px 0 rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+.perfil:hover .perfil-card {
+  transform: translateY(-3px);
+  border-color: var(--gold);
+  box-shadow: 3px 9px 0 rgba(0, 0, 0, 0.35), 0 0 18px rgba(255, 190, 80, 0.25);
+}
+.perfil input:checked + .perfil-card {
+  border-color: var(--crimson);
+  box-shadow: 0 0 0 2px var(--gold), 3px 5px 0 rgba(0, 0, 0, 0.4), 0 0 24px rgba(255, 190, 80, 0.3);
+  background:
+    radial-gradient(circle at 15% 12%, rgba(255, 255, 255, 0.6), transparent 45%),
+    #fff3d3;
+}
+.perfil input:focus-visible + .perfil-card { outline: 2px solid var(--gold-bright); outline-offset: 4px; }
+
+/* Sello de cera al elegir */
+.perfil input:checked + .perfil-card::after {
+  content: "✔";
+  position: absolute; top: -11px; right: -11px;
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #ffe9d6; font-size: 1rem;
+  background: radial-gradient(circle at 35% 30%, #d9663a, #8c2f14);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.45), inset 0 -3px 5px rgba(0, 0, 0, 0.3);
+  animation: sello 0.3s ease-out;
+}
+@keyframes sello { from { transform: scale(2.2) rotate(-25deg); opacity: 0; } to { transform: none; opacity: 1; } }
+
+.perfil-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.perfil-class { font-family: 'MedievalSharp', cursive; font-size: 0.82rem; color: var(--ink-soft); }
+.perfil-class b { color: var(--crimson); font-weight: 400; }
+
+/* Botón "i": vida y experiencia iniciales dentro de la tarjeta */
+.info-btn {
+  position: relative; z-index: 2;
+  width: 24px; height: 24px; padding: 0; margin-right: 14px;
+  border: 1.5px solid var(--ink-soft); border-radius: 50%;
+  background: transparent; color: var(--ink-soft); cursor: pointer;
+  font-family: 'MedievalSharp', cursive; font-size: 0.85rem; line-height: 1;
+}
+.info-btn:hover, .info-btn[aria-expanded="true"] { color: var(--crimson); border-color: var(--crimson); }
+
+.perfil-card h3 { margin: 0 0 6px; font-family: 'Cinzel', serif; font-weight: 700; font-size: 1.12rem; color: var(--ink); }
+.perfil-card p  { margin: 0 0 14px; font-size: 1.02rem; line-height: 1.45; color: var(--ink-soft); }
+
+.tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.tags .stamp { margin-right: 0; }
+
+.perfil-extra {
+  margin-top: 13px; padding-top: 10px;
+  border-top: 1px dotted rgba(110, 70, 30, 0.6);
+  font-style: italic; color: var(--crimson);
+}
+.perfil-extra[hidden] { display: none; }
+
+/* ===== Hoja de personaje (vista previa en tiempo real) ===== */
+.preview {
+  margin-top: 24px; padding: 16px 22px 18px;
+  color: var(--ink);
+  background: radial-gradient(circle at 12% 10%, rgba(255, 255, 255, 0.45), transparent 50%), var(--parchment);
+  border: 1.5px solid rgba(110, 70, 30, 0.55);
+  border-radius: 4px 16px 4px 16px;
+  box-shadow: 3px 5px 0 rgba(0, 0, 0, 0.4);
+}
+.preview h2 { margin: 0 0 12px; font-family: 'Cinzel', serif; font-weight: 700; font-size: 0.95rem; color: var(--crimson); }
+.preview-vacio { margin: 0; font-style: italic; color: var(--ink-soft); }
+.preview-datos { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; }
+.preview-datos[hidden], .preview-vacio[hidden] { display: none; }
+
+.dato-label { margin-bottom: 4px; font-family: 'MedievalSharp', cursive; font-size: 0.82rem; color: var(--crimson); }
+.dato-valor { font-size: 1.25rem; font-style: italic; }
+.dato-nivel { font-size: 1.05rem; font-style: italic; }
+
+/* Medidor de 3 niveles: baja / media / alta */
+.meter { display: flex; gap: 5px; margin-top: 6px; }
+.meter span { width: 100%; height: 7px; border-radius: 2px; background: rgba(110, 70, 30, 0.22); transition: background 0.2s; }
+.meter[data-n="1"] span:nth-child(-n+1),
+.meter[data-n="2"] span:nth-child(-n+2),
+.meter[data-n="3"] span:nth-child(-n+3) { background: var(--crimson); }
+
+/* ===== Error (FE1 / RN03) ===== */
+.pc-error {
+  margin: 18px 0 0; padding: 11px 16px;
+  color: #ffd6c9; font-style: italic; font-size: 1.05rem;
+  background: rgba(168, 46, 46, 0.35);
+  border: 1.5px solid #d9663a; border-radius: 4px 12px 4px 12px;
+}
+.pc-error[hidden] { display: none; }
+.perfiles.invalid .perfil-card { border-color: #d9663a; animation: sacudir 0.35s; }
+@keyframes sacudir { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+
+/* ===== Acciones ===== */
+.pc-actions { display: flex; justify-content: flex-end; margin-top: 26px; }
+.pc-actions.dos { justify-content: space-between; }
+.pc-actions .book-btn { font-size: 0.95rem; padding: 12px 28px; }
+
+@media (max-width: 720px) {
+  /* En celular el fondo "fixed" se ve entrecortado: que se desplace con la página */
+  body.pagina-plana { background-attachment: scroll, scroll, scroll; }
+  .perfiles { grid-template-columns: 1fr; }
+  .pc-main { padding: 26px 16px 44px; }
+  .pc-title { font-size: 1.35rem; }
+  .pc-actions .book-btn { width: 100%; }
+  .pc-actions.dos { flex-direction: column-reverse; gap: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .perfil-card, .meter span { transition: none; }
+  .perfil input:checked + .perfil-card::after, .perfiles.invalid .perfil-card { animation: none; }
+}

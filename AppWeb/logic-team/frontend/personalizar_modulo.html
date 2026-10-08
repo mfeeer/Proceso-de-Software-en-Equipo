@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Personalizar partida — Módulo temático{% endblock %}
+{% block body_class %}pagina-plana{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'css/personalizar.css' %}">
+  <link rel="stylesheet" href="{% static 'css/transicion.css' %}">
+{% endblock %}
+
+{% block loader %}{% endblock %}
+
+{% block page %}
+  <header class="pc-topbar"><span class="file">modulos</span><span class="ext">.json</span></header>
+
+  <main class="pc-main">
+    <h1 class="pc-title">¿Qué módulo temático quieres jugar?</h1>
+    <p class="pc-sub">Cada módulo es una etapa distinta de la carrera, con sus propias decisiones. (2/2 · personalización)</p>
+
+    <form id="form-modulo" method="post" action="{% url 'personalizar_modulo' %}" novalidate>
+      {% csrf_token %}
+
+      <fieldset class="perfiles" id="modulos">
+        <legend style="position:absolute;left:-9999px;">Módulo temático de la partida</legend>
+
+        {% for m in modulos %}
+        <label class="perfil">
+          <input type="radio" name="modulo" value="{{ m.id }}" data-titulo="{{ m.titulo }}"
+                 {% if m.id == modulo_actual %}checked{% endif %}>
+          <div class="perfil-card">
+            <div class="perfil-head">
+              <span class="perfil-class">module <b>{{ m.clase }}</b></span>
+              <button type="button" class="info-btn" aria-label="Ver cuántos temas incluye {{ m.titulo }}"
+                      aria-expanded="false" aria-controls="extra-{{ m.id }}">i</button>
+            </div>
+            <h3>{{ m.titulo }}</h3>
+            <p>{{ m.descripcion }}</p>
+            <div class="tags">
+              {% for s in m.subtemas %}
+              <span class="stamp">{{ s }}</span>
+              {% endfor %}
+            </div>
+            <div class="perfil-extra" id="extra-{{ m.id }}" hidden>
+              📜 {{ m.subtemas|length }} temas · solo se cargarán los escenarios de este módulo
+            </div>
+          </div>
+        </label>
+        {% endfor %}
+      </fieldset>
+
+      <!-- Hoja de personaje: perfil de la pantalla 1 + módulo elegido (tiempo real) -->
+      <section class="preview" aria-live="polite">
+        <h2>Hoja de personaje</h2>
+        <div class="preview-datos">
+          <div>
+            <div class="dato-label">Perfil</div>
+            <div class="dato-nivel">{{ perfil.titulo }}</div>
+          </div>
+          <div>
+            <div class="dato-label">Vidas</div>
+            <div class="dato-valor">❤️ {{ perfil.vidas }}</div>
+          </div>
+          <div>
+            <div class="dato-label">Experiencia</div>
+            <div class="dato-valor">⭐ {{ perfil.xp }} XP</div>
+          </div>
+          <div>
+            <div class="dato-label">Módulo</div>
+            <div class="dato-nivel" id="prev-modulo">Aún no has elegido uno</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RN02: al menos un tema obligatorio -->
+      <p class="pc-error" id="error-modulo" role="alert" {% if not error %}hidden{% endif %}>{{ error|default:"Debes seleccionar un módulo temático para continuar." }}</p>
+
+      <div class="pc-actions dos">
+        <a class="book-btn" href="{% url 'personalizar_perfil' %}">⬅ Atrás</a>
+        <button type="submit" class="book-btn go">⚔️ Comenzar Aventura</button>
+      </div>
+    </form>
+  </main>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'js/transicion.js' %}"></script>
+  <script src="{% static 'js/personalizar_modulo.js' %}"></script>
+{% endblock %}
