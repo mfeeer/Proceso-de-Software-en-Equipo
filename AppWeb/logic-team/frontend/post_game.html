@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ resumen.titulo }} — Post Game{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'css/partida.css' %}">
+  <!-- Si se llega desde el libro (después de cerrarse), no se muestra la pantalla de carga -->
+  <script>
+    try {
+      if (sessionStorage.getItem("trCierre")) {
+        sessionStorage.removeItem("trCierre");
+        document.documentElement.dataset.cierre = "1";
+      }
+    } catch (e) {}
+  </script>
+{% endblock %}
+
+{% block loader_title %}{{ resumen.titulo }}{% endblock %}
+{% block loader_sub %}{% if resumen.completada %}escribiendo el epílogo...{% else %}cerrando el libro...{% endif %}{% endblock %}
+
+{# CU01 FA1 / FE1: resumen Post Game con puntuación, logros y mapa de decisiones. #}
+{% block book %}
+  <div class="ribbon">FIN<b>{% if resumen.completada %}✔{% else %}✘{% endif %}</b></div>
+
+  <div class="pages">
+    <div class="spread active">
+      <section class="page left">
+        <div class="chapter-label">POST GAME</div>
+        <h1 class="chapter-title">{{ resumen.titulo }}</h1>
+        <p class="pt-tema">{{ resumen.final_etiqueta }}</p>
+        <div class="ornament" aria-hidden="true"></div>
+        <p class="story">{{ resumen.texto }}</p>
+
+        <div class="sheet">
+          <div class="sheet-row"><span class="k">Puntuación acumulada</span><span class="v">🏆 {{ resumen.puntuacion }}</span></div>
+          <div class="sheet-row"><span class="k">Decisiones correctas</span><span class="v">🎯 {{ resumen.precision }}% ({{ resumen.aciertos }} de {{ resumen.decisiones }})</span></div>
+          <div class="sheet-row"><span class="k">Vidas restantes</span><span class="v">❤️ {{ resumen.hp }}/{{ resumen.hp_max }}</span></div>
+        </div>
+
+        {% if resumen.logros %}
+          <h2 class="choose-title pt-subtitulo">Logros desbloqueados</h2>
+          <div class="stamps">
+            {% for logro in resumen.logros %}
+              <span class="stamp pt-stamp-oro" title="{{ logro.descripcion }}">🏅 {{ logro.nombre }}</span>
+            {% endfor %}
+          </div>
+        {% endif %}
+        <div class="page-num">– I –</div>
+      </section>
+
+      <section class="page right">
+        <h2 class="choose-title">Mapa de decisiones</h2>
+        <p class="choose-sub">Así se escribió tu historia, {{ resumen.perfil }}.</p>
+
+        <ol class="pt-mapa">
+          {% for r in resumen.mapa %}
+            <li class="pt-paso {% if r.correcta %}ok{% else %}mal{% endif %}">
+              <span class="pt-marca" aria-label="{% if r.correcta %}Correcta{% else %}Errónea{% endif %}">{% if r.correcta %}✔{% else %}✘{% endif %}</span>
+              <div>
+                <strong>{{ r.evento_titulo }}</strong>
+                <em>{{ r.subtema_nombre }}{% if r.tipo == "probabilidad" %} · 🎲 {{ r.probabilidad }}% (tirada {{ r.tirada }}){% endif %}</em>
+                <span>{{ r.opcion_texto }}</span>
+              </div>
+            </li>
+          {% endfor %}
+        </ol>
+
+        <div class="btn-row">
+          <a class="book-btn" href="{% url 'home' %}">⬅ Portada</a>
+          <a class="book-btn go" href="{% url 'personalizar_perfil' %}">Comenzar nueva partida ➔</a>
+        </div>
+        <div class="page-num">– II –</div>
+      </section>
+    </div>
+  </div>
+{% endblock %}

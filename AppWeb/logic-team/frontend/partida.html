@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Realizar partida — {{ estado.perfil.nombre }}{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'css/partida.css' %}">
+  <!-- Si se llega desde la transición de CU02, el libro abierto aparece directo desde la luz -->
+  <script>
+    try { if (sessionStorage.getItem("trLlegada")) document.documentElement.dataset.llegada = "1"; } catch (e) {}
+  </script>
+{% endblock %}
+
+{% block loader_title %}Capítulo {{ estado.bloque.capitulo }}{% endblock %}
+{% block loader_sub %}tu historia continúa...{% endblock %}
+
+{# CU01: el libro de la partida. js/partida.js llena las dos páginas con el estado del servidor. #}
+{% block book %}
+  <div class="ribbon" aria-label="Capítulo">CAP.<b id="ribbon-cap">{{ estado.bloque.capitulo }}</b></div>
+
+  <p class="pt-aviso" id="pt-aviso" role="alert" hidden></p>
+
+  <div class="pages">
+    <div class="spread active" id="pt-spread" data-partida="{{ partida_id }}">
+      <section class="page left" id="pt-izq" aria-live="polite">
+        <div class="chapter-label">CAPÍTULO {{ estado.bloque.capitulo }}</div>
+        <h1 class="chapter-title">{{ estado.bloque.nombre }}</h1>
+        <div class="ornament" aria-hidden="true"></div>
+        <noscript><p class="story">Este libro necesita JavaScript para poder jugarse.</p></noscript>
+      </section>
+      <section class="page right" id="pt-der" aria-live="polite"></section>
+    </div>
+  </div>
+
+  {{ estado|json_script:"pt-estado" }}
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'js/partida.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,286 @@
+{
+  "_ayuda": "Un archivo por materia (mismos ids que CU-02 en app/views_personalizar.py). eventos_normales = decision de analisis: exactamente una opcion con correcta: true. eventos_probabilidad = prueba de atributos: el exito depende de probabilidad_base + el atributo (teoria, equipo o inteligencia). Cada subtema necesita un evento de cada tipo.",
+  "tema": {
+    "id": "ingenieria-requerimientos",
+    "nombre": "Ingeniería de requerimientos",
+    "descripcion": "Fundamentos, ciclo de vida, especificación, validación y verificación."
+  },
+  "subtemas": [
+    {
+      "id": "ingenieria-requerimientos:0",
+      "nombre": "Fundamentos y clasificación de requerimientos"
+    },
+    {
+      "id": "ingenieria-requerimientos:1",
+      "nombre": "Ciclo de vida de requerimientos"
+    },
+    {
+      "id": "ingenieria-requerimientos:2",
+      "nombre": "Especificación de requerimientos"
+    },
+    {
+      "id": "ingenieria-requerimientos:3",
+      "nombre": "Validación y verificación de requerimientos"
+    }
+  ],
+  "eventos_normales": [
+    {
+      "id": "ir-fund-n",
+      "subtema": "ingenieria-requerimientos:0",
+      "titulo": "La Lista de Deseos del Cliente",
+      "contexto": "El dueño de una cadena de cafeterías pide: «Quiero que la app permita hacer pedidos desde el celular y que responda en menos de dos segundos». Tu equipo debe clasificar estos dos requerimientos antes de empezar a construir.",
+      "opciones": [
+        {
+          "id": "a",
+          "texto": "Los dos son requerimientos funcionales.",
+          "correcta": false,
+          "retroalimentacion": "Hacer pedidos es funcional (qué hace el sistema), pero responder en menos de dos segundos es no funcional: describe qué tan bien lo hace (desempeño).",
+          "desenlace": "Como trataron el tiempo de respuesta como una función más, nadie lo midió ni lo probó. En la hora pico la app tarda casi un minuto en cargar el menú, los clientes se van a la competencia y el dueño exige una solución urgente. El equipo descubre tarde que un requerimiento de desempeño necesitaba pruebas propias."
+        },
+        {
+          "id": "b",
+          "texto": "El primero es no funcional y el segundo es funcional.",
+          "correcta": false,
+          "retroalimentacion": "Está invertido: hacer pedidos es una función del sistema, y el tiempo de respuesta es una cualidad (requerimiento no funcional de desempeño).",
+          "desenlace": "Al invertir la clasificación, el equipo optimiza la velocidad de una app que todavía no permite hacer pedidos. En la demo, la app vuela pero no hay botón para pedir un café. El dueño se va decepcionado y el proyecto pierde dos semanas reorganizando prioridades."
+        },
+        {
+          "id": "c",
+          "texto": "El primero es funcional y el segundo es no funcional (desempeño).",
+          "correcta": true,
+          "retroalimentacion": "Los requerimientos funcionales describen lo que el sistema hace; los no funcionales describen cualidades como desempeño, seguridad o usabilidad.",
+          "desenlace": "Con la clasificación correcta, el equipo construye la función de pedidos y, aparte, define pruebas de carga para el tiempo de respuesta. En la inauguración, la app recibe cientos de pedidos sin trabarse. El dueño queda tan contento que encarga la versión para todas sus sucursales."
+        }
+      ]
+    },
+    {
+      "id": "ir-ciclo-n",
+      "subtema": "ingenieria-requerimientos:1",
+      "titulo": "El Cambio de Última Hora",
+      "contexto": "A mitad del desarrollo, la escuela cambia una regla de inscripciones: ahora se permiten hasta 8 materias en lugar de 7. Tu equipo debe decidir cómo manejar el cambio sobre requerimientos que ya estaban aprobados.",
+      "opciones": [
+        {
+          "id": "a",
+          "texto": "Modificar el código directamente, sin documentar el cambio.",
+          "correcta": false,
+          "retroalimentacion": "Cambiar sin registrar rompe la trazabilidad y la línea base; después nadie sabe por qué el sistema se comporta así.",
+          "desenlace": "El cambio entra al código pero no a la documentación. Semanas después, el manual dice 7 materias, el sistema permite 8 y las pruebas fallan sin que nadie entienda por qué. La auditoría marca el proyecto por falta de trazabilidad y el equipo pierde días reconstruyendo qué se cambió."
+        },
+        {
+          "id": "b",
+          "texto": "Evaluar el impacto, registrar el cambio y actualizar la trazabilidad de los requerimientos afectados.",
+          "correcta": true,
+          "retroalimentacion": "La gestión de cambios exige analizar el impacto, documentarlo y mantener la trazabilidad de los requerimientos afectados.",
+          "desenlace": "Analizas qué pantallas, reglas y pruebas toca el cambio, lo registras y actualizas la matriz de trazabilidad. El equipo sabe exactamente qué modificar y el cambio sale en un solo sprint, sin efectos secundarios. Cuando la escuela pregunta por el estado, tienes evidencia clara de todo lo que se hizo."
+        },
+        {
+          "id": "c",
+          "texto": "Ignorar el cambio para no retrasar el proyecto.",
+          "correcta": false,
+          "retroalimentacion": "Los requerimientos evolucionan; ignorar un cambio válido produce un sistema que no resuelve la necesidad real.",
+          "desenlace": "Entregan a tiempo, pero el sistema sigue permitiendo solo 7 materias. Los alumnos que necesitaban 8 no pueden inscribirse, saturan control escolar y la escuela pide rehacer la entrega. Ignorar el cambio terminó costando más que atenderlo a tiempo."
+        }
+      ]
+    },
+    {
+      "id": "ir-esp-n",
+      "subtema": "ingenieria-requerimientos:2",
+      "titulo": "El Requerimiento Ambiguo",
+      "contexto": "En el documento del proyecto aparece un requerimiento que dice: «El sistema debe ser rápido y amigable». Debes reescribirlo para que pueda especificarse y comprobarse.",
+      "opciones": [
+        {
+          "id": "a",
+          "texto": "Agregar más adjetivos para que quede más claro.",
+          "correcta": false,
+          "retroalimentacion": "Más adjetivos añaden ambigüedad; un buen requerimiento es claro, preciso y verificable.",
+          "desenlace": "El requerimiento queda lleno de adjetivos como «muy rápido», «súper amigable» y «moderno». Cada quien lo interpreta distinto y, al final, nadie puede decir si se cumplió. En la revisión con el cliente se discute una hora sin llegar a nada concreto."
+        },
+        {
+          "id": "b",
+          "texto": "Dejarlo igual, porque todos entienden qué es «rápido».",
+          "correcta": false,
+          "retroalimentacion": "Términos como «rápido» o «amigable» son subjetivos y no verificables; cada persona los interpreta distinto.",
+          "desenlace": "El equipo programa algo «rápido» según su criterio, pero el cliente esperaba respuestas instantáneas. En la entrega, el cliente dice que la app es lenta y el equipo dice que cumple. Sin un criterio medible, la discusión termina en un retraso y un cliente desconfiado."
+        },
+        {
+          "id": "c",
+          "texto": "Reescribirlo con criterios medibles: «El sistema deberá responder en menos de 2 segundos».",
+          "correcta": true,
+          "retroalimentacion": "Un requerimiento bien especificado es medible y verificable: permite comprobar objetivamente si se cumple.",
+          "desenlace": "Con «menos de 2 segundos» como meta, el equipo diseña una prueba que lo mide en cada versión. Cuando el cliente pregunta si se cumple, le muestras los resultados y no hay nada que discutir. El requerimiento se vuelve el ejemplo de cómo escribir los demás."
+        }
+      ]
+    },
+    {
+      "id": "ir-val-n",
+      "subtema": "ingenieria-requerimientos:3",
+      "titulo": "La Pregunta de la Clienta",
+      "contexto": "El sistema de citas para una clínica veterinaria está terminado. La clienta pregunta: «¿Cómo sé que construyeron lo que yo necesitaba?». Debes distinguir entre verificar y validar para responderle bien.",
+      "opciones": [
+        {
+          "id": "a",
+          "texto": "Verificar es que el cliente lo apruebe; validar es comprobar la especificación.",
+          "correcta": false,
+          "retroalimentacion": "Está invertido: verificar es comprobar contra la especificación (¿construimos bien el producto?) y validar es confirmar con el cliente que cubre su necesidad (¿construimos el producto correcto?).",
+          "desenlace": "Con los conceptos invertidos, el equipo le muestra a la clienta pruebas técnicas como si fueran la validación. La clienta descubre en la demo que no se pueden registrar citas para gatos, algo que para ella era lo principal. El sistema cumplía el documento, pero no lo que la clínica necesitaba."
+        },
+        {
+          "id": "b",
+          "texto": "Son lo mismo: basta con que el programa no tenga errores.",
+          "correcta": false,
+          "retroalimentacion": "Un programa sin errores puede igualmente no resolver la necesidad del cliente; verificar y validar responden preguntas distintas.",
+          "desenlace": "El equipo presume que el sistema no tiene errores, pero nadie revisó con la clienta si resuelve su problema. Al usarlo, la clínica nota que falta la agenda por veterinario y el sistema no les sirve como está. Hay que agregar un sprint extra que no estaba en el presupuesto."
+        },
+        {
+          "id": "c",
+          "texto": "Verificar es revisar que cumple la especificación; validar es confirmar con la clienta que resuelve su necesidad.",
+          "correcta": true,
+          "retroalimentacion": "Verificación: ¿construimos bien el producto? Validación: ¿construimos el producto correcto? Ambas son necesarias.",
+          "desenlace": "Le muestras las pruebas que verifican cada requerimiento y luego una demo donde ella misma agenda citas. La clienta confirma que resuelve su necesidad y detecta un detalle menor que se corrige ese mismo día. Firma la aceptación con confianza y recomienda al equipo con otras clínicas."
+        }
+      ]
+    }
+  ],
+  "eventos_probabilidad": [
+    {
+      "id": "ir-fund-p",
+      "subtema": "ingenieria-requerimientos:0",
+      "titulo": "La Entrevista con la Clienta",
+      "contexto": "La dueña de una pastelería quiere una página para pedidos en línea y lo describe con frases vagas: «que sea fácil y bonita». Tienes una videollamada de media hora para aclarar requerimientos y poco margen para equivocarte.",
+      "opciones": [
+        {
+          "id": "a",
+          "texto": "Hacer preguntas abiertas para convertir lo vago en requerimientos medibles.",
+          "atributo": "equipo",
+          "probabilidad_base": 30,
+          "retroalimentacion": "La elicitación mediante preguntas abiertas ayuda a convertir deseos vagos en requerimientos concretos.",
+          "desenlace_exito": "Con preguntas abiertas, la clienta explica con ejemplos qué significa «fácil»: pocos pasos para pedir y fotos grandes de los pasteles. Sales de la llamada con una lista de requerimientos medibles. El diseño sale bien a la primera y la clienta siente que la escuchaste.",
+          "desenlace_fallo": "Haces tantas preguntas que la clienta se abruma y termina la llamada sin respuestas claras. Te quedas con más dudas que al inicio y el diseño se retrasa una semana. Aprendes que preguntar también requiere orden."
+        },
+        {
+          "id": "b",
+          "texto": "Preparar una lista de requerimientos candidatos y validarla con ella.",
+          "atributo": "teoria",
+          "probabilidad_base": 30,
+          "retroalimentacion": "Llegar con una propuesta inicial agiliza la conversación y permite corregir sobre algo concreto.",
+          "desenlace_exito": "Llegas con una lista de requerimientos candidatos y la clienta tacha, corrige y agrega. En media hora tienes una base sólida para el proyecto. Ella valora que llegaras preparado y el resto de las reuniones son mucho más rápidas.",
+          "desenlace_fallo": "Tu lista parte de supuestos equivocados: pensabas en entregas a domicilio y ella solo quiere recoger en tienda. La clienta pierde la paciencia y pide otra reunión. El proyecto empieza con desconfianza."
+        },
+        {
+          "id": "c",
+          "texto": "Interpretar por tu cuenta lo que significa «fácil y bonito».",
+          "atributo": "teoria",
+          "probabilidad_base": 15,
+          "retroalimentacion": "Suponer lo que el cliente quiere es riesgoso: los requerimientos deben provenir del cliente, no de suposiciones del equipo.",
+          "desenlace_exito": "Por pura suerte, tu interpretación coincide con lo que ella imaginaba. El diseño le gusta, pero el equipo sabe que no fue por un buen proceso. La próxima vez no habrá tanta suerte.",
+          "desenlace_fallo": "Tu diseño no se parece en nada a lo que ella quería: era más sobrio y con menos colores. Hay que rehacer todo y el proyecto pierde dos semanas. La clienta pide que, a partir de ahora, todo se valide con ella antes de avanzar."
+        }
+      ]
+    },
+    {
+      "id": "ir-ciclo-p",
+      "subtema": "ingenieria-requerimientos:1",
+      "titulo": "La Avalancha de Cambios",
+      "contexto": "Llegan cinco solicitudes de cambio para la app del gimnasio al mismo tiempo y solo hay tiempo para atender algunas este sprint. Debes priorizarlas sin que nadie se enoje.",
+      "opciones": [
+        {
+          "id": "a",
+          "texto": "Evaluar el impacto y el costo de cada solicitud con criterios claros.",
+          "atributo": "inteligencia",
+          "probabilidad_base": 30,
+          "retroalimentacion": "Priorizar con criterios explícitos (impacto, costo, urgencia) vuelve la decisión justificable.",
+          "desenlace_exito": "Evalúas cada cambio por impacto, costo y urgencia, y lo pones en una tabla. La decisión queda tan clara que nadie protesta y el sprint arranca sin conflictos. El gimnasio aprecia la transparencia y adopta tu tabla para futuras solicitudes.",
+          "desenlace_fallo": "Tu tabla deja fuera un cambio crítico: el pago con tarjeta fallaba en algunos bancos. El cliente lo descubre cuando sus usuarios ya se quejaban. Hay que meterlo de emergencia y el sprint se desordena."
+        },
+        {
+          "id": "b",
+          "texto": "Planear un orden por sprints y negociarlo con el cliente.",
+          "atributo": "teoria",
+          "probabilidad_base": 35,
+          "retroalimentacion": "Distribuir los cambios en iteraciones planificadas permite atenderlos de forma ordenada y con expectativas realistas.",
+          "desenlace_exito": "Repartes los cambios en los siguientes sprints y lo negocias con el cliente. Todos saben cuándo llegará cada cosa y el equipo trabaja sin presión excesiva. El gimnasio queda conforme y renueva el contrato.",
+          "desenlace_fallo": "El cliente exige los cinco cambios en el primer sprint y la negociación se rompe. El equipo intenta hacerlo todo, entrega con errores y el gimnasio pierde la confianza. Queda pendiente una reunión difícil para reacomodar el plan."
+        },
+        {
+          "id": "c",
+          "texto": "Reunir a los solicitantes para acordar prioridades entre todos.",
+          "atributo": "equipo",
+          "probabilidad_base": 30,
+          "retroalimentacion": "Negociar prioridades con los interesados genera acuerdos, pero requiere moderar bien las posturas.",
+          "desenlace_exito": "Reúnes a quienes pidieron los cambios y, tras una plática honesta, acuerdan juntos qué va primero. Nadie siente que lo ignoraron y el equipo arranca con prioridades claras. El gimnasio empieza a hacer esas reuniones cada sprint.",
+          "desenlace_fallo": "La reunión se vuelve un debate: cada quien defiende su cambio y nadie cede. Salen sin acuerdos y con más tensión que antes. El equipo pierde una semana esperando a que el cliente decida."
+        }
+      ]
+    },
+    {
+      "id": "ir-esp-p",
+      "subtema": "ingenieria-requerimientos:2",
+      "titulo": "El SRS Contra Reloj",
+      "contexto": "Debes entregar la especificación de requerimientos (SRS) del proyecto antes de la auditoría de calidad del viernes. Faltan detalles y la fecha límite se acerca.",
+      "opciones": [
+        {
+          "id": "a",
+          "texto": "Estructurar el SRS con una plantilla estándar y completar sección por sección.",
+          "atributo": "teoria",
+          "probabilidad_base": 30,
+          "retroalimentacion": "Una plantilla estándar garantiza que no se omitan secciones y facilita la revisión.",
+          "desenlace_exito": "La plantilla te guía sección por sección y el SRS queda completo y ordenado. La auditoría lo revisa sin observaciones y el documento se convierte en la referencia del proyecto. El equipo ya sabe dónde buscar cada requerimiento.",
+          "desenlace_fallo": "Llenas la plantilla en automático y quedan secciones vacías o copiadas de otro proyecto. La auditoría las detecta y pide correcciones para la siguiente semana. El equipo tiene que pausar el desarrollo para terminar el documento."
+        },
+        {
+          "id": "b",
+          "texto": "Escribir casos de uso para cada función principal.",
+          "atributo": "teoria",
+          "probabilidad_base": 30,
+          "retroalimentacion": "Los casos de uso describen las interacciones usuario-sistema y ayudan a descubrir requerimientos funcionales.",
+          "desenlace_exito": "Al escribir los casos de uso descubres dos funciones que nadie había considerado. Las agregas a tiempo y el SRS refleja mejor lo que el sistema debe hacer. La auditoría destaca la calidad de los casos de uso.",
+          "desenlace_fallo": "Te enredas en los detalles de un solo caso de uso y el resto del documento queda sin escribir. Llega el viernes y el SRS está incompleto. La auditoría otorga una prórroga, pero el equipo pierde puntos en la evaluación."
+        },
+        {
+          "id": "c",
+          "texto": "Revisar el borrador con la clienta cada día.",
+          "atributo": "equipo",
+          "probabilidad_base": 30,
+          "retroalimentacion": "La retroalimentación frecuente del cliente evita sorpresas y mantiene el documento alineado con la necesidad real.",
+          "desenlace_exito": "Revisar el borrador con la clienta cada día corrige el rumbo a tiempo. El SRS refleja exactamente lo que ella necesita y la auditoría lo aprueba sin observaciones. La clienta se siente parte del proyecto.",
+          "desenlace_fallo": "Tantas revisiones frenan la redacción y cada día aparecen cambios nuevos. El documento llega incompleto a la auditoría y con secciones que se contradicen. Queda claro que hacía falta congelar una versión antes de revisar."
+        }
+      ]
+    },
+    {
+      "id": "ir-val-p",
+      "subtema": "ingenieria-requerimientos:3",
+      "titulo": "El Día de la Demo",
+      "contexto": "Es el día de la demostración final ante la clienta. Revisará cada requerimiento, y un detalle importante podría haberse malinterpretado. Debes demostrar que el sistema cumple y corregir lo que haga falta.",
+      "opciones": [
+        {
+          "id": "a",
+          "texto": "Ejecutar los casos de prueba contra cada requerimiento.",
+          "atributo": "inteligencia",
+          "probabilidad_base": 35,
+          "retroalimentacion": "Ejecutar pruebas ligadas a cada requerimiento es verificación: comprueba que se construyó conforme a la especificación.",
+          "desenlace_exito": "Ejecutas los casos de prueba en vivo y todos pasan. La clienta ve que cada requerimiento está cubierto y la verificación queda documentada. Firma la aceptación ese mismo día.",
+          "desenlace_fallo": "Una prueba falla en plena demo y se hace un silencio incómodo. La clienta pide revisar todo de nuevo antes de firmar. El equipo pasa la semana corrigiendo y repitiendo las pruebas."
+        },
+        {
+          "id": "b",
+          "texto": "Hacer una demostración guiada y recoger las observaciones de la clienta.",
+          "atributo": "equipo",
+          "probabilidad_base": 35,
+          "retroalimentacion": "Una demostración con el cliente es validación: confirma que el sistema resuelve su necesidad real.",
+          "desenlace_exito": "La clienta usa el sistema en la demo y confirma que resuelve su necesidad. Además detecta un detalle menor que todavía alcanzas a corregir antes de la entrega. Se va contenta y con ganas de recomendar al equipo.",
+          "desenlace_fallo": "Durante la demo la clienta nota que falta lo más importante para ella: los reportes mensuales. Pide rehacer una parte del sistema y la entrega se retrasa. La validación llegó demasiado tarde."
+        },
+        {
+          "id": "c",
+          "texto": "Usar una matriz de trazabilidad entre requerimientos y pruebas.",
+          "atributo": "teoria",
+          "probabilidad_base": 30,
+          "retroalimentacion": "La matriz de trazabilidad muestra qué prueba cubre cada requerimiento y ayuda a detectar huecos.",
+          "desenlace_exito": "La matriz de trazabilidad muestra que cada requerimiento tiene su prueba. La auditoría queda satisfecha y la clienta confía en que nada se quedó fuera. El equipo usa la matriz como modelo para otros proyectos.",
+          "desenlace_fallo": "La matriz estaba desactualizada y deja ver un requerimiento sin probar. La auditoría lo marca como observación y la clienta duda de lo demás. Hay que actualizarla y repetir parte de las pruebas."
+        }
+      ]
+    }
+  ]
+}

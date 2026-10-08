@@ -16,13 +16,17 @@
 
   <main class="pc-main">
     <h1 class="pc-title">¿Qué temas quieres practicar?</h1>
-    <p class="pc-sub">Elige una materia y marca de 1 a {{ max_temas }} de sus temas: solo se cargarán esos escenarios. (2/2 · personalización)</p>
+    <p class="pc-sub">Marca todos los temas que quieras, de una o varias materias: solo se cargarán esos escenarios (la partida dura hasta {{ max_eventos }} eventos). (2/2 · personalización)</p>
 
-    <form id="form-modulo" data-max="{{ max_temas }}" method="post" action="{% url 'personalizar_modulo' %}" novalidate>
+    <form id="form-modulo" method="post" action="{% url 'personalizar_modulo' %}" novalidate>
       {% csrf_token %}
 
-      <fieldset class="perfiles" id="modulos" data-max="{{ max_temas }}">
-        <legend style="position:absolute;left:-9999px;">Temas de la partida (de 1 a {{ max_temas }})</legend>
+      <div class="pc-todos">
+        <button type="button" class="book-btn" id="todos-temas" aria-pressed="false">☑ Seleccionar todos</button>
+      </div>
+
+      <fieldset class="perfiles" id="modulos">
+        <legend style="position:absolute;left:-9999px;">Temas de la partida (al menos uno)</legend>
 
         {% for m in modulos %}
         <div class="perfil modulo-card" data-modulo="{{ m.id }}">
@@ -64,7 +68,7 @@
             <div class="dato-valor">⭐ {{ perfil.xp }} XP</div>
           </div>
           <div>
-            <div class="dato-label">Temas <span id="prev-cuenta">0/{{ max_temas }}</span></div>
+            <div class="dato-label">Temas <span id="prev-cuenta">0</span></div>
             <div class="dato-nivel" id="prev-modulo">Aún no has elegido ninguno</div>
           </div>
         </div>

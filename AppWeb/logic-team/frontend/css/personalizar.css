@@ -151,6 +151,11 @@ body.pagina-plana::before {
 .meter[data-n="1"] span:nth-child(-n+1),
 .meter[data-n="2"] span:nth-child(-n+2),
 .meter[data-n="3"] span:nth-child(-n+3) { background: var(--crimson); }
+/* Botón "Seleccionar todos" de la pantalla de temas */
+.pc-todos { display: flex; justify-content: flex-end; margin: 0 0 12px; }
+
+/* Atributos de 1 a 10 (js/personalizar_perfil.js marca las rayitas con .on) */
+.meter span.on { background: var(--crimson); }
 
 /* ===== Error (FE1 / RN03) ===== */
 .pc-error {

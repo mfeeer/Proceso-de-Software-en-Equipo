@@ -1,0 +1,138 @@
+{
+  "_ayuda": "Reglas del juego (CU-01). Edita numeros y textos y refresca el navegador; no hace falta reiniciar. xp.por_nivel / xp.por_acierto = aciertos para subir de nivel (50/10 = 5). Cada nivel da 1 punto de atributo; niveles marca los topes (personaje y atributos, 1 a 10). Valida con: python manage.py validar_escenarios. finales.derrota: un final por tramo; se elige el primero cuyo hasta_evento sea >= eventos jugados.",
+  "max_eventos_por_partida": 20,
+  "bloques": [
+    {
+      "capitulo": "II",
+      "nombre": "Los Cimientos",
+      "hasta_porcentaje": 33,
+      "probabilidad_evento": 0.0
+    },
+    {
+      "capitulo": "III",
+      "nombre": "La Encrucijada",
+      "hasta_porcentaje": 66,
+      "probabilidad_evento": 0.5
+    },
+    {
+      "capitulo": "IV",
+      "nombre": "El Desafío Final",
+      "hasta_porcentaje": 100,
+      "probabilidad_evento": 0.8
+    }
+  ],
+  "hp": {
+    "dano_por_fallo": 1
+  },
+  "xp": {
+    "por_acierto": 10,
+    "por_nivel": 50
+  },
+  "niveles": {
+    "maximo_personaje": 10,
+    "maximo_atributo": 10
+  },
+  "puntos": {
+    "por_acierto": 100,
+    "bonus_por_riesgo": true
+  },
+  "probabilidad": {
+    "minima": 5,
+    "maxima": 95,
+    "bonus_por_punto_atributo": 6
+  },
+  "atributos": [
+    {
+      "id": "teoria",
+      "nombre": "Teoría",
+      "icono": "📚"
+    },
+    {
+      "id": "equipo",
+      "nombre": "Equipo",
+      "icono": "🤝"
+    },
+    {
+      "id": "inteligencia",
+      "nombre": "Inteligencia",
+      "icono": "💡"
+    }
+  ],
+  "riesgo": [
+    {
+      "hasta": 39,
+      "etiqueta": "alto",
+      "mensaje_exito": "¡Apostaste fuerte y salió bien! Con una probabilidad tan baja fue más suerte que garantía: mejora este atributo para no depender del azar.",
+      "mensaje_fallo": "Era una jugada muy arriesgada: con una probabilidad tan baja, fallar era lo más esperable. Sube este atributo antes de volver a intentarlo."
+    },
+    {
+      "hasta": 69,
+      "etiqueta": "medio",
+      "mensaje_exito": "Riesgo moderado bien calculado. Con más práctica en este atributo, las probabilidades serán aún más favorables.",
+      "mensaje_fallo": "Una probabilidad intermedia no garantiza nada. Mejorar este atributo inclinará la balanza a tu favor."
+    },
+    {
+      "hasta": 100,
+      "etiqueta": "bajo",
+      "mensaje_exito": "Decisión segura, respaldada por tu atributo. Prepararte bien reduce el riesgo.",
+      "mensaje_fallo": "A pesar de la alta probabilidad, el azar también cuenta: un riesgo bajo no es un riesgo cero."
+    }
+  ],
+  "logros": [
+    {
+      "id": "capitulo_cerrado",
+      "nombre": "Capítulo cerrado",
+      "descripcion": "Terminaste una partida completa.",
+      "condicion": "completar"
+    },
+    {
+      "id": "sin_rasgunos",
+      "nombre": "Sin rasguños",
+      "descripcion": "Terminaste sin perder ningún punto de vida.",
+      "condicion": "sin_dano"
+    },
+    {
+      "id": "mente_afilada",
+      "nombre": "Mente afilada",
+      "descripcion": "Terminaste con 80% o más de decisiones correctas.",
+      "condicion": "precision_minima",
+      "valor": 80
+    },
+    {
+      "id": "apostador_audaz",
+      "nombre": "Apostador audaz",
+      "descripcion": "Ganaste 2 pruebas con menos de 40% de probabilidad.",
+      "condicion": "exitos_riesgosos",
+      "valor": 2,
+      "umbral": 40
+    }
+  ],
+  "finales": {
+    "completada": {
+      "titulo": "Fin del Capítulo",
+      "texto": "Cierras el último ticket del tablero y el proyecto sale a producción sin sobresaltos. Cada decisión dejó una enseñanza y el equipo ya te ve como alguien en quien confiar: tu historia como ingeniero apenas comienza."
+    },
+    "derrota": [
+      {
+        "hasta_evento": 5,
+        "titulo": "El Primer Commit",
+        "texto": "Apenas llevabas unos días en el equipo y los errores se acumularon antes de que pudieras agarrar ritmo. Tu líder técnica te reasigna a tareas de soporte mientras repasas los fundamentos. No es el fin: casi todos los grandes desarrolladores tuvieron un primer sprint desastroso."
+      },
+      {
+        "hasta_evento": 10,
+        "titulo": "Atorado a Medio Sprint",
+        "texto": "Superaste las primeras pruebas y empezabas a sentirte parte del equipo, pero a mitad del sprint las malas decisiones te alcanzaron. El proyecto se entrega tarde y te toca presentar el post mortem frente a todos. Al menos ahora sabes exactamente qué harías distinto."
+      },
+      {
+        "hasta_evento": 15,
+        "titulo": "Tan Cerca del Release",
+        "texto": "Llegaste más lejos que la mayoría: tus decisiones sostuvieron el proyecto durante semanas. Pero en la recta final una cadena de errores tumbó el release y el cliente pidió posponer la entrega. El equipo reconoce tu avance; solo te faltó cuidar los detalles al final."
+      },
+      {
+        "hasta_evento": 20,
+        "titulo": "A Un Paso de la Meta",
+        "texto": "Estuviste a nada de cerrar el proyecto. Dominaste casi todo, pero en el último tramo una decisión te costó la energía que te quedaba. La clienta lamenta el retraso, aunque ya te pidió para su siguiente proyecto: sabe de lo que eres capaz."
+      }
+    ]
+  }
+}

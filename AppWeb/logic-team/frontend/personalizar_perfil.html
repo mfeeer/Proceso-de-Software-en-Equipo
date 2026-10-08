@@ -28,7 +28,7 @@
         <label class="perfil">
           <input type="radio" name="perfil" value="{{ p.id }}"
                  data-vidas="{{ p.vidas }}" data-xp="{{ p.xp }}"
-                 data-teoria="{{ p.teoria }}" data-equipo="{{ p.equipo }}" data-inteligencia="{{ p.inteligencia }}"
+                 data-atributos="{{ p.atributos_json }}"
                  {% if p.id == perfil_actual %}checked{% endif %}>
           <div class="perfil-card">
             <div class="perfil-head">
@@ -39,9 +39,10 @@
             <h3>{{ p.titulo }}</h3>
             <p>{{ p.descripcion }}</p>
             <div class="tags">
-              <span class="stamp">teoría {{ p.teoria }}</span>
-              <span class="stamp">equipo {{ p.equipo }}</span>
-              <span class="stamp">inteligencia {{ p.inteligencia }}</span>
+              {# Mismos atributos, íconos y valores que se usan dentro del juego (config_juego.json) #}
+              {% for a in p.atributos %}
+              <span class="stamp">{{ a.icono }} {{ a.nombre }} {{ a.valor }}</span>
+              {% endfor %}
             </div>
             <div class="perfil-extra" id="extra-{{ p.id }}" hidden>
               ❤️ {{ p.vidas }} vidas · ⭐ {{ p.xp }} XP iniciales
@@ -64,21 +65,13 @@
             <div class="dato-label">Experiencia</div>
             <div class="dato-valor" id="prev-xp"></div>
           </div>
+          {% for a in atributos %}
           <div>
-            <div class="dato-label">Teoría</div>
-            <div class="dato-nivel" id="prev-teoria"></div>
-            <div class="meter" id="meter-teoria" data-n="0"><span></span><span></span><span></span></div>
+            <div class="dato-label">{{ a.icono }} {{ a.nombre }}</div>
+            <div class="dato-nivel" data-atributo="{{ a.id }}" data-max="{{ nivel_maximo|length }}"></div>
+            <div class="meter" data-meter="{{ a.id }}">{% for _ in nivel_maximo %}<span></span>{% endfor %}</div>
           </div>
-          <div>
-            <div class="dato-label">Equipo</div>
-            <div class="dato-nivel" id="prev-equipo"></div>
-            <div class="meter" id="meter-equipo" data-n="0"><span></span><span></span><span></span></div>
-          </div>
-          <div>
-            <div class="dato-label">Inteligencia</div>
-            <div class="dato-nivel" id="prev-inteligencia"></div>
-            <div class="meter" id="meter-inteligencia" data-n="0"><span></span><span></span><span></span></div>
-          </div>
+          {% endfor %}
         </div>
       </section>
 

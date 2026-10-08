@@ -1,0 +1,150 @@
+{
+  "_ayuda": "Un archivo por materia (mismos ids que CU-02 en app/views_personalizar.py). eventos_normales = decision de analisis: exactamente una opcion con correcta: true. eventos_probabilidad = prueba de atributos: el exito depende de probabilidad_base + el atributo (teoria, equipo o inteligencia). Cada subtema necesita un evento de cada tipo.",
+  "tema": {
+    "id": "intro-programacion",
+    "nombre": "Introducción a la programación",
+    "descripcion": "Tipos de datos, variables y estructuras de control."
+  },
+  "subtemas": [
+    {
+      "id": "intro-programacion:0",
+      "nombre": "Tipos de datos y variables"
+    },
+    {
+      "id": "intro-programacion:1",
+      "nombre": "Estructuras de control"
+    }
+  ],
+  "eventos_normales": [
+    {
+      "id": "ip-tipos-n",
+      "subtema": "intro-programacion:0",
+      "titulo": "El Cine y los Menores de Edad",
+      "contexto": "Tu primer encargo en la startup: la app de un cine debe bloquear la compra de boletos para películas clasificación C a menores de 18. Tu compañero propone guardar la edad como texto, porque «así llega del formulario». Debes decidir cómo declarar la variable edad.",
+      "opciones": [
+        {
+          "id": "a",
+          "texto": "Guardar edad como cadena de texto y compararla con '18'.",
+          "correcta": false,
+          "retroalimentacion": "Las cadenas se comparan por orden alfabético: '9' resulta mayor que '18'. Para comparar y operar se necesita un tipo numérico.",
+          "desenlace": "Como la edad se guardó como texto, la app comparó «9» contra «18» letra por letra y decidió que 9 era mayor. Esa misma noche un niño compró boletos para una película de terror, sus papás se quejaron con el cine y la gerente pidió desactivar las compras en línea hasta que alguien lo arreglara. El lunes te toca explicar en la junta por qué un dato tan simple tumbó la venta de boletos."
+        },
+        {
+          "id": "b",
+          "texto": "Convertir edad a entero (int) y compararla con 18.",
+          "correcta": true,
+          "retroalimentacion": "Un entero permite comparar y operar correctamente: el tipo de dato debe reflejar la naturaleza del valor que se almacena.",
+          "desenlace": "Con la edad como entero, la comparación con 18 funciona en todos los casos que pruebas: 9, 17, 18 y 45. Tu líder técnica aprueba el pull request a la primera y la validación sale en la actualización del viernes. La gerente del cine te manda un mensaje de agradecimiento y te ganas la confianza para el siguiente encargo."
+        },
+        {
+          "id": "c",
+          "texto": "Guardar edad como decimal (float) por si alguien cumple años a medias.",
+          "correcta": false,
+          "retroalimentacion": "La edad en años cumplidos es un valor discreto; un float añade imprecisión y complejidad innecesarias. Se elige el tipo más simple que represente el dato.",
+          "desenlace": "La app funciona, pero el reporte mensual muestra edades como 17.99999 y el equipo de datos pierde una tarde averiguando de dónde salen. Para colmo, un redondeo deja pasar a alguien de 17 años y once meses. Nada grave, pero la próxima revisión de código tu líder te pide justificar cada tipo de dato que elijas."
+        }
+      ]
+    },
+    {
+      "id": "ip-control-n",
+      "subtema": "intro-programacion:1",
+      "titulo": "Las 50 Notificaciones",
+      "contexto": "La app de la escuela debe enviar un recordatorio de entrega a los 50 alumnos de un grupo. Un compañero propone copiar y pegar 50 veces la línea que envía la notificación. Otro sugiere recorrer la lista de alumnos con un ciclo.",
+      "opciones": [
+        {
+          "id": "a",
+          "texto": "Usar un ciclo while True sin condición de salida.",
+          "correcta": false,
+          "retroalimentacion": "Sin condición de terminación el ciclo es infinito y bloquea el programa; todo ciclo debe garantizar que su condición llegue a ser falsa.",
+          "desenlace": "El ciclo nunca encuentra cuándo detenerse: el servidor manda recordatorios sin parar y cada alumno recibe miles de notificaciones en una hora. Alguien sube capturas al grupo de la generación y la app se vuelve meme. El área de sistemas tiene que apagar el servicio de mensajes y tu primer despliegue termina en reporte de incidente."
+        },
+        {
+          "id": "b",
+          "texto": "Copiar y pegar 50 veces la instrucción, una por alumno.",
+          "correcta": false,
+          "retroalimentacion": "Repetir código a mano es propenso a errores y difícil de mantener; las estructuras de repetición existen justo para esto.",
+          "desenlace": "El copiado funciona el primer día, pero a la semana se inscribe un alumno nuevo y no recibe ningún recordatorio. Pierde una entrega, su mamá llama a la dirección y te toca editar el código a mano el viernes en la noche. Para el siguiente grupo ya son 53 líneas casi iguales y nadie quiere tocarlas."
+        },
+        {
+          "id": "c",
+          "texto": "Usar un ciclo for que recorra la lista de alumnos.",
+          "correcta": true,
+          "retroalimentacion": "Un ciclo for sobre la colección repite la acción para cada elemento sin duplicar código y se adapta si la lista cambia de tamaño.",
+          "desenlace": "El ciclo recorre la lista y cada alumno recibe exactamente un recordatorio, sin importar si el grupo tiene 50 o 500. Las entregas tardías bajan notablemente y el profesor deja de recibir la excusa de «no me avisaron». La coordinación pide usar tu módulo para todos los grupos de la escuela."
+        }
+      ]
+    }
+  ],
+  "eventos_probabilidad": [
+    {
+      "id": "ip-tipos-p",
+      "subtema": "intro-programacion:0",
+      "titulo": "El Carrito que No Suma",
+      "contexto": "La tienda en línea está en pleno Buen Fin y el carrito se cae al calcular el total: la variable total contiene texto en lugar de un número. Tienes poco tiempo antes de que se pierdan más ventas y varias formas de enfrentarlo.",
+      "opciones": [
+        {
+          "id": "a",
+          "texto": "Depurar línea por línea revisando el tipo de cada variable.",
+          "atributo": "inteligencia",
+          "probabilidad_base": 25,
+          "retroalimentacion": "Revisar los tipos paso a paso (depuración) es la forma sistemática de localizar errores de tipo.",
+          "desenlace_exito": "Revisando variable por variable descubres que el precio llegaba como texto desde la API. Lo conviertes antes de sumar y el carrito vuelve a calcular bien en minutos. Las ventas del Buen Fin se recuperan y tu líder agrega una validación de tipos en la entrada de la API.",
+          "desenlace_fallo": "Te pierdes entre cientos de líneas sin encontrar el origen del error. El carrito sigue caído otra hora, los clientes abandonan sus compras y la tienda pierde parte de las ventas más importantes del año. Al final, otro compañero encuentra el problema y a ti te toca escribir el reporte."
+        },
+        {
+          "id": "b",
+          "texto": "Convertir explícitamente a número cada valor antes de sumarlo.",
+          "atributo": "teoria",
+          "probabilidad_base": 30,
+          "retroalimentacion": "La conversión explícita de tipos (casting) evita sumar texto con números, pero hay que prever qué ocurre si el valor no es convertible.",
+          "desenlace_exito": "Conviertes cada valor a número antes de sumarlo y el total vuelve a cuadrar. Además, agregas un mensaje claro para cuando un precio no se pueda convertir. El carrito queda funcionando para el resto del Buen Fin y la solución se vuelve parte del código oficial.",
+          "desenlace_fallo": "Un precio llega como «$199» y la conversión truena, así que el carrito sigue fallando. Mientras buscas cómo limpiar el símbolo, cientos de clientes ven un error al pagar. La tienda decide desactivar las promociones hasta resolverlo y el equipo trabaja hasta tarde."
+        },
+        {
+          "id": "c",
+          "texto": "Pedir ayuda a tu equipo y revisar juntos el código en una llamada.",
+          "atributo": "equipo",
+          "probabilidad_base": 30,
+          "retroalimentacion": "La revisión en equipo detecta errores que una sola persona pasa por alto y reparte el conocimiento del código.",
+          "desenlace_exito": "En la llamada, una compañera reconoce el problema de inmediato: la API cambió el formato del precio. Entre los tres lo corrigen en minutos y documentan el cambio para que no vuelva a pasar. El equipo sale más unido y la tienda recupera las ventas.",
+          "desenlace_fallo": "Cada quien propone una solución distinta y la llamada se alarga toda la tarde sin decidir nada. Mientras tanto el carrito sigue caído y los clientes se van a otras tiendas. Al día siguiente se acuerda una guía para depurar en equipo, pero las ventas perdidas ya no regresan."
+        }
+      ]
+    },
+    {
+      "id": "ip-control-p",
+      "subtema": "intro-programacion:1",
+      "titulo": "El Descuento Equivocado",
+      "contexto": "Una app de transporte cobra distinto según el horario: tarifa normal, hora pico o madrugada. El código que heredaste tiene una maraña de if anidados imposible de leer, y un error cobra la madrugada como si fuera hora pico. Hay que arreglarlo antes del fin de semana.",
+      "opciones": [
+        {
+          "id": "a",
+          "texto": "Reescribir la lógica con if / elif / else y casos que no se traslapen.",
+          "atributo": "inteligencia",
+          "probabilidad_base": 30,
+          "retroalimentacion": "Condiciones mutuamente excluyentes y bien ordenadas hacen el flujo de control legible y evitan casos ambiguos.",
+          "desenlace_exito": "Reescribes la lógica con if, elif y else, cada horario con su propio caso y sin traslapes. Las tarifas se cobran correctamente desde el primer viaje del fin de semana. Los usuarios dejan de reclamar en redes y la empresa reembolsa a quienes se les cobró de más.",
+          "desenlace_fallo": "Al reescribir se te escapa la medianoche: ahora los viajes a las 12 a.m. no caen en ningún caso y salen gratis. La noticia corre en redes y la empresa pierde dinero todo el fin de semana. Hay que sacar otra corrección de emergencia el domingo."
+        },
+        {
+          "id": "b",
+          "texto": "Dibujar primero un diagrama de las condiciones y luego corregir.",
+          "atributo": "teoria",
+          "probabilidad_base": 30,
+          "retroalimentacion": "Planear con un diagrama antes de programar ayuda a ver todos los casos y evita parches improvisados.",
+          "desenlace_exito": "El diagrama muestra que el caso de madrugada se evaluaba después del de hora pico. Con eso a la vista, la corrección sale limpia y fácil de revisar. Tu diagrama se agrega a la documentación para que nadie vuelva a perderse en esas condiciones.",
+          "desenlace_fallo": "Te toma tanto tiempo dibujar todos los casos que llega el viernes sin la corrección. Durante el fin de semana se siguen cobrando tarifas de hora pico en la madrugada. El lunes tienes un diagrama precioso y una bandeja llena de quejas."
+        },
+        {
+          "id": "c",
+          "texto": "Preguntar al desarrollador original qué pretendía con cada condición.",
+          "atributo": "equipo",
+          "probabilidad_base": 25,
+          "retroalimentacion": "Aclarar la intención con quien escribió el código reduce suposiciones, aunque depende de que esa persona esté disponible.",
+          "desenlace_exito": "El desarrollador original te responde por Slack con todas las reglas de tarifas y hasta te comparte documentación vieja. Con eso corriges el error y entiendes por qué estaban así las condiciones. Ganas un contacto que te ayuda en futuros problemas del sistema.",
+          "desenlace_fallo": "El desarrollador original ya no trabaja en la empresa y nunca contesta tu mensaje. Pierdes un día esperando y tienes que descifrar el código por tu cuenta. La corrección sale tarde y varios usuarios ya pidieron reembolso."
+        }
+      ]
+    }
+  ]
+}
