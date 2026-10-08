@@ -5,7 +5,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>TechTail · Una aventura de ingeniería de software</title>
+  <title>TechTale · Una aventura de ingeniería de software</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -142,32 +142,14 @@
       </div>
 
       <div class="portada-accion">
-        <a class="btn-aventura" id="btn-iniciar" href="/personalizar-partida/" data-destino="/personalizar-partida/">
+        {% comment %}
+        Mientras 'personalizar_partida' no tenga URL propia, href es la ruta a la que se navega.
+        Cuando exista, cámbiala por: href="{% url 'personalizar_partida' %}".
+        {% endcomment %}
+        <a class="btn-aventura" id="btn-iniciar" href="/personalizar-partida/">
           <span class="btn-texto">Iniciar partida</span>
         </a>
       </div>
-    </div>
-
-    <!-- Capas de la transición (las controla portada.js) -->
-    <div class="vuelo" id="vuelo" aria-hidden="true">
-      <div class="vuelo-libro" id="vuelo-libro">
-        <div class="vuelo-luz"></div>
-        <div class="vuelo-paginas"></div>
-        <div class="vuelo-tapa" id="vuelo-tapa">
-          <div class="cara frente">
-            <svg viewBox="-52 -92 104 140" preserveAspectRatio="none" focusable="false">
-              <rect x="-52" y="-92" width="104" height="132" rx="4" fill="#4a1012" stroke="#d4a94a" stroke-width="3" />
-              <rect x="-42" y="-82" width="84" height="112" fill="none" stroke="#d4a94a" stroke-width="1.5"
-                opacity=".8" />
-              <path d="M-18 -44 L-34 -28 L-18 -12 M18 -44 L34 -28 L18 -12 M8 -50 L-8 -6" fill="none" stroke="#e8c46a"
-                stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
-              <rect x="-52" y="40" width="104" height="8" fill="#f3e6c4" />
-            </svg>
-          </div>
-          <div class="cara dorso"></div>
-        </div>
-      </div>
-      <div class="vuelo-destello" id="vuelo-destello"></div>
     </div>
   </main>
 
