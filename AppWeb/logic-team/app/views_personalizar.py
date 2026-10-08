@@ -82,8 +82,15 @@ MODULOS = [
     },
 ]
 
+# Cada subtema es una tarjetita marcable: se le da un id estable ("modulo:posicion").
+for _m in MODULOS:
+    _m["subtemas"] = [
+        {"id": f"{_m['id']}:{i}", "titulo": t} for i, t in enumerate(_m["subtemas"])
+    ]
+
 _IDS_VALIDOS = {p["id"] for p in PERFILES}
-_IDS_MODULOS = {m["id"] for m in MODULOS}
+TEMAS = {t["id"]: t["titulo"] for m in MODULOS for t in m["subtemas"]}
+MIN_TEMAS, MAX_TEMAS = 1, 3  # RN02: al menos 1 y como máximo 3 temas
 
 
 def _perfil_de_sesion(request):
@@ -122,22 +129,29 @@ def personalizar_modulo(request):
         return redirect("personalizar_perfil")
 
     error = None
+    marcados = [t for t in request.session.get("temas_ids", []) if t in TEMAS]
 
     if request.method == "POST":
-        elegido = request.POST.get("modulo")
-        if elegido in _IDS_MODULOS:
-            request.session["modulo_id"] = elegido
+        # sin repetidos, en el orden recibido
+        marcados = list(dict.fromkeys(request.POST.getlist("tema")))
+        if not marcados or any(t not in TEMAS for t in marcados):
+            # RN02: toda partida necesita al menos un tema educativo
+            error = "Debes seleccionar al menos un tema para continuar."
+            marcados = [t for t in marcados if t in TEMAS]
+        elif len({t.split(":")[0] for t in marcados}) > 1:
+            error = "Los temas deben ser de una sola materia."
+        elif len(marcados) > MAX_TEMAS:
+            error = f"Puedes elegir máximo {MAX_TEMAS} temas."
+        else:
+            request.session["temas_ids"] = marcados
             # TEMPORAL: aquí se creará y guardará la Partida (perfil, vidas, xp, temas).
-            # "temas" es una lista para poder asignar más de un tema en el futuro.
             request.session["partida"] = {
                 "perfil_id": perfil["id"],
                 "vidas": perfil["vidas"],
                 "xp": perfil["xp"],
-                "temas": [elegido],
+                "temas": marcados,
             }
             return redirect("partida_inicio")
-        # RN02: toda partida necesita al menos un tema educativo
-        error = "Debes seleccionar un módulo temático para continuar."
 
     return render(
         request,
@@ -145,7 +159,8 @@ def personalizar_modulo(request):
         {
             "perfil": perfil,
             "modulos": MODULOS,
-            "modulo_actual": request.session.get("modulo_id"),
+            "marcados": marcados,
+            "max_temas": MAX_TEMAS,
             "error": error,
         },
     )
@@ -156,7 +171,7 @@ def partida_inicio(request):
     partida = request.session.get("partida")
     if not partida:
         return redirect("personalizar_perfil")
-    titulos = [m["titulo"] for m in MODULOS if m["id"] in partida["temas"]]
+    titulos = [TEMAS[t] for t in partida["temas"] if t in TEMAS]
     return HttpResponse(
         "Partida creada (pantalla de juego pendiente). "
         f"Perfil: {partida['perfil_id']} | vidas: {partida['vidas']} | xp: {partida['xp']} | "

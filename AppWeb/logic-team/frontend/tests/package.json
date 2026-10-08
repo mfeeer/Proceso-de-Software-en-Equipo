@@ -1,0 +1,7 @@
+{
+  "name": "logic-team-frontend-tests",
+  "private": true,
+  "description": "Pruebas de la lógica de ajustes (CU03). Ejecutar: npm install && npm test",
+  "scripts": { "test": "node --test" },
+  "devDependencies": { "jsdom": "^26.0.0" }
+}
