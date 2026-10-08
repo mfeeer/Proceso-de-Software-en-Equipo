@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Personalizar partida — Perfil{% endblock %}
+{% block body_class %}pagina-plana{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'css/personalizar.css' %}">
+{% endblock %}
+
+{# Esta pantalla es plana (sin el libro): se queda con el fondo de biblioteca y las luciérnagas #}
+{% block loader %}{% endblock %}
+
+{% block page %}
+  <header class="pc-topbar"><span class="file">personaje</span><span class="ext">.jsx</span></header>
+
+  <main class="pc-main">
+    <h1 class="pc-title">¿De dónde viene tu personaje?</h1>
+    <p class="pc-sub">Define el punto de partida — afecta tus atributos iniciales. (1/2 · personalización)</p>
+
+    <form id="form-perfil" method="post" action="{% url 'personalizar_perfil' %}" novalidate>
+      {% csrf_token %}
+
+      <fieldset class="perfiles" id="perfiles">
+        <legend style="position:absolute;left:-9999px;">Perfil o antecedente inicial</legend>
+
+        {% for p in perfiles %}
+        <label class="perfil">
+          <input type="radio" name="perfil" value="{{ p.id }}"
+                 data-vidas="{{ p.vidas }}" data-xp="{{ p.xp }}"
+                 data-teoria="{{ p.teoria }}" data-equipo="{{ p.equipo }}" data-inteligencia="{{ p.inteligencia }}"
+                 {% if p.id == perfil_actual %}checked{% endif %}>
+          <div class="perfil-card">
+            <div class="perfil-head">
+              <span class="perfil-class">class <b>{{ p.clase }}</b></span>
+              <button type="button" class="info-btn" aria-label="Ver vida y experiencia iniciales de {{ p.titulo }}"
+                      aria-expanded="false" aria-controls="extra-{{ p.id }}">i</button>
+            </div>
+            <h3>{{ p.titulo }}</h3>
+            <p>{{ p.descripcion }}</p>
+            <div class="tags">
+              <span class="stamp">teoría {{ p.teoria }}</span>
+              <span class="stamp">equipo {{ p.equipo }}</span>
+              <span class="stamp">inteligencia {{ p.inteligencia }}</span>
+            </div>
+            <div class="perfil-extra" id="extra-{{ p.id }}" hidden>
+              ❤️ {{ p.vidas }} vidas · ⭐ {{ p.xp }} XP iniciales
+            </div>
+          </div>
+        </label>
+        {% endfor %}
+      </fieldset>
+
+      <!-- Vista previa de atributos iniciales (se actualiza al elegir) -->
+      <section class="preview" aria-live="polite">
+        <h2>Hoja de personaje</h2>
+        <p class="preview-vacio" id="preview-vacio">Elige un perfil para ver sus atributos iniciales.</p>
+        <div class="preview-datos" id="preview-datos" hidden>
+          <div>
+            <div class="dato-label">Vidas</div>
+            <div class="dato-valor" id="prev-vidas"></div>
+          </div>
+          <div>
+            <div class="dato-label">Experiencia</div>
+            <div class="dato-valor" id="prev-xp"></div>
+          </div>
+          <div>
+            <div class="dato-label">Teoría</div>
+            <div class="dato-nivel" id="prev-teoria"></div>
+            <div class="meter" id="meter-teoria" data-n="0"><span></span><span></span><span></span></div>
+          </div>
+          <div>
+            <div class="dato-label">Equipo</div>
+            <div class="dato-nivel" id="prev-equipo"></div>
+            <div class="meter" id="meter-equipo" data-n="0"><span></span><span></span><span></span></div>
+          </div>
+          <div>
+            <div class="dato-label">Inteligencia</div>
+            <div class="dato-nivel" id="prev-inteligencia"></div>
+            <div class="meter" id="meter-inteligencia" data-n="0"><span></span><span></span><span></span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FE1 / RN03: no se puede continuar sin perfil -->
+      <p class="pc-error" id="error-perfil" role="alert" {% if not error %}hidden{% endif %}>{{ error|default:"Debes seleccionar un perfil para continuar." }}</p>
+
+      <div class="pc-actions">
+        <button type="submit" class="book-btn go">Continuar ➔</button>
+      </div>
+    </form>
+  </main>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'js/personalizar_perfil.js' %}"></script>
+{% endblock %}

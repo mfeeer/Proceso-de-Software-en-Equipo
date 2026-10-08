@@ -56,4 +56,16 @@
       if (book) book.classList.add("visible");
     }, reduceMotion ? 0 : 2200);
   });
+
+  // --- Llegada desde la transición "el libro se abre" (ver js/transicion.js) ---
+  try {
+    if (sessionStorage.getItem("trLlegada")) {
+      sessionStorage.removeItem("trLlegada");
+      const luz = document.createElement("div");
+      luz.className = "tr-llegada";
+      document.body.appendChild(luz);
+      requestAnimationFrame(() => requestAnimationFrame(() => luz.classList.add("fuera")));
+      setTimeout(() => luz.remove(), 1300);
+    }
+  } catch (e) { /* sin almacenamiento: no pasa nada */ }
 })();

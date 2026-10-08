@@ -261,3 +261,11 @@ a.book-btn { display: inline-block; text-decoration: none; text-align: center; }
   .spread.active, .loader-book, .loader-title, .choice.selected::after { animation: none; }
   .book { transition: none; }
 }
+
+/* Llegada desde la transición "el libro se abre": la página nace de la luz dorada */
+.tr-llegada {
+  position: fixed; inset: 0; z-index: 200; pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, #fffef8, #fff0b8 70%, #ffe08a);
+  opacity: 1; transition: opacity 1s ease;
+}
+.tr-llegada.fuera { opacity: 0; }
