@@ -1,0 +1,75 @@
+{% load static %}{% comment %}
+  CU03 - Personalizar interfaz.
+  Engranaje + panel de ajustes. Lo incluye base.html, así que aparece en TODAS las pantallas.
+  La lógica está en js/ajustes.js y los estilos en css/ajustes.css.
+  Para cambiar la música: reemplaza frontend/audio/ambiente.wav (o apunta data-musica-src a otro archivo).
+{% endcomment %}
+<div id="ajustes-root" class="ajustes-root" data-musica-src="{% static 'audio/ambiente.wav' %}">
+
+  <button type="button" id="ajustes-btn" class="ajustes-btn" title="Ajustes"
+          aria-label="Ajustes de lectura y sonido" aria-haspopup="dialog"
+          aria-expanded="false" aria-controls="ajustes-panel">
+    <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" focusable="false">
+      <path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/>
+    </svg>
+  </button>
+
+  <section id="ajustes-panel" class="ajustes-panel" role="dialog" tabindex="-1"
+           aria-labelledby="ajustes-titulo" hidden>
+    <header class="ajustes-cabecera">
+      <h2 id="ajustes-titulo">Ajustes del libro</h2>
+      <button type="button" id="ajustes-cerrar" class="ajustes-cerrar" aria-label="Cerrar ajustes">×</button>
+    </header>
+    <p class="ajustes-nota">Estos ajustes se guardan en tu navegador y no afectan tu partida.</p>
+
+    <fieldset class="ajustes-grupo">
+      <legend>Tamaño de letra</legend>
+      <div class="opciones">
+        <label class="opcion"><input type="radio" name="tamano" value="pequeno"><span>Pequeño</span></label>
+        <label class="opcion"><input type="radio" name="tamano" value="normal"><span>Normal</span></label>
+        <label class="opcion"><input type="radio" name="tamano" value="grande"><span>Grande</span></label>
+        <label class="opcion"><input type="radio" name="tamano" value="muy-grande"><span>Muy grande</span></label>
+      </div>
+    </fieldset>
+
+    <fieldset class="ajustes-grupo">
+      <legend>Tipo de letra</legend>
+      <div class="opciones opciones-col">
+        <label class="opcion"><input type="radio" name="fuente" value="libro"><span class="f-libro">Libro de aventuras (original)</span></label>
+        <label class="opcion"><input type="radio" name="fuente" value="dislexia"><span class="f-dislexia">OpenDyslexic (dislexia)</span></label>
+        <label class="opcion"><input type="radio" name="fuente" value="legible"><span class="f-legible">Atkinson Hyperlegible</span></label>
+      </div>
+    </fieldset>
+
+    <fieldset class="ajustes-grupo">
+      <legend>Vista</legend>
+      <label class="interruptor">
+        <input type="checkbox" role="switch" id="aj-contraste">
+        <span class="pista" aria-hidden="true"></span>
+        <span class="texto">Alto contraste</span>
+      </label>
+      <label class="interruptor">
+        <input type="checkbox" role="switch" id="aj-movimiento">
+        <span class="pista" aria-hidden="true"></span>
+        <span class="texto">Reducir animaciones</span>
+      </label>
+    </fieldset>
+
+    <fieldset class="ajustes-grupo">
+      <legend>Sonido</legend>
+      <label class="interruptor">
+        <input type="checkbox" role="switch" id="aj-musica">
+        <span class="pista" aria-hidden="true"></span>
+        <span class="texto">Música ambiental</span>
+      </label>
+      <div class="volumen">
+        <label for="aj-volumen">Volumen</label>
+        <input type="range" id="aj-volumen" min="0" max="100" step="5">
+      </div>
+    </fieldset>
+
+    <button type="button" id="ajustes-restaurar" class="ajustes-restaurar">Restaurar valores por defecto</button>
+  </section>
+
+  <div id="ajustes-aviso" class="ajustes-aviso" role="status" aria-live="polite" hidden></div>
+</div>
