@@ -15,37 +15,35 @@
   <header class="pc-topbar"><span class="file">modulos</span><span class="ext">.json</span></header>
 
   <main class="pc-main">
-    <h1 class="pc-title">¿Qué módulo temático quieres jugar?</h1>
-    <p class="pc-sub">Cada módulo es una etapa distinta de la carrera, con sus propias decisiones. (2/2 · personalización)</p>
+    <h1 class="pc-title">¿Qué temas quieres practicar?</h1>
+    <p class="pc-sub">Elige una materia y marca de 1 a {{ max_temas }} de sus temas: solo se cargarán esos escenarios. (2/2 · personalización)</p>
 
-    <form id="form-modulo" method="post" action="{% url 'personalizar_modulo' %}" novalidate>
+    <form id="form-modulo" data-max="{{ max_temas }}" method="post" action="{% url 'personalizar_modulo' %}" novalidate>
       {% csrf_token %}
 
-      <fieldset class="perfiles" id="modulos">
-        <legend style="position:absolute;left:-9999px;">Módulo temático de la partida</legend>
+      <fieldset class="perfiles" id="modulos" data-max="{{ max_temas }}">
+        <legend style="position:absolute;left:-9999px;">Temas de la partida (de 1 a {{ max_temas }})</legend>
 
         {% for m in modulos %}
-        <label class="perfil">
-          <input type="radio" name="modulo" value="{{ m.id }}" data-titulo="{{ m.titulo }}"
-                 {% if m.id == modulo_actual %}checked{% endif %}>
+        <div class="perfil modulo-card" data-modulo="{{ m.id }}">
           <div class="perfil-card">
             <div class="perfil-head">
               <span class="perfil-class">module <b>{{ m.clase }}</b></span>
-              <button type="button" class="info-btn" aria-label="Ver cuántos temas incluye {{ m.titulo }}"
-                      aria-expanded="false" aria-controls="extra-{{ m.id }}">i</button>
+              <span class="contador-modulo" aria-hidden="true"></span>
             </div>
             <h3>{{ m.titulo }}</h3>
             <p>{{ m.descripcion }}</p>
             <div class="tags">
-              {% for s in m.subtemas %}
-              <span class="stamp">{{ s }}</span>
+              {% for t in m.subtemas %}
+              <label class="tema">
+                <input type="checkbox" name="tema" value="{{ t.id }}" data-titulo="{{ t.titulo }}"
+                       {% if t.id in marcados %}checked{% endif %}>
+                <span class="tema-chip">{{ t.titulo }}</span>
+              </label>
               {% endfor %}
             </div>
-            <div class="perfil-extra" id="extra-{{ m.id }}" hidden>
-              📜 {{ m.subtemas|length }} temas · solo se cargarán los escenarios de este módulo
-            </div>
           </div>
-        </label>
+        </div>
         {% endfor %}
       </fieldset>
 
@@ -66,14 +64,14 @@
             <div class="dato-valor">⭐ {{ perfil.xp }} XP</div>
           </div>
           <div>
-            <div class="dato-label">Módulo</div>
-            <div class="dato-nivel" id="prev-modulo">Aún no has elegido uno</div>
+            <div class="dato-label">Temas <span id="prev-cuenta">0/{{ max_temas }}</span></div>
+            <div class="dato-nivel" id="prev-modulo">Aún no has elegido ninguno</div>
           </div>
         </div>
       </section>
 
       <!-- RN02: al menos un tema obligatorio -->
-      <p class="pc-error" id="error-modulo" role="alert" {% if not error %}hidden{% endif %}>{{ error|default:"Debes seleccionar un módulo temático para continuar." }}</p>
+      <p class="pc-error" id="error-modulo" role="alert" {% if not error %}hidden{% endif %}>{{ error|default:"Debes seleccionar al menos un tema para continuar." }}</p>
 
       <div class="pc-actions dos">
         <a class="book-btn" href="{% url 'personalizar_perfil' %}">⬅ Atrás</a>
