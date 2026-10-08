@@ -1,6 +1,6 @@
 {
   "_ayuda": "Reglas del juego (CU-01). Edita numeros y textos y refresca el navegador; no hace falta reiniciar. xp.por_nivel / xp.por_acierto = aciertos para subir de nivel (50/10 = 5). Cada nivel da 1 punto de atributo; niveles marca los topes (personaje y atributos, 1 a 10). Valida con: python manage.py validar_escenarios. finales.derrota: un final por tramo; se elige el primero cuyo hasta_evento sea >= eventos jugados.",
-  "max_eventos_por_partida": 20,
+  "max_eventos_por_partida": 5,
   "bloques": [
     {
       "capitulo": "II",
@@ -10,13 +10,13 @@
     },
     {
       "capitulo": "III",
-      "nombre": "La Encrucijada",
+      "nombre": "¿Esto es Dificil?",
       "hasta_porcentaje": 66,
       "probabilidad_evento": 0.5
     },
     {
       "capitulo": "IV",
-      "nombre": "El Desafío Final",
+      "nombre": "El Mundo Real",
       "hasta_porcentaje": 100,
       "probabilidad_evento": 0.8
     }
