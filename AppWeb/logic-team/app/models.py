@@ -54,6 +54,9 @@ class Partida(models.Model):
     logros = models.JSONField(default=list)
     # Resultado de la ultima decision; se muestra hasta que el jugador pasa la pagina.
     resultado_pendiente = models.JSONField(null=True, blank=True)
+    # CU-06 Conseguir vidas (app/services/conseguir_vidas.py): conteo de eventos para la
+    # sugerencia, preguntas vistas, vidas recuperadas y la ronda en juego.
+    vidas_extra = models.JSONField(default=dict, blank=True)
 
     creada = models.DateTimeField(auto_now_add=True)
     actualizada = models.DateTimeField(auto_now=True)

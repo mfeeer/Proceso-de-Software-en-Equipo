@@ -17,7 +17,7 @@ from django.urls import reverse
 
 from app.models import Partida, RegistroDecision
 
-from . import escenarios
+from . import conseguir_vidas, escenarios
 
 
 class ReglaError(Exception):
@@ -209,6 +209,8 @@ def resolver_decision(partida, opcion_id):
         raise ReglaError("Primero pasa la página para continuar la historia.")
     if partida.puntos_atributo > 0:
         raise ReglaError("Primero asigna tus puntos de atributo.")
+    if conseguir_vidas.ronda_en_juego(partida):  # CU-06: el minijuego pausa la historia
+        raise ReglaError("Termina primero el minijuego de vidas.")
 
     config, catalogo = escenarios.cargar()
     evento = _evento_actual(partida, catalogo)
@@ -225,6 +227,7 @@ def resolver_decision(partida, opcion_id):
         desenlace = opcion["desenlace_exito"] if acierto else opcion["desenlace_fallo"]
 
     nivel_antes = nivel_de(partida.xp, config)
+    hp_antes = partida.hp
     hp_delta = xp_delta = puntos_delta = ganados = 0
     if acierto:
         xp_delta = config["xp"]["por_acierto"]
@@ -264,6 +267,7 @@ def resolver_decision(partida, opcion_id):
     if partida.estado != Partida.EN_CURSO:
         ganados = 0
     partida.puntos_atributo += ganados
+    conseguir_vidas.registrar_evento(partida, hp_antes, config)  # CU-06 FA1
 
     partida.resultado_pendiente = {
         "acierto": acierto,
@@ -296,7 +300,8 @@ def _logros_ganados(partida, config):
         if condicion == "completar":
             cumple = True
         elif condicion == "sin_dano":
-            cumple = partida.hp == partida.hp_max
+            # Las vidas recuperadas en CU-06 cuentan como dano recibido
+            cumple = partida.hp == partida.hp_max and not conseguir_vidas.recuperadas(partida)
         elif condicion == "precision_minima":
             cumple = precision >= logro["valor"]
         else:  # exitos_riesgosos
@@ -390,6 +395,7 @@ def estado_publico(partida):
         "evento": None,
         "resultado": partida.resultado_pendiente,
         "url_fin": reverse("partida_fin", args=[partida.id]),
+        "vidas": conseguir_vidas.estado_publico(partida, config),  # CU-06
     }
     if fase == "evento":
         evento = _evento_actual(partida, catalogo)

@@ -14,7 +14,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_GET, require_POST
 
 from .models import Partida
-from .services import escenarios, motor_partida
+from .services import conseguir_vidas, escenarios, motor_partida
 from .services.motor_partida import ReglaError
 
 
@@ -103,3 +103,30 @@ def api_continuar(request, partida_id):
 def api_mejorar(request, partida_id):
     atributo = str(_cuerpo_json(request).get("atributo", ""))
     return _accion(request, partida_id, motor_partida.mejorar_atributo, atributo)
+
+
+# ---------------------------------------------------------------- CU06 Conseguir vidas
+# Las cuatro rutas responden con el estado de la partida, que incluye el bloque "vidas".
+@require_POST
+def api_vidas_iniciar(request, partida_id):
+    """Pasos 4-6: crea la ronda o retoma la que esta en juego."""
+    return _accion(request, partida_id, conseguir_vidas.iniciar_ronda)
+
+
+@require_POST
+def api_vidas_responder(request, partida_id):
+    """Pasos 7-10, FA2, FE1 y FA3. Cuerpo: {"respuesta": true | false}."""
+    respuesta = conseguir_vidas.leer_respuesta(_cuerpo_json(request))
+    return _accion(request, partida_id, conseguir_vidas.responder, respuesta)
+
+
+@require_POST
+def api_vidas_salir(request, partida_id):
+    """FE2 (abandona la ronda sin dar la vida) o paso 11 (cierra el resultado)."""
+    return _accion(request, partida_id, conseguir_vidas.salir)
+
+
+@require_POST
+def api_vidas_sugerencia(request, partida_id):
+    """FA1: cierra el recuadro de sugerencia y reinicia el conteo de eventos."""
+    return _accion(request, partida_id, conseguir_vidas.descartar_sugerencia)

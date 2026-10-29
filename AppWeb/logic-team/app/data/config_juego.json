@@ -107,6 +107,13 @@
       "umbral": 40
     }
   ],
+  "conseguir_vidas": {
+    "_ayuda": "CU-06. Ronda de verdadero o falso para recuperar vidas: se gana con aciertos_minimos de preguntas_por_ronda (RN-01) y se sugiere cada eventos_para_sugerencia eventos completados con vidas faltantes (FA1). Las afirmaciones viven en preguntas_vidas.json.",
+    "preguntas_por_ronda": 5,
+    "aciertos_minimos": 4,
+    "vidas_por_ronda": 1,
+    "eventos_para_sugerencia": 5
+  },
   "finales": {
     "completada": {
       "titulo": "Fin del Capítulo",
