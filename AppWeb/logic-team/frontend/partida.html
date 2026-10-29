@@ -5,6 +5,7 @@
 
 {% block extra_head %}
   <link rel="stylesheet" href="{% static 'css/partida.css' %}">
+  <link rel="stylesheet" href="{% static 'css/vidas.css' %}">
   <!-- Si se llega desde la transición de CU02, el libro abierto aparece directo desde la luz -->
   <script>
     try { if (sessionStorage.getItem("trLlegada")) document.documentElement.dataset.llegada = "1"; } catch (e) {}
@@ -36,5 +37,6 @@
 {% endblock %}
 
 {% block extra_js %}
+  <script src="{% static 'js/vidas.js' %}"></script>
   <script src="{% static 'js/partida.js' %}"></script>
 {% endblock %}

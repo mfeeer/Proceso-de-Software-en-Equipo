@@ -73,6 +73,12 @@
     try { return JSON.parse(localStorage.getItem(claveRespaldo)); } catch (err) { return null; }
   }
 
+  // CU06 - Conseguir vidas (js/vidas.js): botón permanente y minijuego sobre el libro.
+  // Al volver del minijuego el libro se repinta sin pasar la página.
+  const vidas = window.CU06Vidas
+    ? window.CU06Vidas.conectar({ llamar, alActualizar: (e) => pintar(e, false) })
+    : null;
+
   // ------------------------------------------------------------ piezas del libro
   const ornamento = () => { const o = el("div", "ornament"); o.setAttribute("aria-hidden", "true"); return o; };
   const numeroPagina = (n) => el("div", "page-num", `– ${n} –`);
@@ -96,6 +102,7 @@
     return con(
       el("div", "pt-ficha"),
       barra("❤️ Vidas", e.hp, e.hp_max, "hp", `${e.hp}/${e.hp_max}`),
+      vidas && e.vidas ? vidas.boton(e) : null,
       barra(`⭐ Nivel ${e.nivel}`, e.xp_en_nivel, e.xp_por_nivel, "xp",
         e.nivel >= e.nivel_maximo ? "nivel máximo" : `${e.xp_en_nivel}/${e.xp_por_nivel} XP para el nivel ${e.nivel + 1}`),
       barra("📖 Historia", e.progreso, 100, "progreso", `${e.progreso}% · evento ${e.evento_numero} de ${e.evento_total}`),
@@ -399,6 +406,7 @@
       pasarPagina();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
+    if (vidas) vidas.sincronizar(e); // CU06: retoma la ronda o muestra la sugerencia (FA1)
   }
 
   // Al terminar: si perdió, el libro se cierra; en ambos casos el Post Game abre sin

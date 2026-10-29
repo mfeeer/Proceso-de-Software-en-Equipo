@@ -1,0 +1,355 @@
+{
+  "_ayuda": "CU-06 Conseguir vidas: afirmaciones de verdadero o falso. 'subtema' usa los mismos ids que app/data/escenarios/*.json y 'respuesta' es true (verdadera) o false (falsa). La ronda toma primero afirmaciones de los subtemas de la partida que aun no se han visto. Las reglas (tamano de la ronda, aciertos minimos...) estan en config_juego.json > conseguir_vidas. Valida con: python manage.py validar_escenarios.",
+  "preguntas": [
+    {
+      "id": "ir0-1",
+      "subtema": "ingenieria-requerimientos:0",
+      "afirmacion": "«El sistema debe responder en menos de 2 segundos» es un requerimiento no funcional.",
+      "respuesta": true,
+      "explicacion": "Describe una cualidad del sistema (rendimiento), no una función que el usuario realiza."
+    },
+    {
+      "id": "ir0-2",
+      "subtema": "ingenieria-requerimientos:0",
+      "afirmacion": "Un requerimiento funcional describe qué tan rápido, seguro o usable debe ser el sistema.",
+      "respuesta": false,
+      "explicacion": "Eso describe un requerimiento no funcional. El funcional dice qué hace el sistema, por ejemplo «registrar una venta»."
+    },
+    {
+      "id": "ir0-3",
+      "subtema": "ingenieria-requerimientos:0",
+      "afirmacion": "Los requerimientos de usuario suelen escribirse en lenguaje natural para que el cliente los entienda.",
+      "respuesta": true,
+      "explicacion": "Van dirigidos a personas no técnicas; los requerimientos de sistema son los que detallan lo técnico."
+    },
+    {
+      "id": "ir0-4",
+      "subtema": "ingenieria-requerimientos:0",
+      "afirmacion": "Una restricción como «el sistema debe programarse en Python» se clasifica como requerimiento no funcional.",
+      "respuesta": true,
+      "explicacion": "Es una restricción de implementación: no dice qué hace el sistema, sino una condición que el desarrollo debe cumplir."
+    },
+    {
+      "id": "ir0-5",
+      "subtema": "ingenieria-requerimientos:0",
+      "afirmacion": "Un requerimiento de dominio es el que el programador inventa para facilitar el desarrollo.",
+      "respuesta": false,
+      "explicacion": "Los requerimientos de dominio vienen del área de aplicación del sistema, como las reglas de un banco o las leyes de salud."
+    },
+    {
+      "id": "ir1-1",
+      "subtema": "ingenieria-requerimientos:1",
+      "afirmacion": "Una vez aprobados, los requerimientos ya no pueden cambiar durante el proyecto.",
+      "respuesta": false,
+      "explicacion": "Los requerimientos cambian casi siempre; por eso se gestionan con un control de cambios que evalúa su impacto."
+    },
+    {
+      "id": "ir1-2",
+      "subtema": "ingenieria-requerimientos:1",
+      "afirmacion": "La trazabilidad permite saber qué diseño, código y pruebas se ven afectados cuando cambia un requerimiento.",
+      "respuesta": true,
+      "explicacion": "Relaciona cada requerimiento con los artefactos que lo implementan y lo prueban."
+    },
+    {
+      "id": "ir1-3",
+      "subtema": "ingenieria-requerimientos:1",
+      "afirmacion": "La elicitación es la etapa en la que se obtienen los requerimientos de los usuarios y otros interesados.",
+      "respuesta": true,
+      "explicacion": "Se hace con entrevistas, cuestionarios, observación o talleres, entre otras técnicas."
+    },
+    {
+      "id": "ir1-4",
+      "subtema": "ingenieria-requerimientos:1",
+      "afirmacion": "Los interesados (stakeholders) de un sistema son únicamente las personas que lo van a usar.",
+      "respuesta": false,
+      "explicacion": "También lo son el cliente que paga, los gerentes, los reguladores y el propio equipo de desarrollo."
+    },
+    {
+      "id": "ir1-5",
+      "subtema": "ingenieria-requerimientos:1",
+      "afirmacion": "Antes de aprobar una solicitud de cambio se evalúa su impacto en costo, tiempo y en los demás artefactos.",
+      "respuesta": true,
+      "explicacion": "Así se decide con información si conviene hacer el cambio y qué más hay que actualizar."
+    },
+    {
+      "id": "ir2-1",
+      "subtema": "ingenieria-requerimientos:2",
+      "afirmacion": "Un buen requerimiento puede usar palabras como «rápido» o «fácil» sin definirlas, porque todos las entienden igual.",
+      "respuesta": false,
+      "explicacion": "Son términos ambiguos: cada quien los interpreta distinto. Un requerimiento debe ser medible y verificable."
+    },
+    {
+      "id": "ir2-2",
+      "subtema": "ingenieria-requerimientos:2",
+      "afirmacion": "La Especificación de Requerimientos de Software (SRS) describe qué debe hacer el sistema, no cómo programarlo.",
+      "respuesta": true,
+      "explicacion": "El cómo corresponde al diseño; la SRS se enfoca en el comportamiento esperado y sus restricciones."
+    },
+    {
+      "id": "ir2-3",
+      "subtema": "ingenieria-requerimientos:2",
+      "afirmacion": "Cada requerimiento debe tener un identificador único para poder rastrearlo.",
+      "respuesta": true,
+      "explicacion": "Un id como RF-05 permite referenciarlo en el diseño, las pruebas y las solicitudes de cambio."
+    },
+    {
+      "id": "ir2-4",
+      "subtema": "ingenieria-requerimientos:2",
+      "afirmacion": "Una historia de usuario suele escribirse como «Como <rol>, quiero <objetivo>, para <beneficio>».",
+      "respuesta": true,
+      "explicacion": "Esa forma deja claro quién necesita algo, qué necesita y por qué."
+    },
+    {
+      "id": "ir2-5",
+      "subtema": "ingenieria-requerimientos:2",
+      "afirmacion": "En la SRS conviene juntar varios requerimientos en una sola oración larga para ahorrar espacio.",
+      "respuesta": false,
+      "explicacion": "Cada requerimiento debe ser atómico: uno por enunciado, para poder rastrearlo y probarlo por separado."
+    },
+    {
+      "id": "ir3-1",
+      "subtema": "ingenieria-requerimientos:3",
+      "afirmacion": "Validar responde a «¿estamos construyendo el producto correcto?» y verificar a «¿lo estamos construyendo correctamente?».",
+      "respuesta": true,
+      "explicacion": "La validación revisa que se cumpla lo que el cliente necesita; la verificación, que se cumpla la especificación."
+    },
+    {
+      "id": "ir3-2",
+      "subtema": "ingenieria-requerimientos:3",
+      "afirmacion": "Las revisiones de requerimientos solo sirven cuando el sistema ya está programado.",
+      "respuesta": false,
+      "explicacion": "Se hacen antes de programar: un error encontrado en los requerimientos cuesta mucho menos que uno encontrado en producción."
+    },
+    {
+      "id": "ir3-3",
+      "subtema": "ingenieria-requerimientos:3",
+      "afirmacion": "Un prototipo puede ayudar a validar requerimientos con el cliente antes de programar el sistema completo.",
+      "respuesta": true,
+      "explicacion": "Al ver y usar el prototipo, el cliente detecta lo que falta o lo que se entendió mal."
+    },
+    {
+      "id": "ir3-4",
+      "subtema": "ingenieria-requerimientos:3",
+      "afirmacion": "Un requerimiento es verificable si se puede diseñar una prueba que demuestre si se cumple.",
+      "respuesta": true,
+      "explicacion": "Por eso «responde en menos de 2 segundos» es verificable y «responde rápido» no lo es."
+    },
+    {
+      "id": "ir3-5",
+      "subtema": "ingenieria-requerimientos:3",
+      "afirmacion": "Que el cliente firme la SRS garantiza que los requerimientos no tienen errores.",
+      "respuesta": false,
+      "explicacion": "La firma es un acuerdo, no una prueba. Los errores se encuentran con revisiones, prototipos y casos de prueba."
+    },
+    {
+      "id": "ip0-1",
+      "subtema": "intro-programacion:0",
+      "afirmacion": "Un dato de tipo booleano solo puede tomar dos valores: verdadero o falso.",
+      "respuesta": true,
+      "explicacion": "Por eso se usa en condiciones: true o false."
+    },
+    {
+      "id": "ip0-2",
+      "subtema": "intro-programacion:0",
+      "afirmacion": "Una constante es una variable cuyo valor puede cambiar libremente durante la ejecución.",
+      "respuesta": false,
+      "explicacion": "Una constante conserva el mismo valor durante todo el programa, como PI o IVA."
+    },
+    {
+      "id": "ip0-3",
+      "subtema": "intro-programacion:0",
+      "afirmacion": "El texto \"25\" entre comillas y el número 25 son el mismo tipo de dato.",
+      "respuesta": false,
+      "explicacion": "\"25\" es una cadena de texto y 25 es un número entero: con la cadena no se pueden hacer operaciones aritméticas directamente."
+    },
+    {
+      "id": "ip0-4",
+      "subtema": "intro-programacion:0",
+      "afirmacion": "Una variable debe recibir un valor antes de poder leerse.",
+      "respuesta": true,
+      "explicacion": "Si se lee sin valor, el programa falla o usa basura, según el lenguaje."
+    },
+    {
+      "id": "ip0-5",
+      "subtema": "intro-programacion:0",
+      "afirmacion": "El nombre de una variable puede empezar con un número, como 2total.",
+      "respuesta": false,
+      "explicacion": "En la mayoría de los lenguajes un identificador debe empezar con una letra o guion bajo, como total2."
+    },
+    {
+      "id": "ip1-1",
+      "subtema": "intro-programacion:1",
+      "afirmacion": "Un ciclo while puede no ejecutarse ni una sola vez si su condición es falsa desde el inicio.",
+      "respuesta": true,
+      "explicacion": "while revisa la condición antes de cada vuelta, incluida la primera."
+    },
+    {
+      "id": "ip1-2",
+      "subtema": "intro-programacion:1",
+      "afirmacion": "Un if siempre necesita un bloque else para funcionar.",
+      "respuesta": false,
+      "explicacion": "El else es opcional: si la condición es falsa y no hay else, simplemente no se ejecuta nada."
+    },
+    {
+      "id": "ip1-3",
+      "subtema": "intro-programacion:1",
+      "afirmacion": "Un ciclo do-while revisa la condición antes de ejecutar su cuerpo por primera vez.",
+      "respuesta": false,
+      "explicacion": "do-while revisa la condición al final, así que su cuerpo se ejecuta al menos una vez."
+    },
+    {
+      "id": "ip1-4",
+      "subtema": "intro-programacion:1",
+      "afirmacion": "Una estructura if-else ejecuta los dos bloques cuando la condición es verdadera.",
+      "respuesta": false,
+      "explicacion": "Solo ejecuta uno: el bloque if si la condición es verdadera o el bloque else si es falsa."
+    },
+    {
+      "id": "ip1-5",
+      "subtema": "intro-programacion:1",
+      "afirmacion": "Un ciclo for es adecuado cuando se sabe de antemano cuántas veces debe repetirse algo.",
+      "respuesta": true,
+      "explicacion": "Por ejemplo, recorrer los 10 elementos de una lista."
+    },
+    {
+      "id": "la0-1",
+      "subtema": "logica-algoritmos:0",
+      "afirmacion": "En un diagrama de flujo, el rombo representa una decisión.",
+      "respuesta": true,
+      "explicacion": "Del rombo salen dos caminos, uno para «sí» y otro para «no»."
+    },
+    {
+      "id": "la0-2",
+      "subtema": "logica-algoritmos:0",
+      "afirmacion": "El pseudocódigo debe compilarse antes de poder usarse para describir un algoritmo.",
+      "respuesta": false,
+      "explicacion": "El pseudocódigo no es un lenguaje de programación: es una descripción para personas y no se compila."
+    },
+    {
+      "id": "la0-3",
+      "subtema": "logica-algoritmos:0",
+      "afirmacion": "Un algoritmo debe terminar después de un número finito de pasos.",
+      "respuesta": true,
+      "explicacion": "La finitud es una de sus características, junto con ser preciso y estar bien definido."
+    },
+    {
+      "id": "la0-4",
+      "subtema": "logica-algoritmos:0",
+      "afirmacion": "En un diagrama de flujo, el óvalo marca el inicio y el fin del algoritmo.",
+      "respuesta": true,
+      "explicacion": "Es el símbolo terminal: todo diagrama tiene un inicio y al menos un fin."
+    },
+    {
+      "id": "la0-5",
+      "subtema": "logica-algoritmos:0",
+      "afirmacion": "Un algoritmo solo puede representarse escribiéndolo en un lenguaje de programación.",
+      "respuesta": false,
+      "explicacion": "También se representa con lenguaje natural, pseudocódigo o diagramas de flujo."
+    },
+    {
+      "id": "la1-1",
+      "subtema": "logica-algoritmos:1",
+      "afirmacion": "La búsqueda binaria funciona en cualquier lista, aunque no esté ordenada.",
+      "respuesta": false,
+      "explicacion": "Necesita la lista ordenada para poder descartar la mitad en cada paso."
+    },
+    {
+      "id": "la1-2",
+      "subtema": "logica-algoritmos:1",
+      "afirmacion": "En una lista ordenada de un millón de elementos, la búsqueda binaria necesita como máximo unas 20 comparaciones.",
+      "respuesta": true,
+      "explicacion": "Cada comparación descarta la mitad: 2 elevado a la 20 ya supera el millón."
+    },
+    {
+      "id": "la1-3",
+      "subtema": "logica-algoritmos:1",
+      "afirmacion": "El ordenamiento burbuja compara pares de elementos vecinos y los intercambia si están en desorden.",
+      "respuesta": true,
+      "explicacion": "En cada pasada el elemento más grande «sube» hasta su lugar, como una burbuja."
+    },
+    {
+      "id": "la1-4",
+      "subtema": "logica-algoritmos:1",
+      "afirmacion": "La búsqueda lineal revisa los elementos uno por uno hasta encontrar el buscado o llegar al final.",
+      "respuesta": true,
+      "explicacion": "Funciona en cualquier lista, ordenada o no, pero en el peor caso revisa todos los elementos."
+    },
+    {
+      "id": "la1-5",
+      "subtema": "logica-algoritmos:1",
+      "afirmacion": "Ordenar una lista desordenada cuesta menos que recorrerla una sola vez.",
+      "respuesta": false,
+      "explicacion": "Ordenar exige muchas comparaciones e intercambios; para una sola búsqueda en datos desordenados conviene la búsqueda lineal."
+    },
+    {
+      "id": "po0-1",
+      "subtema": "programacion-oo:0",
+      "afirmacion": "Gracias al polimorfismo, objetos de clases distintas pueden responder al mismo método de forma diferente.",
+      "respuesta": true,
+      "explicacion": "Por ejemplo, Perro y Gato pueden tener hablar(), y cada uno lo implementa a su manera."
+    },
+    {
+      "id": "po0-2",
+      "subtema": "programacion-oo:0",
+      "afirmacion": "Una clase es un objeto concreto que ya existe en memoria.",
+      "respuesta": false,
+      "explicacion": "La clase es el molde; los objetos son las instancias que se crean a partir de ella."
+    },
+    {
+      "id": "po0-3",
+      "subtema": "programacion-oo:0",
+      "afirmacion": "El encapsulamiento consiste en ocultar los datos internos de un objeto y exponer solo lo necesario mediante métodos.",
+      "respuesta": true,
+      "explicacion": "Así nadie modifica el estado del objeto por fuera de las reglas que define la clase."
+    },
+    {
+      "id": "po0-4",
+      "subtema": "programacion-oo:0",
+      "afirmacion": "La herencia permite que una clase reutilice los atributos y métodos de otra.",
+      "respuesta": true,
+      "explicacion": "Por ejemplo, Estudiante puede heredar de Persona su nombre y su método saludar()."
+    },
+    {
+      "id": "po0-5",
+      "subtema": "programacion-oo:0",
+      "afirmacion": "Un constructor es el método que se usa para destruir un objeto cuando ya no se necesita.",
+      "respuesta": false,
+      "explicacion": "El constructor crea e inicializa el objeto; liberarlo es tarea del destructor o del recolector de basura."
+    },
+    {
+      "id": "po1-1",
+      "subtema": "programacion-oo:1",
+      "afirmacion": "El bloque finally solo se ejecuta si ocurrió una excepción.",
+      "respuesta": false,
+      "explicacion": "finally se ejecuta siempre, haya o no excepción. Se usa para liberar recursos, como cerrar archivos o conexiones."
+    },
+    {
+      "id": "po1-2",
+      "subtema": "programacion-oo:1",
+      "afirmacion": "Atrapar todas las excepciones con un bloque catch vacío es una buena práctica porque evita que el programa falle.",
+      "respuesta": false,
+      "explicacion": "Esconde los errores: el programa sigue en un estado incorrecto y nadie se entera de qué pasó."
+    },
+    {
+      "id": "po1-3",
+      "subtema": "programacion-oo:1",
+      "afirmacion": "Una excepción interrumpe el flujo normal del programa hasta que algún bloque la atrapa.",
+      "respuesta": true,
+      "explicacion": "Si ningún bloque la atrapa, el programa termina con un error."
+    },
+    {
+      "id": "po1-4",
+      "subtema": "programacion-oo:1",
+      "afirmacion": "Un programa puede lanzar su propia excepción (con raise o throw) cuando detecta una situación inválida.",
+      "respuesta": true,
+      "explicacion": "Por ejemplo, al recibir una edad negativa se lanza un ValueError con un mensaje claro."
+    },
+    {
+      "id": "po1-5",
+      "subtema": "programacion-oo:1",
+      "afirmacion": "Un error de sintaxis y una excepción son lo mismo: los dos aparecen a mitad de la ejecución.",
+      "respuesta": false,
+      "explicacion": "El error de sintaxis se detecta antes de ejecutar; la excepción ocurre durante la ejecución, por ejemplo al dividir entre cero."
+    }
+  ]
+}
