@@ -8,9 +8,12 @@ asi que basta con editar el JSON y refrescar el navegador.
 import json
 from pathlib import Path
 
+from . import tecnicismos
+
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 ESCENARIOS_DIR = DATA_DIR / "escenarios"
 CONFIG_PATH = DATA_DIR / "config_juego.json"
+TECNICISMOS_PATH = DATA_DIR / "tecnicismos.json"  # CU05 (RF-39 a RF-41)
 
 NORMAL = "normal"
 PROBABILIDAD = "probabilidad"
@@ -43,7 +46,7 @@ class CatalogoError(Exception):
 
 
 def _archivos():
-    return [CONFIG_PATH, *sorted(ESCENARIOS_DIR.glob("*.json"))]
+    return [CONFIG_PATH, TECNICISMOS_PATH, *sorted(ESCENARIOS_DIR.glob("*.json"))]
 
 
 def _firma():
@@ -247,7 +250,20 @@ def _construir():
                 }
     if not temas and not errores:
         errores.append("No hay archivos de escenarios en app/data/escenarios/")
-    return config, {"temas": temas, "eventos": eventos}, errores
+
+    # CU05: catalogo de tecnicismos y los que declara cada evento (RF-39 a RF-41)
+    datos_tec = _leer(TECNICISMOS_PATH, errores)
+    reglas, catalogo_tec = {}, {}
+    if datos_tec is not None:
+        reglas, catalogo_tec = tecnicismos.leer(datos_tec, TECNICISMOS_PATH.name, errores)
+    errores += tecnicismos.validar_eventos(eventos.values(), catalogo_tec, "escenarios")
+    catalogo = {
+        "temas": temas,
+        "eventos": eventos,
+        "tecnicismos": catalogo_tec,
+        "reglas_cuestionario": reglas,
+    }
+    return config, catalogo, errores
 
 
 def validar():

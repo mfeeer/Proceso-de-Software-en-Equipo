@@ -142,12 +142,9 @@
       </div>
 
       <div class="portada-accion">
-        {% comment %}
-        Mientras 'personalizar_partida' no tenga URL propia, href es la ruta a la que se navega.
-        Cuando exista, cámbiala por: href="{% url 'personalizar_partida' %}".
-        {% endcomment %}
-        <a class="btn-aventura" id="btn-iniciar" href="/personalizar-partida/">
-          <span class="btn-texto">Iniciar partida</span>
+        {# CU05 paso 1: «Iniciar juego» abre el menú de modos (Historia narrativa / Cuestionario súbito) #}
+        <a class="btn-aventura" id="btn-iniciar" href="{% url 'menu_modos' %}">
+          <span class="btn-texto">Iniciar juego</span>
         </a>
       </div>
     </div>

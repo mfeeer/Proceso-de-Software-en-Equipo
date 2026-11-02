@@ -1,0 +1,406 @@
+{
+  "reglas": {
+    "minimo_tecnicismos": 4,
+    "preguntas_por_cuestionario": 10,
+    "opciones_por_pregunta": 4,
+    "dias_validez_cuestionario": 30
+  },
+  "tecnicismos": [
+    {
+      "id": "requerimiento-funcional",
+      "nombre": "Requerimiento funcional",
+      "subtema": "ingenieria-requerimientos:0",
+      "descripcion": "Describe una acción o servicio que el sistema debe realizar, es decir, qué hace el sistema.",
+      "escenario_aplicacion": "Indicar que la app debe permitir hacer pedidos desde el celular",
+      "palabra_clave": "acción",
+      "formas": ["requerimientos funcionales", "requerimiento funcional"]
+    },
+    {
+      "id": "requerimiento-no-funcional",
+      "nombre": "Requerimiento no funcional",
+      "subtema": "ingenieria-requerimientos:0",
+      "descripcion": "Describe una cualidad del sistema, como su desempeño, seguridad o usabilidad: qué tan bien hace lo que hace.",
+      "escenario_aplicacion": "Exigir que la app responda en menos de dos segundos en la hora pico",
+      "palabra_clave": "cualidad",
+      "formas": ["requerimientos no funcionales", "requerimiento no funcional", "no funcional"]
+    },
+    {
+      "id": "desempeno",
+      "nombre": "Desempeño",
+      "subtema": "ingenieria-requerimientos:0",
+      "descripcion": "Requerimiento no funcional que mide qué tan rápido responde el sistema y cuántos usuarios atiende a la vez.",
+      "escenario_aplicacion": "Definir pruebas de carga para el tiempo de respuesta de una tienda en línea",
+      "palabra_clave": "rápido",
+      "formas": ["desempeño", "tiempo de respuesta"]
+    },
+    {
+      "id": "trazabilidad",
+      "nombre": "Trazabilidad",
+      "subtema": "ingenieria-requerimientos:1",
+      "descripcion": "Capacidad de seguir la vida de un requerimiento: de dónde salió, en qué parte del diseño y del código se implementó y con qué prueba se verifica.",
+      "escenario_aplicacion": "Saber qué pruebas repetir cuando cambia un requerimiento",
+      "palabra_clave": "seguir",
+      "formas": ["trazabilidad"]
+    },
+    {
+      "id": "analisis-impacto",
+      "nombre": "Análisis de impacto",
+      "subtema": "ingenieria-requerimientos:1",
+      "descripcion": "Estudio de qué partes del sistema, del plan y del costo se verán afectadas antes de aceptar un cambio.",
+      "escenario_aplicacion": "Decidir si se acepta subir de 7 a 8 materias en un sistema de inscripciones ya aprobado",
+      "palabra_clave": "afectadas",
+      "formas": ["evaluar el impacto", "análisis de impacto"]
+    },
+    {
+      "id": "criterio-medible",
+      "nombre": "Criterio medible",
+      "subtema": "ingenieria-requerimientos:2",
+      "descripcion": "Condición expresada con números o hechos comprobables que permite verificar objetivamente si un requerimiento se cumple.",
+      "escenario_aplicacion": "Reescribir «el sistema debe ser rápido» como «deberá responder en menos de 2 segundos»",
+      "palabra_clave": "números",
+      "formas": ["criterios medibles", "criterio medible"]
+    },
+    {
+      "id": "verificacion",
+      "nombre": "Verificación",
+      "subtema": "ingenieria-requerimientos:3",
+      "descripcion": "Revisión de que el producto se construyó conforme a su especificación. Responde: ¿construimos bien el producto?",
+      "escenario_aplicacion": "Ejecutar los casos de prueba ligados a cada requerimiento del SRS",
+      "palabra_clave": "conforme",
+      "formas": ["verificación", "verificar"]
+    },
+    {
+      "id": "validacion",
+      "nombre": "Validación",
+      "subtema": "ingenieria-requerimientos:3",
+      "descripcion": "Confirmación con el cliente de que el producto resuelve su necesidad real. Responde: ¿construimos el producto correcto?",
+      "escenario_aplicacion": "Hacer una demostración guiada y recoger las observaciones de la clienta",
+      "palabra_clave": "necesidad",
+      "formas": ["validación", "validar", "validarla"]
+    },
+    {
+      "id": "especificacion",
+      "nombre": "Especificación",
+      "subtema": "ingenieria-requerimientos:2",
+      "descripcion": "Documento que describe de forma clara, completa y verificable lo que el sistema debe hacer y bajo qué condiciones.",
+      "escenario_aplicacion": "Comparar lo que hace el programa contra lo que se acordó por escrito",
+      "palabra_clave": "documento",
+      "formas": ["especificación", "especificarse"]
+    },
+    {
+      "id": "elicitacion",
+      "nombre": "Elicitación",
+      "subtema": "ingenieria-requerimientos:0",
+      "descripcion": "Actividad de obtener los requerimientos de los clientes y usuarios por medio de entrevistas, preguntas abiertas u observación.",
+      "escenario_aplicacion": "Entrevistar a la dueña de una pastelería para entender qué necesita su página",
+      "palabra_clave": "entrevistas",
+      "formas": ["elicitación", "aclarar requerimientos", "preguntas abiertas"]
+    },
+    {
+      "id": "solicitud-cambio",
+      "nombre": "Solicitud de cambio",
+      "subtema": "ingenieria-requerimientos:1",
+      "descripcion": "Petición formal para modificar un requerimiento ya aprobado; se registra, se evalúa y se aprueba o rechaza.",
+      "escenario_aplicacion": "Registrar que el gimnasio ahora quiere reservar clases desde la app",
+      "palabra_clave": "formal",
+      "formas": ["solicitudes de cambio", "solicitud de cambio"]
+    },
+    {
+      "id": "sprint",
+      "nombre": "Sprint",
+      "subtema": "ingenieria-requerimientos:1",
+      "descripcion": "Iteración corta de duración fija, normalmente de una a cuatro semanas, en la que el equipo entrega un incremento del producto.",
+      "escenario_aplicacion": "Planear qué cambios se atienden en las próximas tres semanas de trabajo",
+      "palabra_clave": "incremento",
+      "formas": ["sprints", "sprint"]
+    },
+    {
+      "id": "priorizacion",
+      "nombre": "Priorización",
+      "subtema": "ingenieria-requerimientos:1",
+      "descripcion": "Ordenar los requerimientos o cambios según criterios explícitos como impacto, costo y urgencia.",
+      "escenario_aplicacion": "Elegir cuáles de cinco solicitudes se atienden primero cuando no hay tiempo para todas",
+      "palabra_clave": "urgencia",
+      "formas": ["priorizarlas", "priorizar", "prioridades"]
+    },
+    {
+      "id": "srs",
+      "nombre": "SRS",
+      "subtema": "ingenieria-requerimientos:2",
+      "descripcion": "Especificación de Requerimientos de Software: documento estándar que reúne todos los requerimientos del sistema organizados en secciones.",
+      "escenario_aplicacion": "Entregar los requerimientos completos antes de una auditoría de calidad",
+      "palabra_clave": "secciones",
+      "formas": ["SRS", "especificación de requerimientos"]
+    },
+    {
+      "id": "caso-uso",
+      "nombre": "Caso de uso",
+      "subtema": "ingenieria-requerimientos:2",
+      "descripcion": "Descripción paso a paso de la interacción entre un actor y el sistema para lograr un objetivo, con sus flujos alternos.",
+      "escenario_aplicacion": "Describir cómo un estudiante se inscribe a sus materias en el sistema escolar",
+      "palabra_clave": "actor",
+      "formas": ["casos de uso", "caso de uso"]
+    },
+    {
+      "id": "caso-prueba",
+      "nombre": "Caso de prueba",
+      "subtema": "ingenieria-requerimientos:3",
+      "descripcion": "Conjunto de entradas, condiciones y resultado esperado que sirve para comprobar si una función se comporta correctamente.",
+      "escenario_aplicacion": "Comprobar que el carrito suma bien el total con tres productos distintos",
+      "palabra_clave": "esperado",
+      "formas": ["casos de prueba", "caso de prueba"]
+    },
+    {
+      "id": "matriz-trazabilidad",
+      "nombre": "Matriz de trazabilidad",
+      "subtema": "ingenieria-requerimientos:3",
+      "descripcion": "Tabla que relaciona cada requerimiento con el diseño, el código y las pruebas que lo cubren, para detectar huecos.",
+      "escenario_aplicacion": "Demostrar ante la clienta que cada requerimiento tiene al menos una prueba",
+      "palabra_clave": "tabla",
+      "formas": ["matriz de trazabilidad"]
+    },
+    {
+      "id": "variable",
+      "nombre": "Variable",
+      "subtema": "intro-programacion:0",
+      "descripcion": "Espacio con nombre en la memoria donde el programa guarda un valor que puede cambiar durante la ejecución.",
+      "escenario_aplicacion": "Guardar el total del carrito mientras el cliente agrega productos",
+      "palabra_clave": "memoria",
+      "formas": ["variables", "variable"]
+    },
+    {
+      "id": "entero",
+      "nombre": "Entero (int)",
+      "subtema": "intro-programacion:0",
+      "descripcion": "Tipo de dato numérico sin parte decimal que permite comparar y hacer operaciones aritméticas exactas.",
+      "escenario_aplicacion": "Guardar la edad en años cumplidos para compararla con 18",
+      "palabra_clave": "decimal",
+      "formas": ["entero", "int"]
+    },
+    {
+      "id": "cadena-texto",
+      "nombre": "Cadena de texto (string)",
+      "subtema": "intro-programacion:0",
+      "descripcion": "Tipo de dato formado por una secuencia de caracteres; se compara en orden alfabético, no numérico.",
+      "escenario_aplicacion": "Guardar el nombre de usuario que escribe una persona en un formulario",
+      "palabra_clave": "caracteres",
+      "formas": ["cadena de texto", "cadena"]
+    },
+    {
+      "id": "punto-flotante",
+      "nombre": "Punto flotante (float)",
+      "subtema": "intro-programacion:0",
+      "descripcion": "Tipo de dato numérico con parte decimal; puede tener pequeños errores de precisión al operar.",
+      "escenario_aplicacion": "Guardar la temperatura medida por un sensor, por ejemplo 36.6 grados",
+      "palabra_clave": "precisión",
+      "formas": ["decimal (float)", "float"]
+    },
+    {
+      "id": "ciclo",
+      "nombre": "Ciclo (estructura de repetición)",
+      "subtema": "intro-programacion:1",
+      "descripcion": "Estructura de control que repite un bloque de instrucciones mientras se cumpla una condición o para cada elemento de una colección.",
+      "escenario_aplicacion": "Enviar el mismo recordatorio a cada uno de los 50 alumnos de una lista",
+      "palabra_clave": "repite",
+      "formas": ["ciclo for", "ciclo", "ciclos"]
+    },
+    {
+      "id": "ciclo-infinito",
+      "nombre": "Ciclo infinito",
+      "subtema": "intro-programacion:1",
+      "descripcion": "Ciclo cuya condición nunca llega a ser falsa, por lo que no termina y bloquea el programa.",
+      "escenario_aplicacion": "Detectar por qué una app se congela al usar while True sin un break",
+      "palabra_clave": "falsa",
+      "formas": ["while True sin condición de salida", "ciclo infinito"]
+    },
+    {
+      "id": "depuracion",
+      "nombre": "Depuración",
+      "subtema": "intro-programacion:0",
+      "descripcion": "Proceso de localizar y corregir errores en un programa, revisando paso a paso su comportamiento y sus variables.",
+      "escenario_aplicacion": "Revisar línea por línea por qué el total del carrito contiene texto",
+      "palabra_clave": "localizar",
+      "formas": ["depurar", "depuración"]
+    },
+    {
+      "id": "conversion-tipos",
+      "nombre": "Conversión de tipos (casting)",
+      "subtema": "intro-programacion:0",
+      "descripcion": "Transformar explícitamente un valor de un tipo de dato a otro, por ejemplo de texto a número, antes de operar con él.",
+      "escenario_aplicacion": "Transformar el precio que llega del formulario como texto antes de sumarlo",
+      "palabra_clave": "explícitamente",
+      "formas": ["convertir explícitamente", "conversión explícita", "casting"]
+    },
+    {
+      "id": "if-anidado",
+      "nombre": "If anidado",
+      "subtema": "intro-programacion:1",
+      "descripcion": "Condicional colocado dentro de otro condicional; si se abusa de ellos, el código se vuelve difícil de leer y propenso a errores.",
+      "escenario_aplicacion": "Reconocer por qué una maraña de condiciones cobra la madrugada como hora pico",
+      "palabra_clave": "dentro",
+      "formas": ["if anidados", "if anidado"]
+    },
+    {
+      "id": "condicional",
+      "nombre": "Estructura condicional",
+      "subtema": "intro-programacion:1",
+      "descripcion": "Estructura de control que elige qué instrucciones ejecutar según si una condición es verdadera o falsa (if / elif / else).",
+      "escenario_aplicacion": "Cobrar tarifa normal, de hora pico o de madrugada según la hora del viaje",
+      "palabra_clave": "elige",
+      "formas": ["if / elif / else", "condiciones"]
+    },
+    {
+      "id": "algoritmo",
+      "nombre": "Algoritmo",
+      "subtema": "logica-algoritmos:0",
+      "descripcion": "Secuencia finita y ordenada de pasos que resuelve un problema o realiza una tarea.",
+      "escenario_aplicacion": "Describir los pasos para asignar turnos al personal de una cafetería",
+      "palabra_clave": "finita",
+      "formas": ["algoritmo", "algoritmos"]
+    },
+    {
+      "id": "diagrama-flujo",
+      "nombre": "Diagrama de flujo",
+      "subtema": "logica-algoritmos:0",
+      "descripcion": "Representación gráfica de un algoritmo con símbolos para los pasos, las decisiones y las flechas que los conectan.",
+      "escenario_aplicacion": "Explicar a marketing y ventas cuándo un pedido tiene envío gratis",
+      "palabra_clave": "gráfica",
+      "formas": ["diagrama de flujo"]
+    },
+    {
+      "id": "codigo-fuente",
+      "nombre": "Código fuente",
+      "subtema": "logica-algoritmos:0",
+      "descripcion": "Texto escrito en un lenguaje de programación que implementa un algoritmo y que la computadora puede ejecutar.",
+      "escenario_aplicacion": "Revisar en el repositorio cómo está programada la función de envío gratis",
+      "palabra_clave": "lenguaje",
+      "formas": ["código fuente"]
+    },
+    {
+      "id": "busqueda-lineal",
+      "nombre": "Búsqueda lineal",
+      "subtema": "logica-algoritmos:1",
+      "descripcion": "Recorre los elementos uno por uno desde el inicio hasta encontrar el buscado; funciona aunque los datos estén desordenados.",
+      "escenario_aplicacion": "Buscar un nombre en una lista desordenada de invitados",
+      "palabra_clave": "desordenados",
+      "formas": ["búsqueda lineal", "uno por uno"]
+    },
+    {
+      "id": "busqueda-binaria",
+      "nombre": "Búsqueda binaria",
+      "subtema": "logica-algoritmos:1",
+      "descripcion": "Encuentra un valor comparándolo con el elemento del centro y descartando la mitad de los datos ordenados en cada paso.",
+      "escenario_aplicacion": "Buscar una palabra en un diccionario ordenado alfabéticamente",
+      "palabra_clave": "mitad",
+      "formas": ["búsqueda binaria", "empezar por la mitad"]
+    },
+    {
+      "id": "base-datos",
+      "nombre": "Base de datos",
+      "subtema": "logica-algoritmos:1",
+      "descripcion": "Colección organizada de información guardada de forma persistente para consultarla y actualizarla con facilidad.",
+      "escenario_aplicacion": "Guardar los usuarios, canciones y listas de reproducción de una app de música",
+      "palabra_clave": "persistente",
+      "formas": ["base de datos"]
+    },
+    {
+      "id": "prueba-escritorio",
+      "nombre": "Prueba de escritorio",
+      "subtema": "logica-algoritmos:0",
+      "descripcion": "Ejecutar a mano un algoritmo con datos de ejemplo, anotando el valor de cada variable, para comprobar que funciona.",
+      "escenario_aplicacion": "Seguir con papel y lápiz un algoritmo sin documentar para deducir los pasos que faltan",
+      "palabra_clave": "mano",
+      "formas": ["prueba de escritorio", "casos de ejemplo"]
+    },
+    {
+      "id": "algoritmo-ordenamiento",
+      "nombre": "Algoritmo de ordenamiento",
+      "subtema": "logica-algoritmos:1",
+      "descripcion": "Algoritmo que acomoda los elementos de una colección según un criterio, por ejemplo de menor a mayor o por fecha.",
+      "escenario_aplicacion": "Acomodar mil pedidos por fecha antes de enviarlos a paquetería",
+      "palabra_clave": "criterio",
+      "formas": ["algoritmo de ordenamiento"]
+    },
+    {
+      "id": "ordenamiento-mezcla",
+      "nombre": "Ordenamiento por mezcla (merge sort)",
+      "subtema": "logica-algoritmos:1",
+      "descripcion": "Divide la lista en mitades, ordena cada una y luego las combina; es eficiente aun con miles de elementos.",
+      "escenario_aplicacion": "Ordenar rápidamente una lista muy grande de registros desordenados",
+      "palabra_clave": "combina",
+      "formas": ["ordenar por mezcla", "ordenamiento por mezcla"]
+    },
+    {
+      "id": "clase",
+      "nombre": "Clase",
+      "subtema": "programacion-oo:0",
+      "descripcion": "Plantilla que define los atributos y métodos que tendrán todos los objetos de un mismo tipo.",
+      "escenario_aplicacion": "Modelar a todos los repartidores de una app con los mismos datos y acciones",
+      "palabra_clave": "plantilla",
+      "formas": ["clase", "clases"]
+    },
+    {
+      "id": "objeto",
+      "nombre": "Objeto",
+      "subtema": "programacion-oo:0",
+      "descripcion": "Instancia concreta de una clase, con su propio estado (valores de sus atributos) y su comportamiento.",
+      "escenario_aplicacion": "Representar a un repartidor en particular con su nombre y el nivel de batería de su moto",
+      "palabra_clave": "instancia",
+      "formas": ["objeto", "objetos"]
+    },
+    {
+      "id": "metodo",
+      "nombre": "Método",
+      "subtema": "programacion-oo:0",
+      "descripcion": "Función definida dentro de una clase que describe una acción que pueden realizar sus objetos.",
+      "escenario_aplicacion": "Programar la acción aceptarPedido() que puede hacer cualquier repartidor",
+      "palabra_clave": "función",
+      "formas": ["métodos", "método"]
+    },
+    {
+      "id": "excepcion",
+      "nombre": "Excepción",
+      "subtema": "programacion-oo:1",
+      "descripcion": "Evento anormal que interrumpe el flujo normal de un programa, como un archivo que no existe o una división entre cero.",
+      "escenario_aplicacion": "Evitar que el sistema se caiga cuando el archivo de ventas todavía no se ha subido",
+      "palabra_clave": "anormal",
+      "formas": ["excepciones", "excepción"]
+    },
+    {
+      "id": "try-except",
+      "nombre": "Bloque try/except",
+      "subtema": "programacion-oo:1",
+      "descripcion": "Estructura que intenta ejecutar un código y, si ocurre una excepción, la captura para manejarla sin que el programa se detenga.",
+      "escenario_aplicacion": "Avisar al usuario que falta el archivo en lugar de mostrar un error en rojo",
+      "palabra_clave": "captura",
+      "formas": ["try/except", "except"]
+    },
+    {
+      "id": "herencia",
+      "nombre": "Herencia",
+      "subtema": "programacion-oo:0",
+      "descripcion": "Mecanismo por el que una clase hija reutiliza los atributos y métodos de una clase base y especializa solo lo que cambia.",
+      "escenario_aplicacion": "Crear Guerrero y Mago a partir de Personaje sin duplicar código",
+      "palabra_clave": "reutiliza",
+      "formas": ["herencia", "hereden", "heredar"]
+    },
+    {
+      "id": "clase-base",
+      "nombre": "Clase base",
+      "subtema": "programacion-oo:0",
+      "descripcion": "Clase general de la que heredan otras; concentra lo que comparten todas sus clases hijas.",
+      "escenario_aplicacion": "Definir en Personaje la vida y el movimiento que comparten todos los personajes",
+      "palabra_clave": "general",
+      "formas": ["clase base"]
+    },
+    {
+      "id": "division-cero",
+      "nombre": "División entre cero",
+      "subtema": "programacion-oo:1",
+      "descripcion": "Operación matemática indefinida que, en la mayoría de los lenguajes, lanza una excepción y detiene el programa si no se maneja.",
+      "escenario_aplicacion": "Calcular el promedio de un alumno que todavía no tiene tareas registradas",
+      "palabra_clave": "indefinida",
+      "formas": ["divide entre cero", "división entre cero"]
+    }
+  ]
+}

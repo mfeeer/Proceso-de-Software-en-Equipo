@@ -29,6 +29,11 @@
       "subtema": "ingenieria-requerimientos:0",
       "titulo": "La Lista de Deseos del Cliente",
       "contexto": "El dueño de una cadena de cafeterías pide: «Quiero que la app permita hacer pedidos desde el celular y que responda en menos de dos segundos». Tu equipo debe clasificar estos dos requerimientos antes de empezar a construir.",
+      "tecnicismos": [
+        "requerimiento-funcional",
+        "requerimiento-no-funcional",
+        "desempeno"
+      ],
       "opciones": [
         {
           "id": "a",
@@ -58,6 +63,10 @@
       "subtema": "ingenieria-requerimientos:1",
       "titulo": "El Cambio de Última Hora",
       "contexto": "A mitad del desarrollo, la escuela cambia una regla de inscripciones: ahora se permiten hasta 8 materias en lugar de 7. Tu equipo debe decidir cómo manejar el cambio sobre requerimientos que ya estaban aprobados.",
+      "tecnicismos": [
+        "trazabilidad",
+        "analisis-impacto"
+      ],
       "opciones": [
         {
           "id": "a",
@@ -87,6 +96,10 @@
       "subtema": "ingenieria-requerimientos:2",
       "titulo": "El Requerimiento Ambiguo",
       "contexto": "En el documento del proyecto aparece un requerimiento que dice: «El sistema debe ser rápido y amigable». Debes reescribirlo para que pueda especificarse y comprobarse.",
+      "tecnicismos": [
+        "especificacion",
+        "criterio-medible"
+      ],
       "opciones": [
         {
           "id": "a",
@@ -116,6 +129,11 @@
       "subtema": "ingenieria-requerimientos:3",
       "titulo": "La Pregunta de la Clienta",
       "contexto": "El sistema de citas para una clínica veterinaria está terminado. La clienta pregunta: «¿Cómo sé que construyeron lo que yo necesitaba?». Debes distinguir entre verificar y validar para responderle bien.",
+      "tecnicismos": [
+        "verificacion",
+        "validacion",
+        "especificacion"
+      ],
       "opciones": [
         {
           "id": "a",
@@ -147,6 +165,9 @@
       "subtema": "ingenieria-requerimientos:0",
       "titulo": "La Entrevista con la Clienta",
       "contexto": "La dueña de una pastelería quiere una página para pedidos en línea y lo describe con frases vagas: «que sea fácil y bonita». Tienes una videollamada de media hora para aclarar requerimientos y poco margen para equivocarte.",
+      "tecnicismos": [
+        "elicitacion"
+      ],
       "opciones": [
         {
           "id": "a",
@@ -182,6 +203,11 @@
       "subtema": "ingenieria-requerimientos:1",
       "titulo": "La Avalancha de Cambios",
       "contexto": "Llegan cinco solicitudes de cambio para la app del gimnasio al mismo tiempo y solo hay tiempo para atender algunas este sprint. Debes priorizarlas sin que nadie se enoje.",
+      "tecnicismos": [
+        "solicitud-cambio",
+        "sprint",
+        "priorizacion"
+      ],
       "opciones": [
         {
           "id": "a",
@@ -217,6 +243,10 @@
       "subtema": "ingenieria-requerimientos:2",
       "titulo": "El SRS Contra Reloj",
       "contexto": "Debes entregar la especificación de requerimientos (SRS) del proyecto antes de la auditoría de calidad del viernes. Faltan detalles y la fecha límite se acerca.",
+      "tecnicismos": [
+        "srs",
+        "caso-uso"
+      ],
       "opciones": [
         {
           "id": "a",
@@ -252,6 +282,10 @@
       "subtema": "ingenieria-requerimientos:3",
       "titulo": "El Día de la Demo",
       "contexto": "Es el día de la demostración final ante la clienta. Revisará cada requerimiento, y un detalle importante podría haberse malinterpretado. Debes demostrar que el sistema cumple y corregir lo que haga falta.",
+      "tecnicismos": [
+        "caso-prueba",
+        "matriz-trazabilidad"
+      ],
       "opciones": [
         {
           "id": "a",

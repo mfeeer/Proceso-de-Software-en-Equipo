@@ -79,6 +79,12 @@
     ? window.CU06Vidas.conectar({ llamar, alActualizar: (e) => pintar(e, false) })
     : null;
 
+  // CU05 (cambios a CU01, RF-39 y RF-40): resalta y explica los tecnicismos (js/tecnicismos.js).
+  const tec = window.CU01Tecnicismos || null;
+  function resaltar(nodos, e, interactivo = true) {
+    if (tec && e.tecnicismos && e.tecnicismos.length) tec.resaltar(nodos, e.tecnicismos, { interactivo });
+  }
+
   // ------------------------------------------------------------ piezas del libro
   const ornamento = () => { const o = el("div", "ornament"); o.setAttribute("aria-hidden", "true"); return o; };
   const numeroPagina = (n) => el("div", "page-num", `– ${n} –`);
@@ -231,13 +237,16 @@
   function pintarEvento(e) {
     const ev = e.evento;
     const probabilidad = ev.tipo === "probabilidad";
+    const historia = el("p", "story", ev.contexto);
+    resaltar(historia, e); // RF-39
     con(
       izq,
       el("div", "chapter-label", `CAPÍTULO ${e.bloque.capitulo} · ${e.bloque.nombre.toUpperCase()}`),
       el("h1", "chapter-title", ev.titulo),
       ornamento(),
       el("p", "pt-tema", `${ev.tema} · ${ev.subtema}`),
-      el("p", "story", ev.contexto),
+      historia,
+      tec ? tec.tira(e.tecnicismos, e.tecnicismos_nuevos) : null, // RF-40 y aviso de RF-41
       ficha(e),
       numeroPagina(e.evento_numero * 2 - 1)
     );
@@ -249,6 +258,7 @@
         ? [sello(`🎲 ${op.probabilidad}%`), sello(`${op.atributo_icono} ${op.atributo_nombre} ${op.valor_atributo}`, "pt-stamp-oro")]
         : [];
       const boton = tarjeta(LETRAS[i], op.texto, sellos);
+      resaltar(boton.querySelector(".pt-opcion"), e, false); // dentro de un botón: solo color
       boton.setAttribute("aria-label", `Opción ${LETRAS[i]}: ${op.texto}` + (probabilidad ? `, probabilidad ${op.probabilidad}%` : ""));
       boton.addEventListener("click", () => elegir(op.id, boton, botones));
       botones.push(boton);
@@ -288,14 +298,17 @@
   // Flujo normal pasos 3-6 (y FA2.2-2.3): retroalimentación, indicadores, desenlace y botón.
   function pintarResultado(e) {
     const r = e.resultado;
+    const eleccion = el("p", "pt-eleccion", `Elegiste: «${r.opcion.texto}»`);
+    const retro = el("p", "pt-retro", r.retroalimentacion);
+    resaltar([eleccion, retro], e); // RF-39 también en la retroalimentación
     con(
       izq,
       el("div", "chapter-label", "RETROALIMENTACIÓN TÉCNICA"),
       el("h1", "chapter-title", r.evento_titulo),
       ornamento(),
       el("p", `pt-veredicto ${r.acierto ? "ok" : "mal"}`, r.acierto ? "✔ Decisión acertada" : "✘ Decisión errónea"),
-      el("p", "pt-eleccion", `Elegiste: «${r.opcion.texto}»`),
-      el("p", "pt-retro", r.retroalimentacion)
+      eleccion,
+      retro
     );
     if (r.riesgo) {
       con(
@@ -328,11 +341,13 @@
       }
     });
 
+    const desenlace = el("p", "story", r.desenlace);
+    resaltar(desenlace, e);
     con(
       der,
       el("h2", "choose-title", "Desenlace"),
       el("p", "choose-sub", `${r.tema} · ${r.subtema}`),
-      el("p", "story", r.desenlace),
+      desenlace,
       cambios,
       con(el("div", "btn-row"), el("span"), boton),
       numeroPagina(e.evento_numero * 2)
@@ -392,6 +407,7 @@
 
   function pintar(e, animar = true) {
     respaldar(e);
+    if (tec) tec.cerrar(false); // un globo abierto no sobrevive a pasar la página
     if (e.fase === "fin") {
       terminar(e); // FA1 / FE1: pantalla Post Game
       return;

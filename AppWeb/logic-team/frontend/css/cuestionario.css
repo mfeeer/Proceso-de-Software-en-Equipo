@@ -1,0 +1,622 @@
+/* CU05 · Completar cuestionario de tecnicismos: menú de modos (pantalla plana, como CU02) y
+   cuestionario en formato mesa de trabajo (taller.css). Tomado del mockup del CU05. */
+
+/* Menú de modos (pantalla plana, como CU02) */
+.c5-modos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+
+.c5-modo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 22px 22px 20px;
+}
+
+.c5-modo .emblem {
+  margin: 0 auto 12px;
+  width: 92px;
+  height: 92px;
+  font-size: 2.6rem;
+}
+
+.c5-modo h3 {
+  text-align: center;
+  font-size: 1.3rem !important;
+}
+
+.c5-modo p {
+  text-align: center;
+}
+
+.c5-modo .tags {
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.c5-modo .book-btn {
+  margin-top: auto;
+  align-self: center;
+  padding: 11px 26px;
+}
+
+.c5-modo.desbloqueado:hover,
+.c5-modo.desbloqueado:focus-within {
+  transform: translateY(-3px);
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px var(--gold), 3px 9px 0 rgba(0, 0, 0, 0.35), 0 0 22px rgba(255, 190, 80, 0.3);
+}
+
+.c5-nuevo {
+  position: absolute;
+  top: 14px;
+  right: -8px;
+  padding: 3px 12px;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 1px;
+  color: var(--gold-bright);
+  background: linear-gradient(180deg, #b13a2a, #7d1f16);
+  box-shadow: 0 3px 4px rgba(0, 0, 0, 0.35);
+}
+
+.c5-modo.bloqueado {
+  filter: saturate(0.4);
+}
+
+.c5-modo.bloqueado .emblem {
+  background: radial-gradient(circle at 35% 30%, #efe5cf, #c9b48a);
+}
+
+.c5-candado {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  font-size: 1.4rem;
+}
+
+.c5-meter {
+  display: flex;
+  gap: 5px;
+  margin: 6px 0 4px;
+}
+
+.c5-meter span {
+  flex: 1;
+  height: 8px;
+  border-radius: 2px;
+  background: rgba(110, 70, 30, 0.22);
+}
+
+.c5-meter span.on {
+  background: var(--crimson);
+}
+
+.pc-volver {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 26px;
+}
+
+
+/* ===== Cuestionario en formato mesa de trabajo (tarjetas de trivia) ===== */
+.c5-mesa {
+  max-width: 900px;
+}
+
+.c5-avance {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.c5-puntos {
+  display: flex;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.c5-puntos li {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(214, 170, 70, 0.55);
+}
+
+/* RN07: las respondidas se marcan neutras (sin decir si acertó) */
+.c5-puntos li.hecha {
+  background: var(--gold);
+  border-color: var(--gold);
+}
+
+.c5-puntos li.actual {
+  background: var(--gold-bright);
+  border-color: #fff3c4;
+  box-shadow: 0 0 8px rgba(255, 217, 106, 0.8);
+}
+
+.c5-pregunta {
+  margin: 4px auto 16px;
+  max-width: 44rem;
+  padding: 22px 28px 20px;
+  text-align: center;
+}
+
+.c5-pregunta .stamp {
+  margin: 0 0 10px;
+}
+
+.c5-pregunta .nombre {
+  display: block;
+  margin: 2px 0 6px;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 1.4rem;
+}
+
+.c5-pregunta .texto {
+  margin: 0;
+  font-size: 1.22rem;
+  line-height: 1.55;
+}
+
+.c5-pregunta .pide {
+  margin: 12px 0 0;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--crimson);
+}
+
+.c5-hueco {
+  display: inline-block;
+  min-width: 7rem;
+  border-bottom: 3px solid var(--crimson);
+  color: var(--crimson);
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+}
+
+.c5-opciones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  max-width: 44rem;
+  margin: 0 auto;
+}
+
+.c5-opciones.renglones {
+  grid-template-columns: 1fr;
+}
+
+.c5-op {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 4.2rem;
+  padding: 10px 16px 10px 10px;
+  font: inherit;
+  font-size: 1.12rem;
+  text-align: left;
+  color: var(--ink);
+  cursor: pointer;
+  background: linear-gradient(180deg, #fbf1d9, #ecd9ad);
+  border: 2px solid rgba(110, 70, 30, 0.5);
+  border-radius: 10px;
+  box-shadow: 0 5px 0 #5a3e18;
+}
+
+.c5-opciones.renglones .c5-op {
+  min-height: 3.2rem;
+  font-size: 1.05rem;
+}
+
+.c5-op .letra {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.3rem;
+  height: 2.3rem;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  color: var(--gold-bright);
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+  background: radial-gradient(circle at 35% 30%, #7d2a2a, #3a1010);
+}
+
+.c5-op:hover:not(:disabled),
+.c5-op:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--gold);
+  box-shadow: 0 7px 0 #5a3e18, 0 0 14px rgba(255, 200, 100, 0.4);
+}
+
+/* Elegida (dorado, sin decir si es correcta: RN07) */
+.c5-op.elegida {
+  transform: translateY(3px);
+  background: linear-gradient(180deg, #ffe7a3, #e8c062);
+  border-color: #8a6a1a;
+  box-shadow: 0 2px 0 #5a3e18, 0 0 0 3px var(--gold-bright);
+}
+
+.c5-op.elegida .letra {
+  color: #2f1d10;
+  background: radial-gradient(circle at 35% 30%, #fff1b8, #c9a13a);
+}
+
+.c5-pista {
+  margin: 14px 0 0;
+  text-align: center;
+  font-size: 0.92rem;
+  font-style: italic;
+  color: #d9c49a;
+}
+
+/* Resumen */
+.c5-resumen {
+  display: grid;
+  grid-template-columns: 17rem 1fr;
+  gap: 14px;
+}
+
+.c5-marcador {
+  padding: 18px 18px 16px;
+  text-align: center;
+}
+
+.c5-marcador h2 {
+  margin: 0 0 10px;
+  font-family: 'Cinzel Decorative', serif;
+  font-weight: 900;
+  font-size: 1.25rem;
+}
+
+.c5-anillo {
+  margin: 0 auto 12px;
+  width: 136px;
+  height: 136px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: conic-gradient(#3f6b2a 0 70%, rgba(142, 42, 42, 0.75) 70% 100%);
+}
+
+.c5-anillo div {
+  width: 108px;
+  height: 108px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  background: radial-gradient(circle at 35% 30%, #fff6df, #ead39e);
+  border: 2px solid var(--gold);
+}
+
+.c5-anillo b {
+  font-family: 'Cinzel', serif;
+  font-size: 2.2rem;
+  line-height: 1;
+}
+
+.c5-anillo span {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+.c5-cuenta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.c5-cuenta div {
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(255, 250, 235, 0.65);
+  border: 1.5px solid rgba(110, 70, 30, 0.3);
+}
+
+.c5-cuenta b {
+  display: block;
+  font-family: 'Cinzel', serif;
+  font-size: 1.5rem;
+}
+
+.c5-cuenta .ok b { color: #2f6b24; }
+.c5-cuenta .mal b { color: var(--crimson); }
+
+.c5-cuenta span {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.c5-fecha {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+.c5-repaso {
+  padding: 16px 18px;
+}
+
+.c5-repaso h3 {
+  margin: 0 0 10px;
+  font-family: 'Cinzel', serif;
+  font-size: 1.05rem;
+  color: var(--crimson);
+}
+
+.c5-errores {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.c5-error {
+  padding: 10px 12px;
+  background: rgba(255, 250, 235, 0.7);
+  border: 1.5px solid rgba(110, 70, 30, 0.25);
+  border-left: 5px solid var(--crimson);
+  border-radius: 4px 8px 8px 4px;
+  line-height: 1.35;
+}
+
+.c5-error strong {
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+}
+
+.c5-error .tipo {
+  margin-left: 6px;
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+.c5-error .fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 4px 0 2px;
+  font-size: 0.95rem;
+}
+
+.c5-error .tuya { color: var(--crimson); }
+.c5-error .buena { color: #2f5a1f; font-weight: 700; }
+
+.c5-error .exp {
+  display: block;
+  font-size: 0.93rem;
+  color: var(--ink-soft);
+}
+
+.c5-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.c5-acciones .book-btn {
+  padding: 12px 22px;
+}
+
+.c5-sello {
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.c5-sin-red {
+  margin: 0 0 12px;
+}
+
+@media (max-width: 760px) {
+  .c5-opciones,
+  .c5-resumen {
+    grid-template-columns: 1fr;
+  }
+
+  .c5-pregunta {
+    padding: 18px 16px;
+  }
+
+  .c5-acciones .book-btn {
+    flex: 1;
+  }
+}
+
+
+/* ===== Agregados a la implementación (no estaban en el mockup) ===== */
+
+/* Las tarjetas de modo llevan un enlace o un botón */
+.c5-modo a.book-btn {
+  text-decoration: none;
+}
+
+.c5-modo.desbloqueado:hover,
+.c5-modo.desbloqueado:focus-within {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+
+.pc-volver a.book-btn {
+  text-decoration: none;
+}
+
+/* Aviso de resultados pendientes de sincronizar (FE1) en el menú */
+.c5-pendientes {
+  margin: 0 0 16px;
+}
+
+.c5-pendientes[hidden],
+.tl-aviso[hidden] {
+  display: none;
+}
+
+/* FA1: diálogo sobre la pantalla plana */
+.c5-velo {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(13, 7, 5, 0.72);
+}
+
+.c5-velo[hidden] {
+  display: none;
+}
+
+.c5-dialogo {
+  width: min(26rem, 100%);
+  padding: 20px 22px;
+  text-align: center;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 15% 10%, rgba(255, 255, 255, 0.5), transparent 45%),
+    var(--parchment);
+  border: 2px solid var(--crimson);
+  border-radius: 8px;
+  box-shadow: 0 0 0 5px var(--leather-2, #3a1a10), 0 0 0 6px rgba(214, 170, 70, 0.6), 0 24px 50px rgba(0, 0, 0, 0.7);
+}
+
+.c5-dialogo .emblem {
+  margin: 0 auto 10px;
+  width: 74px;
+  height: 74px;
+  font-size: 2rem;
+}
+
+.c5-dialogo h2 {
+  margin: 0 0 6px;
+  font-family: 'Cinzel', serif;
+  font-size: 1.15rem;
+}
+
+.c5-dialogo p {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  line-height: 1.45;
+}
+
+.c5-dialogo .btn-row {
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.c5-dialogo a.book-btn {
+  text-decoration: none;
+}
+
+.c5-ayuda {
+  font-size: 0.95rem !important;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+/* Pantalla del cuestionario: la mesa ocupa el centro */
+body.pagina-mesa {
+  align-items: flex-start;
+  padding-top: 64px;
+}
+
+.c5-mesa {
+  min-height: 22rem;
+}
+
+.c5-cargando {
+  padding: 60px 20px;
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem;
+  color: #f4e7c9;
+}
+
+.c5-op:disabled {
+  cursor: default;
+}
+
+.c5-sin-errores {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.45;
+}
+
+.c5-aviso {
+  margin: 0 0 12px;
+}
+
+/* CU03: alto contraste y reducir animaciones */
+html[data-contraste="alto"] .c5-op {
+  background: #fffdf6;
+  border-color: #3a2410;
+}
+
+html[data-contraste="alto"] .c5-op.elegida {
+  background: #ffe7a3;
+  border-color: #000;
+}
+
+html[data-contraste="alto"] .c5-pista,
+html[data-contraste="alto"] .c5-cargando {
+  color: #fff3dc;
+}
+
+html[data-movimiento="reducido"] .c5-op,
+html[data-movimiento="reducido"] .c5-modo {
+  transition: none !important;
+  transform: none !important;
+}
+
+.c5-marcador {
+  align-self: start;
+}
+
+/* El foco se pone en la pregunta para los lectores de pantalla; no necesita contorno */
+.c5-pregunta:focus {
+  outline: none;
+}
+
+/* Menú de 3 modos: en pantallas medianas, dos columnas; en celular, una */
+@media (max-width: 1000px) {
+  .c5-modos {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .c5-modos {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* CU04 en desarrollo */
+.c5-modo.pendiente {
+  filter: saturate(0.5);
+}
+
+.tc-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

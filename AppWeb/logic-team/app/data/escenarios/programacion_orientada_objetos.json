@@ -21,6 +21,11 @@
       "subtema": "programacion-oo:0",
       "titulo": "La Flotilla de Repartidores",
       "contexto": "Una app de entregas necesita representar cientos de repartidores, cada uno con nombre, nivel de batería de su moto eléctrica y la capacidad de aceptar pedidos. Un practicante crea una variable suelta por cada dato de cada repartidor. Hay que modelarlo mejor.",
+      "tecnicismos": [
+        "clase",
+        "objeto",
+        "metodo"
+      ],
       "opciones": [
         {
           "id": "a",
@@ -50,6 +55,10 @@
       "subtema": "programacion-oo:1",
       "titulo": "El Reporte que Desaparece",
       "contexto": "Tu programa genera el reporte mensual de ventas leyendo un archivo CSV, pero a veces el archivo todavía no se ha subido y todo el sistema truena con un error en rojo. La gerencia exige que el sistema no se caiga.",
+      "tecnicismos": [
+        "excepcion",
+        "try-except"
+      ],
       "opciones": [
         {
           "id": "a",
@@ -81,6 +90,11 @@
       "subtema": "programacion-oo:0",
       "titulo": "La Herencia del Proyecto Viejo",
       "contexto": "En el estudio de videojuegos donde haces prácticas, el equipo anterior dejó la clase Personaje y ahora necesitas crear Guerrero y Mago sin duplicar código. Si no lo entregas a tiempo, la demo para inversionistas se cancela.",
+      "tecnicismos": [
+        "clase",
+        "herencia",
+        "clase-base"
+      ],
       "opciones": [
         {
           "id": "a",
@@ -116,6 +130,11 @@
       "subtema": "programacion-oo:1",
       "titulo": "La App que Se Cierra Sola",
       "contexto": "La app de una calculadora de calificaciones se cierra de golpe cuando un alumno no tiene tareas registradas, porque el promedio divide entre cero. Las calificaciones se publican en una hora.",
+      "tecnicismos": [
+        "excepcion",
+        "try-except",
+        "division-cero"
+      ],
       "opciones": [
         {
           "id": "a",

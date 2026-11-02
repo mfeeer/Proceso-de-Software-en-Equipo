@@ -14,7 +14,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_GET, require_POST
 
 from .models import Partida
-from .services import conseguir_vidas, escenarios, motor_partida
+from .services import conseguir_vidas, escenarios, motor_partida, tecnicismos
 from .services.motor_partida import ReglaError
 
 
@@ -42,6 +42,12 @@ def _error_catalogo(exc):
     return _error("Los escenarios tienen errores: " + "; ".join(exc.errores), 500)
 
 
+def _estado(request, partida):
+    """Estado del libro. Si muestra un evento, registra sus tecnicismos (RF-41, CU05-RN02)."""
+    estado = motor_partida.estado_publico(partida)
+    return tecnicismos.registrar_del_estado(tecnicismos.jugador_de(request), estado, partida)
+
+
 # ---------------------------------------------------------------- paginas
 @ensure_csrf_cookie
 @require_GET
@@ -51,7 +57,7 @@ def partida_libro(request, partida_id):
     if partida.estado != Partida.EN_CURSO and partida.resultado_pendiente is None:
         return redirect("partida_fin", partida_id=partida.id)
     try:
-        estado = motor_partida.estado_publico(partida)
+        estado = _estado(request, partida)
     except escenarios.CatalogoError as exc:
         return render(request, "partida_error.html", {"errores": exc.errores}, status=500)
     return render(request, "partida.html", {"partida_id": partida.id, "estado": estado})
@@ -71,7 +77,7 @@ def partida_fin(request, partida_id):
 def api_estado(request, partida_id):
     partida = _partida_del_usuario(request, partida_id)
     try:
-        return JsonResponse(motor_partida.estado_publico(partida))
+        return JsonResponse(_estado(request, partida))
     except escenarios.CatalogoError as exc:
         return _error_catalogo(exc)
 
@@ -81,7 +87,8 @@ def _accion(request, partida_id, funcion, *args):
         with transaction.atomic():
             partida = _partida_del_usuario(request, partida_id, bloquear=True)
             funcion(partida, *args)
-        return JsonResponse(motor_partida.estado_publico(partida))
+            estado = _estado(request, partida)
+        return JsonResponse(estado)
     except ReglaError as exc:
         return _error(str(exc), 409)
     except escenarios.CatalogoError as exc:

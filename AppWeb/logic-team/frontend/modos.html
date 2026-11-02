@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Iniciar juego — Modos de juego{% endblock %}
+{% block body_class %}pagina-plana{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'css/personalizar.css' %}">
+  <link rel="stylesheet" href="{% static 'css/taller.css' %}">
+  <link rel="stylesheet" href="{% static 'css/cuestionario.css' %}">
+{% endblock %}
+
+{% block loader %}{% endblock %}
+
+{# CU05 pasos 1 a 3 (RF-51): menú de modos de juego, pantalla plana con el estilo de CU02 #}
+{% block page %}
+  <header class="pc-topbar"><span class="file">modo_de_juego</span><span class="ext">.jsx</span></header>
+
+  <main class="pc-main">
+    <h1 class="pc-title">¿Cómo quieres jugar hoy?</h1>
+    <p class="pc-sub">Elige un modo de juego. Tus tecnicismos descubiertos se guardan entre partidas.</p>
+
+    {# FE1: aquí aparece el aviso si hay resultados del cuestionario pendientes de sincronizar #}
+    <div class="tl-aviso info c5-pendientes" id="c5-pendientes" role="status" hidden></div>
+
+    <div class="c5-modos">
+      {# FA2: Historia narrativa ejecuta el CU01 (pasando por CU02 para armar la partida) #}
+      <div class="perfil-card c5-modo desbloqueado">
+        <div class="perfil-head"><span class="perfil-class">modo <b>HistoriaNarrativa</b></span></div>
+        <div class="emblem" aria-hidden="true">📖</div>
+        <h3>Historia narrativa</h3>
+        <p>Vive tu primer proyecto como ingeniero: toma decisiones, enfrenta pruebas y descubre nuevos tecnicismos.</p>
+        <div class="tags"><span class="stamp">🎭 Elige tu perfil</span><span class="stamp">📚 Elige tus temas</span></div>
+        <a class="book-btn go" id="btn-historia" href="{% url 'personalizar_perfil' %}">Jugar historia ➔</a>
+      </div>
+
+      {# CU04: todavía no está implementado; al terminarlo, cambiar el botón por un enlace #}
+      <div class="perfil-card c5-modo pendiente">
+        <span class="c5-candado" aria-hidden="true">🚧</span>
+        <div class="perfil-head"><span class="perfil-class">modo <b>MinijuegoCodigo</b></span></div>
+        <div class="emblem" aria-hidden="true">🧩</div>
+        <h3>Minijuego de código</h3>
+        <p>Arma algoritmos arrastrando bloques de instrucciones y gana estrellas por resolverlos con eficiencia.</p>
+        <div class="tags"><span class="stamp">🧱 Bloques</span><span class="stamp">⭐ Hasta 3 estrellas</span></div>
+        <button class="book-btn" id="btn-codigo" type="button" disabled aria-describedby="codigo-estado">🚧 En desarrollo</button>
+        <span class="tc-sr" id="codigo-estado">Este modo estará disponible en una próxima versión.</span>
+      </div>
+
+      {% if resumen.desbloqueado %}
+      <div class="perfil-card c5-modo desbloqueado">
+        <span class="c5-nuevo">¡DESBLOQUEADO!</span>
+        <div class="perfil-head"><span class="perfil-class">modo <b>CuestionarioSubito</b></span></div>
+        <div class="emblem" aria-hidden="true">⚡</div>
+        <h3>Cuestionario súbito</h3>
+        <p>Pon a prueba los tecnicismos que descubriste en tus partidas con {{ resumen.preguntas }} preguntas de opción múltiple.</p>
+        <div class="tags">
+          <span class="stamp">🔎 {{ resumen.registrados }} tecnicismo{{ resumen.registrados|pluralize }} descubierto{{ resumen.registrados|pluralize }}</span>
+          <span class="stamp">❓ {{ resumen.preguntas }} preguntas</span>
+          {% if resumen.ultimo %}<span class="stamp pt-stamp-oro">🏅 Último puntaje: {{ resumen.ultimo.puntaje }}</span>{% endif %}
+        </div>
+        <a class="book-btn go" id="btn-cuestionario" href="{% url 'cuestionario' %}">Jugar cuestionario ➔</a>
+      </div>
+      {% else %}
+      <div class="perfil-card c5-modo bloqueado">
+        <span class="c5-candado" aria-hidden="true">🔒</span>
+        <div class="perfil-head"><span class="perfil-class">modo <b>CuestionarioSubito</b></span></div>
+        <div class="emblem" aria-hidden="true">⚡</div>
+        <h3>Cuestionario súbito</h3>
+        <p>Pon a prueba los tecnicismos que descubriste en tus partidas con preguntas de opción múltiple.</p>
+        <div class="tags"><span class="stamp">🔎 {{ resumen.registrados }} de {{ resumen.minimo }} tecnicismos</span></div>
+        <button class="book-btn" id="btn-cuestionario" type="button" aria-haspopup="dialog" aria-controls="c5-bloqueado">🔒 Bloqueado</button>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="pc-volver"><a class="book-btn" href="{% url 'home' %}">⬅ Portada</a></div>
+  </main>
+
+  {% if not resumen.desbloqueado %}
+  {# FA1: tecnicismos insuficientes (RN03) #}
+  <div class="c5-velo" id="c5-bloqueado" hidden>
+    <div class="c5-dialogo" role="alertdialog" aria-modal="true" aria-labelledby="c5-bloqueado-titulo" aria-describedby="c5-bloqueado-texto">
+      <div class="emblem" aria-hidden="true">🔒</div>
+      <h2 id="c5-bloqueado-titulo">Cuestionario bloqueado</h2>
+      <p id="c5-bloqueado-texto">{{ resumen.mensaje_bloqueado }}</p>
+      <div class="c5-meter" aria-hidden="true">{% for lleno in resumen.medidor %}<span{% if lleno %} class="on"{% endif %}></span>{% endfor %}</div>
+      <p class="c5-ayuda">Los tecnicismos aparecen resaltados en los eventos de la historia.</p>
+      <div class="btn-row">
+        <button class="book-btn" type="button" id="c5-cerrar">Cerrar</button>
+        <a class="book-btn go" href="{% url 'personalizar_perfil' %}">Ir a Historia narrativa ➔</a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'js/cuestionario_sync.js' %}"></script>
+  <script src="{% static 'js/modos.js' %}"></script>
+{% endblock %}
