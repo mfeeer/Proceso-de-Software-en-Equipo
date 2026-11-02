@@ -1,0 +1,179 @@
+/* Tecnicismos en el libro (cambios al CU01 que pide el CU05: RF-39 y RF-40).
+   El término se pinta con tinta azul, distinta del texto y del carmesí de los títulos, y con
+   subrayado punteado para que no dependa solo del color. */
+
+.tc-termino {
+  --tc-tinta: #1d4f91;
+  display: inline;
+  margin: 0;
+  padding: 0 0.12em;
+  font: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  color: var(--tc-tinta);
+  font-weight: 700;
+  text-align: inherit;
+  background: rgba(29, 79, 145, 0.09);
+  border: 0;
+  border-bottom: 2px dotted var(--tc-tinta);
+  border-radius: 3px;
+  cursor: help;
+}
+
+button.tc-termino:hover,
+button.tc-termino[aria-expanded="true"] {
+  background: rgba(29, 79, 145, 0.18);
+}
+
+button.tc-termino:focus-visible,
+.tc-chip:focus-visible,
+.tc-cerrar:focus-visible {
+  outline: 3px solid var(--gold-bright, #ffd96a);
+  outline-offset: 2px;
+}
+
+/* Dentro de una opción solo se colorea (la opción ya es un botón) */
+.tc-pasivo {
+  cursor: inherit;
+}
+
+/* Tira de tecnicismos del evento */
+.tc-tira {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 12px;
+}
+
+.tc-tira-titulo {
+  font-family: 'Cinzel', serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.tc-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #1d4f91;
+  background: rgba(29, 79, 145, 0.08);
+  border: 1.5px solid rgba(29, 79, 145, 0.55);
+  border-radius: 999px;
+  cursor: help;
+}
+
+.tc-chip:hover,
+.tc-chip[aria-expanded="true"] {
+  background: rgba(29, 79, 145, 0.18);
+}
+
+.tc-chip.nuevo {
+  border-color: var(--gold, #c9a13a);
+  box-shadow: 0 0 0 2px rgba(255, 217, 106, 0.55);
+  animation: tc-brillo 1.6s ease-in-out 2;
+}
+
+.tc-nuevo {
+  padding: 0 6px;
+  font-family: 'Cinzel', serif;
+  font-size: 0.66rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #2f1d10;
+  background: linear-gradient(180deg, #ffe08a, #c9a13a);
+  border-radius: 999px;
+}
+
+@keyframes tc-brillo {
+  50% { box-shadow: 0 0 0 4px rgba(255, 217, 106, 0.85), 0 0 14px rgba(255, 200, 90, 0.7); }
+}
+
+/* Globo con la explicación (RF-40) */
+.tc-globo {
+  position: fixed;
+  z-index: 200;
+  width: min(22rem, calc(100vw - 20px));
+  padding: 12px 34px 12px 14px;
+  color: var(--ink, #2f1d10);
+  font-family: inherit;
+  text-align: left;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(255, 255, 255, 0.55), transparent 45%),
+    var(--parchment, #f4e7c9);
+  border: 2px solid #1d4f91;
+  border-radius: 8px;
+  box-shadow: 0 0 0 4px rgba(47, 29, 16, 0.85), 0 16px 34px rgba(0, 0, 0, 0.55);
+}
+
+.tc-etiqueta {
+  display: block;
+  font-family: 'MedievalSharp', cursive;
+  font-size: 0.72rem;
+  letter-spacing: 2px;
+  color: #1d4f91;
+}
+
+.tc-nombre {
+  display: block;
+  margin: 2px 0 4px;
+  font-family: 'Cinzel', serif;
+  font-size: 1.05rem;
+}
+
+.tc-descripcion {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.tc-cerrar {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  font: inherit;
+  font-size: 0.9rem;
+  line-height: 1;
+  color: var(--ink, #2f1d10);
+  background: transparent;
+  border: 1px solid rgba(47, 29, 16, 0.35);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Solo para lectores de pantalla */
+.tc-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* CU03: alto contraste y reducir animaciones */
+html[data-contraste="alto"] .tc-termino,
+html[data-contraste="alto"] .tc-chip {
+  --tc-tinta: #0a2a5c;
+  color: #0a2a5c;
+  background: #e6eefb;
+  border-color: #0a2a5c;
+}
+
+html[data-contraste="alto"] .tc-globo {
+  background: #fffaf0;
+  border-color: #0a2a5c;
+}
+
+html[data-movimiento="reducido"] .tc-chip.nuevo {
+  animation: none;
+}

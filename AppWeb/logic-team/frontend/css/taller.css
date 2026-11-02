@@ -1,0 +1,211 @@
+/* Formato «mesa de trabajo» para los minijuegos de pantalla completa (CU04 y CU05).
+   Ya no es el libro: es una mesa de madera con marco dorado y superficies de pergamino, con la
+   misma paleta y tipografías del proyecto (SDS 1.3.3). Tomado de los mockups del Sprint 2.
+   Se carga encima de libro.css y usa sus variables y .book-btn / .stamp. */
+
+.tl-mesa {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 1080px;
+  padding: 14px 18px 18px;
+  color: var(--ink);
+  border-radius: 16px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 190, 90, 0.16), transparent 60%),
+    repeating-linear-gradient(92deg, rgba(0, 0, 0, 0.10) 0 3px, transparent 3px 11px),
+    repeating-linear-gradient(88deg, rgba(255, 220, 160, 0.04) 0 1px, transparent 1px 23px),
+    linear-gradient(180deg, #5b3820, #3b2213 60%, #2c180c);
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 0 5px #1a0c06, 0 0 0 6px rgba(214, 170, 70, 0.45), 0 30px 60px rgba(0, 0, 0, 0.7);
+}
+
+/* Barra superior del minijuego */
+.tl-barra {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  color: #f4e7c9;
+}
+
+.tl-salir {
+  padding: 7px 12px;
+  font: inherit;
+  font-size: 0.9rem;
+  color: #f4e7c9;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1.5px solid rgba(214, 170, 70, 0.55);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.tl-titulo {
+  display: grid;
+  line-height: 1.15;
+}
+
+.tl-titulo small {
+  font-family: 'MedievalSharp', cursive;
+  font-size: 0.72rem;
+  letter-spacing: 3px;
+  color: var(--gold);
+}
+
+.tl-titulo b {
+  font-family: 'Cinzel', serif;
+  font-size: 1.15rem;
+  color: var(--gold-bright);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.tl-derecha {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tl-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: #fff3dc;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1.5px solid rgba(214, 170, 70, 0.6);
+  border-radius: 999px;
+}
+
+.tl-chip.oro {
+  color: #2f1d10;
+  background: linear-gradient(180deg, #ffe08a, #c9a13a);
+  border-color: #8a6a1a;
+}
+
+.tl-chip.alerta {
+  color: #fff1ea;
+  background: linear-gradient(180deg, #b13a2a, #7d1f16);
+  border-color: #f0a080;
+}
+
+
+/* Superficies de pergamino sobre la mesa */
+.tl-pergamino {
+  position: relative;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(255, 255, 255, 0.5), transparent 45%),
+    radial-gradient(circle at 85% 95%, rgba(150, 100, 50, 0.18), transparent 55%),
+    var(--parchment);
+  border: 1.5px solid rgba(110, 70, 30, 0.55);
+  border-radius: 10px;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.35), inset 0 0 30px rgba(110, 70, 20, 0.18);
+}
+
+/* Aviso flotante (toast) */
+.tl-aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  font-size: 1rem;
+  line-height: 1.4;
+  border-radius: 8px;
+  border: 2px solid;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+}
+
+.tl-aviso .ico {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 50%;
+  font-weight: 900;
+  color: #fff;
+}
+
+.tl-aviso > div > b:first-child {
+  display: block;
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+}
+
+.tl-aviso.mal { color: #3a0c0e; background: #fbe4e4; border-color: var(--crimson); }
+.tl-aviso.mal .ico { background: var(--crimson); }
+.tl-aviso.ok { color: #1d3a12; background: #e6f2dc; border-color: #3f6b2a; }
+.tl-aviso.ok .ico { background: #3f6b2a; }
+.tl-aviso.info { color: #4a3608; background: #fbf0cf; border-color: var(--gold); }
+.tl-aviso.info .ico { background: #a07c1c; }
+
+/* Ventana centrada sobre la mesa (resultado, confirmaciones) */
+.tl-velo {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(13, 7, 5, 0.68);
+}
+
+.tl-ventana {
+  width: min(27rem, 100%);
+  padding: 22px 24px;
+  text-align: center;
+}
+
+.tl-ventana h2 {
+  margin: 0 0 6px;
+  font-family: 'Cinzel Decorative', serif;
+  font-weight: 900;
+  font-size: 1.45rem;
+}
+
+.tl-ventana p {
+  margin: 0 0 10px;
+  font-size: 1.05rem;
+  line-height: 1.45;
+}
+
+.tl-ventana .btn-row {
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 760px) {
+  .tl-mesa {
+    padding: 12px 12px 14px;
+  }
+
+  .tl-barra {
+    flex-wrap: wrap;
+  }
+
+  .tl-derecha {
+    width: 100%;
+    margin-left: 0;
+    justify-content: space-between;
+  }
+}
+
+
+/* Botones deshabilitados */
+.book-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(0.4);
+  transform: none;
+}
+
+/* CU03: alto contraste */
+html[data-contraste="alto"] .tl-pergamino {
+  background: #fffaf0;
+  border-color: #3a2410;
+}

@@ -1,7 +1,7 @@
 # Registra aqui los modelos para editarlos desde Django Admin (modulo de autoria).
 from django.contrib import admin
 
-from .models import Partida, RegistroDecision
+from .models import Partida, RegistroDecision, ResultadoCuestionario, TecnicismoRegistrado
 
 
 class RegistroDecisionInline(admin.TabularInline):
@@ -17,3 +17,18 @@ class PartidaAdmin(admin.ModelAdmin):
     list_display = ("id", "perfil_nombre", "estado", "hp", "xp", "indice", "puntuacion", "creada")
     list_filter = ("estado",)
     inlines = [RegistroDecisionInline]
+
+
+# CU05 - Cuestionario de tecnicismos
+@admin.register(TecnicismoRegistrado)
+class TecnicismoRegistradoAdmin(admin.ModelAdmin):
+    list_display = ("tecnicismo_id", "usuario", "sesion", "partida", "registrado")
+    list_filter = ("tecnicismo_id",)
+    search_fields = ("tecnicismo_id", "usuario__username", "sesion")
+
+
+@admin.register(ResultadoCuestionario)
+class ResultadoCuestionarioAdmin(admin.ModelAdmin):
+    list_display = ("id", "usuario", "sesion", "fecha", "puntaje", "aciertos", "total", "origen")
+    list_filter = ("origen",)
+    readonly_fields = ("respuestas",)

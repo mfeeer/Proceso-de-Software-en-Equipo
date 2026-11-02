@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Cuestionario súbito{% endblock %}
+{% block body_class %}pagina-mesa{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'css/taller.css' %}">
+  <link rel="stylesheet" href="{% static 'css/cuestionario.css' %}">
+{% endblock %}
+
+{% block loader %}{% endblock %}
+
+{# CU05 pasos 4 a 13: js/cuestionario.js pide el cuestionario y dibuja la mesa de trabajo #}
+{% block page %}
+  <div class="tl-mesa c5-mesa" id="c5-mesa"
+       data-generar="{% url 'cuestionario_generar' %}"
+       data-resultado="{% url 'cuestionario_resultado' %}"
+       data-menu="{% url 'menu_modos' %}"
+       data-historia="{% url 'personalizar_perfil' %}">
+    <p class="c5-cargando" role="status">Preparando tu cuestionario…</p>
+    <noscript><p class="c5-cargando">El cuestionario necesita JavaScript para poder jugarse.</p></noscript>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'js/cuestionario_sync.js' %}"></script>
+  <script src="{% static 'js/cuestionario.js' %}"></script>
+{% endblock %}

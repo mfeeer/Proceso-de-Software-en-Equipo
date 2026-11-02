@@ -1,4 +1,4 @@
-// Portada: encuadre del paisaje. El botón "Iniciar partida" es un enlace normal.
+// Portada: encuadre del paisaje. El botón "Iniciar juego" es un enlace normal (abre el menú de modos, CU05).
 // (La animación del libro que se abre quedó guardada en js/transicion-libro.js para usarla en otras páginas.)
 (function () {
   const fondo = document.getElementById("fondo-svg");

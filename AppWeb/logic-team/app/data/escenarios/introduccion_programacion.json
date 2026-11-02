@@ -21,6 +21,12 @@
       "subtema": "intro-programacion:0",
       "titulo": "El Cine y los Menores de Edad",
       "contexto": "Tu primer encargo en la startup: la app de un cine debe bloquear la compra de boletos para películas clasificación C a menores de 18. Tu compañero propone guardar la edad como texto, porque «así llega del formulario». Debes decidir cómo declarar la variable edad.",
+      "tecnicismos": [
+        "variable",
+        "entero",
+        "cadena-texto",
+        "punto-flotante"
+      ],
       "opciones": [
         {
           "id": "a",
@@ -50,6 +56,10 @@
       "subtema": "intro-programacion:1",
       "titulo": "Las 50 Notificaciones",
       "contexto": "La app de la escuela debe enviar un recordatorio de entrega a los 50 alumnos de un grupo. Un compañero propone copiar y pegar 50 veces la línea que envía la notificación. Otro sugiere recorrer la lista de alumnos con un ciclo.",
+      "tecnicismos": [
+        "ciclo",
+        "ciclo-infinito"
+      ],
       "opciones": [
         {
           "id": "a",
@@ -81,6 +91,11 @@
       "subtema": "intro-programacion:0",
       "titulo": "El Carrito que No Suma",
       "contexto": "La tienda en línea está en pleno Buen Fin y el carrito se cae al calcular el total: la variable total contiene texto en lugar de un número. Tienes poco tiempo antes de que se pierdan más ventas y varias formas de enfrentarlo.",
+      "tecnicismos": [
+        "variable",
+        "depuracion",
+        "conversion-tipos"
+      ],
       "opciones": [
         {
           "id": "a",
@@ -116,6 +131,10 @@
       "subtema": "intro-programacion:1",
       "titulo": "El Descuento Equivocado",
       "contexto": "Una app de transporte cobra distinto según el horario: tarifa normal, hora pico o madrugada. El código que heredaste tiene una maraña de if anidados imposible de leer, y un error cobra la madrugada como si fuera hora pico. Hay que arreglarlo antes del fin de semana.",
+      "tecnicismos": [
+        "if-anidado",
+        "condicional"
+      ],
       "opciones": [
         {
           "id": "a",

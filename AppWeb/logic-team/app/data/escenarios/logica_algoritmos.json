@@ -21,6 +21,11 @@
       "subtema": "logica-algoritmos:0",
       "titulo": "La Regla del Envío Gratis",
       "contexto": "Una tienda en línea quiere documentar cuándo un pedido tiene envío gratis: si el total supera $500 o si el cliente es miembro premium. Necesitas representar el algoritmo para que lo entiendan marketing, ventas y desarrollo.",
+      "tecnicismos": [
+        "algoritmo",
+        "diagrama-flujo",
+        "codigo-fuente"
+      ],
       "opciones": [
         {
           "id": "a",
@@ -50,6 +55,11 @@
       "subtema": "logica-algoritmos:1",
       "titulo": "El Millón de Usuarios",
       "contexto": "La base de datos de una app de música tiene un millón de usuarios ordenados alfabéticamente por nombre de usuario y necesitas encontrar uno rápido. Un compañero propone revisarlos uno por uno desde el inicio; otra opción es empezar por la mitad y descartar la mitad que no sirve en cada paso.",
+      "tecnicismos": [
+        "base-datos",
+        "busqueda-lineal",
+        "busqueda-binaria"
+      ],
       "opciones": [
         {
           "id": "a",
@@ -81,6 +91,10 @@
       "subtema": "logica-algoritmos:0",
       "titulo": "El Algoritmo sin Documentar",
       "contexto": "El algoritmo que asigna turnos al personal de una cafetería dejó de funcionar y nadie lo documentó: solo hay fragmentos de código con nombres como x2 y temp. El lunes empieza la nueva semana de turnos y debes reconstruirlo y dejarlo claro para todos.",
+      "tecnicismos": [
+        "algoritmo",
+        "prueba-escritorio"
+      ],
       "opciones": [
         {
           "id": "a",
@@ -116,6 +130,11 @@
       "subtema": "logica-algoritmos:1",
       "titulo": "Los Mil Pedidos Revueltos",
       "contexto": "Por un error en la migración de la base de datos, mil pedidos de una tienda en línea quedaron desordenados y deben salir a paquetería ordenados por fecha antes de medianoche. Hay varias formas de organizarlos, cada una con sus riesgos.",
+      "tecnicismos": [
+        "base-datos",
+        "algoritmo-ordenamiento",
+        "ordenamiento-mezcla"
+      ],
       "opciones": [
         {
           "id": "a",

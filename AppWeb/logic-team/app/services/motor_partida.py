@@ -17,7 +17,7 @@ from django.urls import reverse
 
 from app.models import Partida, RegistroDecision
 
-from . import conseguir_vidas, escenarios
+from . import conseguir_vidas, escenarios, tecnicismos
 
 
 class ReglaError(Exception):
@@ -270,6 +270,7 @@ def resolver_decision(partida, opcion_id):
     conseguir_vidas.registrar_evento(partida, hp_antes, config)  # CU-06 FA1
 
     partida.resultado_pendiente = {
+        "evento_id": evento["id"],  # CU05: para resaltar sus tecnicismos en el resultado
         "acierto": acierto,
         "tipo": evento["tipo"],
         "evento_titulo": evento["titulo"],
@@ -396,7 +397,15 @@ def estado_publico(partida):
         "resultado": partida.resultado_pendiente,
         "url_fin": reverse("partida_fin", args=[partida.id]),
         "vidas": conseguir_vidas.estado_publico(partida, config),  # CU-06
+        "tecnicismos": [],  # CU05 (RF-39, RF-40): los que el libro resalta y explica
     }
+    if fase == "resultado":
+        evento_id = (partida.resultado_pendiente or {}).get("evento_id")
+        evento_resultado = catalogo["eventos"].get(evento_id)
+        if evento_resultado:
+            datos["tecnicismos"] = tecnicismos.publicos(
+                evento_resultado.get("tecnicismos", []), catalogo["tecnicismos"]
+            )
     if fase == "evento":
         evento = _evento_actual(partida, catalogo)
         datos["evento"] = {
@@ -408,6 +417,9 @@ def estado_publico(partida):
             "subtema": evento["subtema_nombre"],
             "opciones": _opciones_publicas(evento, partida, config),
         }
+        datos["tecnicismos"] = tecnicismos.publicos(
+            evento.get("tecnicismos", []), catalogo["tecnicismos"]
+        )
     return datos
 
 
