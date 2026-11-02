@@ -114,6 +114,16 @@
     "vidas_por_ronda": 1,
     "eventos_para_sugerencia": 5
   },
+  "minijuego_codigo": {
+    "_ayuda": "CU-04. Estrellas según los bloques usados contra el óptimo del nivel (RN01, RN03): la primera regla que se cumpla, y la última debe tener bloques_extra_max: null (sin límite). porcentaje_xp es la parte de xp_base que se gana con esas estrellas (RN04). Cada prueba fallida resta penalizacion_por_fallo % de la XP, hasta penalizacion_maxima % (RN05). Los niveles viven en niveles_codigo/*.json y los bloques en instrucciones_codigo.json.",
+    "estrellas": [
+      { "estrellas": 3, "bloques_extra_max": 0, "porcentaje_xp": 100 },
+      { "estrellas": 2, "bloques_extra_max": 2, "porcentaje_xp": 75 },
+      { "estrellas": 1, "bloques_extra_max": null, "porcentaje_xp": 50 }
+    ],
+    "penalizacion_por_fallo": 5,
+    "penalizacion_maxima": 50
+  },
   "finales": {
     "completada": {
       "titulo": "Fin del Capítulo",
