@@ -57,7 +57,7 @@ html[data-tamano="muy-grande"] {
 /* ===== Tipo de letra =====
    libro.css fija font-family en muchos selectores, por eso se usa !important.
    Afecta al libro, a la pantalla de carga y a las pantallas planas de CU02 (.pc-topbar,
-   .pc-main) y a la mesa de trabajo de los minijuegos (.tl-mesa), pero no al panel de ajustes. */
+   .pc-main), pero no al panel de ajustes. */
 html[data-fuente="dislexia"] .book,
 html[data-fuente="dislexia"] .book *,
 html[data-fuente="dislexia"] #loader-overlay,
@@ -65,9 +65,7 @@ html[data-fuente="dislexia"] #loader-overlay *,
 html[data-fuente="dislexia"] .pc-topbar,
 html[data-fuente="dislexia"] .pc-topbar *,
 html[data-fuente="dislexia"] .pc-main,
-html[data-fuente="dislexia"] .pc-main *,
-html[data-fuente="dislexia"] .tl-mesa,
-html[data-fuente="dislexia"] .tl-mesa * {
+html[data-fuente="dislexia"] .pc-main * {
   font-family: 'OpenDyslexic', 'Comic Sans MS', sans-serif !important;
   font-style: normal !important;
   /* la cursiva dificulta la lectura con dislexia */
@@ -84,9 +82,7 @@ html[data-fuente="legible"] #loader-overlay *,
 html[data-fuente="legible"] .pc-topbar,
 html[data-fuente="legible"] .pc-topbar *,
 html[data-fuente="legible"] .pc-main,
-html[data-fuente="legible"] .pc-main *,
-html[data-fuente="legible"] .tl-mesa,
-html[data-fuente="legible"] .tl-mesa * {
+html[data-fuente="legible"] .pc-main * {
   font-family: 'Atkinson Hyperlegible', 'Segoe UI', Arial, sans-serif !important;
 }
 

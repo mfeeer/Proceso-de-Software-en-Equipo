@@ -1,20 +1,18 @@
 from django.core.management.base import BaseCommand, CommandError
 
-from app.services import conseguir_vidas, escenarios, minijuego_codigo
+from app.services import conseguir_vidas, escenarios
 
 
 class Command(BaseCommand):
     help = (
-        "Valida config_juego.json, los escenarios de app/data/escenarios/*.json, las "
-        "afirmaciones del CU-06 (app/data/preguntas_vidas.json) y los niveles e instrucciones "
-        "del CU-04 (app/data/niveles_codigo/*.json, app/data/instrucciones_codigo.json)."
+        "Valida config_juego.json, los escenarios de app/data/escenarios/*.json y las "
+        "afirmaciones del CU-06 (app/data/preguntas_vidas.json)."
     )
 
     def handle(self, *args, **options):
         errores = escenarios.validar()
         if not errores:
             errores = conseguir_vidas.validar()  # CU-06: necesita los escenarios sin errores
-        errores += minijuego_codigo.validar()  # CU-04
         if errores:
             for error in errores:
                 self.stderr.write(self.style.ERROR(f"- {error}"))
@@ -35,12 +33,5 @@ class Command(BaseCommand):
             self.style.SUCCESS(
                 f"Afirmaciones del CU-06 válidas: {len(preguntas)} ({verdaderas} verdaderas y "
                 f"{len(preguntas) - verdaderas} falsas)."
-            )
-        )
-        codigo = minijuego_codigo.cargar()
-        self.stdout.write(
-            self.style.SUCCESS(
-                f"Minijuego de código válido: {len(codigo['niveles'])} nivel(es) y "
-                f"{len(codigo['instrucciones'])} instrucciones."
             )
         )
