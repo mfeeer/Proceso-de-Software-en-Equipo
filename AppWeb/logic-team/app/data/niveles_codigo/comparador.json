@@ -1,0 +1,17 @@
+{
+  "id": "comparador",
+  "orden": 1,
+  "titulo": "El Comparador",
+  "objetivo": "Toma **A** y **B** de la INBOX y entrega en la OUTBOX **el número mayor**.",
+  "variables": ["A", "B"],
+  "bloques_disponibles": ["INBOX", "OUTBOX", "COPY_TO", "SI"],
+  "optimo": 5,
+  "max_bloques": 12,
+  "xp_base": 40,
+  "max_pasos": 200,
+  "casos": [
+    { "entradas": [3, 8], "salida": [8] },
+    { "entradas": [9, 2], "salida": [9] },
+    { "entradas": [5, 5], "salida": [5] }
+  ]
+}
