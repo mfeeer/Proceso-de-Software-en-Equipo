@@ -34,16 +34,21 @@
         <a class="book-btn go" id="btn-historia" href="{% url 'personalizar_perfil' %}">Jugar historia ➔</a>
       </div>
 
-      {# CU04: todavía no está implementado; al terminarlo, cambiar el botón por un enlace #}
-      <div class="perfil-card c5-modo pendiente">
-        <span class="c5-candado" aria-hidden="true">🚧</span>
+      {# CU04: Minijuego de código, se juega en la mesa de trabajo (views_codigo.py) #}
+      <div class="perfil-card c5-modo desbloqueado">
         <div class="perfil-head"><span class="perfil-class">modo <b>MinijuegoCodigo</b></span></div>
         <div class="emblem" aria-hidden="true">🧩</div>
         <h3>Minijuego de código</h3>
         <p>Arma algoritmos arrastrando bloques de instrucciones y gana estrellas por resolverlos con eficiencia.</p>
-        <div class="tags"><span class="stamp">🧱 Bloques</span><span class="stamp">⭐ Hasta 3 estrellas</span></div>
-        <button class="book-btn" id="btn-codigo" type="button" disabled aria-describedby="codigo-estado">🚧 En desarrollo</button>
-        <span class="tc-sr" id="codigo-estado">Este modo estará disponible en una próxima versión.</span>
+        <div class="tags">
+          <span class="stamp">🧱 Bloques</span>
+          {% if codigo.resueltos %}
+            <span class="stamp pt-stamp-oro">⭐ {{ codigo.estrellas }} de {{ codigo.estrellas_max }} estrellas</span>
+          {% else %}
+            <span class="stamp">⭐ Hasta 3 estrellas</span>
+          {% endif %}
+        </div>
+        <a class="book-btn go" id="btn-codigo" href="{% url 'codigo_inicio' %}">Jugar minijuego ➔</a>
       </div>
 
       {% if resumen.desbloqueado %}

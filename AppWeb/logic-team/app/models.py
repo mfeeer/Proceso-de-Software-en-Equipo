@@ -1,7 +1,8 @@
 # Entidades del diccionario de datos (WP.12, seccion 3.4).
 # Perfil y Tema siguen definidos en app/views_personalizar.py (CU-02) y los escenarios
 # (NodoNarrativo, Opcion) viven en app/data/*.json (RNF-MAN-05). En la base de datos se guarda
-# lo que genera el jugador: la Partida y su bitacora de decisiones (RegistroDecision).
+# lo que genera el jugador: la Partida, su bitacora de decisiones (RegistroDecision), los
+# tecnicismos y cuestionarios de CU-05 y los intentos del minijuego de codigo de CU-04.
 import uuid
 
 from django.conf import settings
@@ -170,3 +171,51 @@ class ResultadoCuestionario(models.Model):
 
     def __str__(self):
         return f"Cuestionario {self.id} ({self.puntaje}/100)"
+
+
+class IntentoCodigo(models.Model):
+    """Solución de un jugador a un nivel del minijuego de código (CU-04, SDS 3.4).
+
+    Se juega desde el menú de modos (CU-05) y no depende de una partida. Igual que el registro
+    de tecnicismos, es del usuario con sesión iniciada o, si no hay, de la sesión del navegador.
+    Los niveles viven en app/data/niveles_codigo/*.json.
+    """
+
+    EN_CURSO = "en_curso"
+    RESUELTO = "resuelto"
+    ABANDONADO = "abandonado"
+    ESTADOS = [
+        (EN_CURSO, "En curso"),
+        (RESUELTO, "Resuelto"),
+        (ABANDONADO, "Abandonado (sin XP)"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="intentos_codigo",
+    )
+    sesion = models.CharField(max_length=40, blank=True, db_index=True)
+    nivel_id = models.CharField(max_length=60)
+
+    # Último tablero compilado y su huella: solo se ejecuta ese tablero (CU04-RN02).
+    tablero = models.JSONField(null=True, blank=True)
+    huella = models.CharField(max_length=64, blank=True)
+    bloques_usados = models.PositiveSmallIntegerField(null=True, blank=True)
+    intentos_fallidos = models.PositiveSmallIntegerField(default=0)  # CU04-RN05
+    estrellas = models.PositiveSmallIntegerField(null=True, blank=True)
+    xp_obtenida = models.PositiveIntegerField(default=0)
+    resultado = models.JSONField(null=True, blank=True)  # resumen de la calificación
+    estado = models.CharField(max_length=12, choices=ESTADOS, default=EN_CURSO)
+
+    creado = models.DateTimeField(auto_now_add=True)
+    actualizado = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-creado"]
+
+    def __str__(self):
+        return f"{self.usuario_id or self.sesion} · {self.nivel_id} ({self.estado})"

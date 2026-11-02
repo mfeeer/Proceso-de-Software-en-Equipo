@@ -8,6 +8,7 @@ urlpatterns = [
     path("api/", include("app.urls")),
     path("personalizar/", include("app.urls_personalizar")),
     path("partida/", include("app.urls_partida")),
+    path("jugar/codigo/", include("app.urls_codigo")),
     path("jugar/", include("app.urls_cuestionario")),
     path("personalizar-partida/", RedirectView.as_view(pattern_name="personalizar_perfil")),
     path("", TemplateView.as_view(template_name="index.html"), name="home"),
