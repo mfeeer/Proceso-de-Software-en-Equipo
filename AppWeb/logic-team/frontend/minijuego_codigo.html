@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Minijuego de código — {{ estado.nivel.titulo }}{% endblock %}
+{% block body_class %}pagina-mesa{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'css/taller.css' %}">
+  <link rel="stylesheet" href="{% static 'css/cuestionario.css' %}">
+  <link rel="stylesheet" href="{% static 'css/minijuego_codigo.css' %}">
+{% endblock %}
+
+{% block loader %}{% endblock %}
+
+{# CU04: mesa de trabajo. Todo se lee de izquierda a derecha: INBOX -> tablero -> OUTBOX.  #}
+{# js/minijuego_codigo.js arma el tablero, la paleta y las acciones con el estado del servidor. #}
+{% block page %}
+<main class="tl-mesa c4-mesa" id="mj-mesa"
+      data-compilar="{% url 'codigo_compilar' estado.intento_id %}"
+      data-ejecutar="{% url 'codigo_ejecutar' estado.intento_id %}"
+      data-salir="{% url 'codigo_salir' estado.intento_id %}"
+      data-menu="{% url 'menu_modos' %}"
+      data-otra-vez="{% url 'codigo_mesa' nivel_id %}?nuevo=1">
+  <div class="tl-barra">
+    <button class="tl-salir" type="button" id="mj-salir">✕ Salir</button>
+    <div class="tl-titulo"><small>MINIJUEGO DE CÓDIGO</small><b>{{ estado.nivel.titulo }}</b></div>
+    <div class="tl-derecha">
+      <button class="tl-salir tl-ayuda" type="button" id="mj-ayuda" aria-haspopup="dialog">? Cómo se juega</button>
+      <ol class="tl-pasos" id="mj-pasos" aria-label="Pasos del minijuego">
+        <li data-n="1">Armar</li><li data-n="2">Compilar</li><li data-n="3">Ejecutar</li>
+      </ol>
+      <span class="tl-chip" id="mj-chip" hidden></span>
+      <span class="tl-chip" id="mj-contador" title="Bloques usados / óptimo">🧱 0 / {{ estado.nivel.optimo }}</span>
+    </div>
+  </div>
+
+  <div class="tl-pergamino c4-mision">
+    <span class="ico" aria-hidden="true">🎯</span>
+    <p id="mj-objetivo">{{ estado.nivel.objetivo }}</p>
+    <span class="c4-ejemplo">Ejemplo: {{ estado.nivel.ejemplo.entradas|join:", " }} → <b>{{ estado.nivel.ejemplo.salida|join:", " }}</b></span>
+  </div>
+
+  <div class="c4-zona">
+    <div class="c4-cinta in" id="mj-inbox" aria-label="INBOX"></div>
+    <section class="tl-pergamino c4-tablero" id="mj-tablero" aria-label="Tablero">
+      <div class="c4-tablero-cab">
+        <h2>Tablero</h2>
+        <div class="c4-vars" id="mj-vars" aria-live="polite"></div>
+      </div>
+      <div id="mj-pila"></div>
+      <div class="tl-aviso" id="mj-aviso" role="status" hidden></div>
+    </section>
+    <div class="c4-cinta out" id="mj-outbox" aria-label="OUTBOX"></div>
+  </div>
+
+  <div class="c4-bandeja">
+    <span class="c4-bandeja-k">Bloques</span>
+    <div class="c4-paleta" id="mj-paleta" aria-label="Bloques disponibles: arrástralos al tablero o haz clic para agregarlos"></div>
+    <div class="c4-acciones" id="mj-acciones"></div>
+  </div>
+
+  <div class="tl-velo" id="mj-velo" hidden></div>
+  <noscript><p class="tl-aviso mal">Este minijuego necesita JavaScript.</p></noscript>
+</main>
+
+{{ estado|json_script:"mj-estado" }}
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'js/minijuego_codigo.js' %}"></script>
+{% endblock %}
