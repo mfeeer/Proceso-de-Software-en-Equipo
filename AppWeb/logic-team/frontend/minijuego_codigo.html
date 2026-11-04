@@ -12,50 +12,51 @@
 
 {% block loader %}{% endblock %}
 
-{# CU04: mesa de trabajo. Todo se lee de izquierda a derecha: INBOX -> tablero -> OUTBOX.  #}
-{# js/minijuego_codigo.js arma el tablero, la paleta y las acciones con el estado del servidor. #}
+{# CU04: mesa de trabajo. A la izquierda el banco con las líneas revueltas, a la derecha el programa. #}
+{# js/minijuego_codigo.js mueve las líneas, cambia su sangría y pide al servidor comprobar el acomodo. #}
 {% block page %}
 <main class="tl-mesa c4-mesa" id="mj-mesa"
-      data-compilar="{% url 'codigo_compilar' estado.intento_id %}"
-      data-ejecutar="{% url 'codigo_ejecutar' estado.intento_id %}"
+      data-comprobar="{% url 'codigo_comprobar' estado.intento_id %}"
       data-salir="{% url 'codigo_salir' estado.intento_id %}"
       data-menu="{% url 'menu_modos' %}"
+      data-nivel="{% url 'codigo_mesa' 'NIVEL' %}"
       data-otra-vez="{% url 'codigo_mesa' nivel_id %}?nuevo=1">
   <div class="tl-barra">
     <button class="tl-salir" type="button" id="mj-salir">✕ Salir</button>
     <div class="tl-titulo"><small>MINIJUEGO DE CÓDIGO</small><b>{{ estado.nivel.titulo }}</b></div>
     <div class="tl-derecha">
       <button class="tl-salir tl-ayuda" type="button" id="mj-ayuda" aria-haspopup="dialog">? Cómo se juega</button>
-      <ol class="tl-pasos" id="mj-pasos" aria-label="Pasos del minijuego">
-        <li data-n="1">Armar</li><li data-n="2">Compilar</li><li data-n="3">Ejecutar</li>
-      </ol>
+      <nav class="c4-lenguajes" id="mj-lenguajes" aria-label="Lenguaje del programa"></nav>
       <span class="tl-chip" id="mj-chip" hidden></span>
-      <span class="tl-chip" id="mj-contador" title="Bloques usados / óptimo">🧱 0 / {{ estado.nivel.optimo }}</span>
     </div>
   </div>
+
+  <nav class="c4-niveles" id="mj-niveles" aria-label="Niveles"></nav>
 
   <div class="tl-pergamino c4-mision">
     <span class="ico" aria-hidden="true">🎯</span>
     <p id="mj-objetivo">{{ estado.nivel.objetivo }}</p>
-    <span class="c4-ejemplo">Ejemplo: {{ estado.nivel.ejemplo.entradas|join:", " }} → <b>{{ estado.nivel.ejemplo.salida|join:", " }}</b></span>
+    <div class="c4-ejemplo" id="mj-ejemplo" aria-label="Ejemplo de cómo debe correr el programa"></div>
   </div>
 
   <div class="c4-zona">
-    <div class="c4-cinta in" id="mj-inbox" aria-label="INBOX"></div>
-    <section class="tl-pergamino c4-tablero" id="mj-tablero" aria-label="Tablero">
-      <div class="c4-tablero-cab">
-        <h2>Tablero</h2>
-        <div class="c4-vars" id="mj-vars" aria-live="polite"></div>
+    <section class="tl-pergamino c4-banco" id="mj-banco" aria-labelledby="mj-banco-titulo">
+      <h2 id="mj-banco-titulo">Líneas revueltas</h2>
+      <p class="c4-ayudita">Haz clic en una línea para pasarla a tu programa, o arrástrala.</p>
+      <ul class="c4-lista" id="mj-lista-banco"></ul>
+    </section>
+    <section class="c4-editor" id="mj-editor" aria-labelledby="mj-editor-titulo">
+      <div class="c4-editor-cab">
+        <h2 id="mj-editor-titulo">Tu programa</h2>
+        <span class="c4-lenguaje-tag">{{ estado.nivel.lenguaje_nombre }}</span>
       </div>
-      <div id="mj-pila"></div>
+      <ol class="c4-codigo" id="mj-programa" aria-label="Líneas de tu programa"></ol>
       <div class="tl-aviso" id="mj-aviso" role="status" hidden></div>
     </section>
-    <div class="c4-cinta out" id="mj-outbox" aria-label="OUTBOX"></div>
   </div>
 
   <div class="c4-bandeja">
-    <span class="c4-bandeja-k">Bloques</span>
-    <div class="c4-paleta" id="mj-paleta" aria-label="Bloques disponibles: arrástralos al tablero o haz clic para agregarlos"></div>
+    <span class="c4-atajos"><kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd> sangría · <kbd>Alt</kbd>+<kbd>↑</kbd><kbd>↓</kbd> mover · <kbd>Supr</kbd> regresar al banco</span>
     <div class="c4-acciones" id="mj-acciones"></div>
   </div>
 

@@ -178,7 +178,8 @@ class IntentoCodigo(models.Model):
 
     Se juega desde el menú de modos (CU-05) y no depende de una partida. Igual que el registro
     de tecnicismos, es del usuario con sesión iniciada o, si no hay, de la sesión del navegador.
-    Los niveles viven en app/data/niveles_codigo/*.json.
+    Los niveles viven en app/data/niveles_codigo/*.json: un programa en Python o pseudocódigo
+    con sus líneas revueltas que el jugador acomoda.
     """
 
     EN_CURSO = "en_curso"
@@ -201,7 +202,8 @@ class IntentoCodigo(models.Model):
     sesion = models.CharField(max_length=40, blank=True, db_index=True)
     nivel_id = models.CharField(max_length=60)
 
-    # Último tablero compilado y su huella: solo se ejecuta ese tablero (CU04-RN02).
+    # Último acomodo comprobado ([{id, sangria}, ...]) y su huella: el mismo acomodo no cuenta
+    # dos veces como intento fallido (CU04-RN02). bloques_usados son las líneas del acomodo.
     tablero = models.JSONField(null=True, blank=True)
     huella = models.CharField(max_length=64, blank=True)
     bloques_usados = models.PositiveSmallIntegerField(null=True, blank=True)
