@@ -64,6 +64,7 @@
     intentos: inicial.intentos_fallidos,
     penalizacion: inicial.penalizacion,
     resultado: inicial.resultado,
+    ronda: inicial.ronda, // avance de la ronda; cambia al resolver el nivel
   };
 
   // ------------------------------------------------------------ utilidades
@@ -410,14 +411,19 @@
     return a;
   }
 
-  // Con el nivel resuelto se sigue desde aquí aunque se cierre la ventana del resultado
+  // Con el nivel resuelto se sigue desde aquí aunque se cierre la ventana del resultado:
+  // al siguiente nivel de la ronda o, si la ronda acabó, a otra ronda
   function accionesFinales() {
-    const siguiente = inicial.niveles.find((n) => n.numero > nivel.numero);
+    const r = s.ronda;
+    if (r.completa) {
+      return [
+        enlace("book-btn", "Volver al menú", rutas.menu),
+        enlace("book-btn go siguiente", "🔁 Jugar otra ronda", inicial.urls.otra_ronda),
+      ];
+    }
     return [
-      enlace("book-btn", "🎲 Otro programa", rutas.otraVez),
-      siguiente
-        ? enlace("book-btn go siguiente", "Siguiente nivel ➔", siguiente.url)
-        : enlace("book-btn go siguiente", "Volver al menú ➔", rutas.menu),
+      enlace("book-btn", "Volver al menú", rutas.menu),
+      enlace("book-btn go siguiente", "Siguiente nivel ➔", inicial.urls.niveles[r.siguiente]),
     ];
   }
 
@@ -442,8 +448,8 @@
     pintarAcciones();
   }
 
-  // Selector de lenguaje y de niveles (enlaces a la mesa de cada nivel; el servidor da las URL)
-  function pintarNavegacion() {
+  // Cambiar de lenguaje lleva a donde va la ronda de ese lenguaje (el servidor da las URL)
+  function pintarLenguajes() {
     vaciar(nodos.lenguajes);
     inicial.lenguajes.forEach((l) => {
       const actual = l.id === nivel.lenguaje;
@@ -452,17 +458,22 @@
       else a.href = l.url;
       con(nodos.lenguajes, a);
     });
+  }
 
+  // Avance de la ronda: ✓ los niveles resueltos con sus estrellas, el de ahora y 🔒 los que faltan.
+  // No son enlaces: los niveles se juegan en orden con «Siguiente nivel».
+  function pintarRonda() {
     vaciar(nodos.niveles);
-    inicial.niveles.forEach((n) => {
-      const actual = n.numero === nivel.numero;
-      const a = el(actual ? "span" : "a", `c4-nivel${actual ? " actual" : ""}${n.estrellas ? " resuelto" : ""}`);
-      if (actual) a.setAttribute("aria-current", "page");
-      else a.href = n.url;
+    s.ronda.niveles.forEach((n) => {
+      const viendo = n.numero === nivel.numero;
+      const li = el("li", `c4-nivel ${n.estado}${viendo ? " viendo" : ""}`);
+      const marca = n.estado === "hecho" ? "✓" : n.estado === "pendiente" ? "🔒" : String(n.numero);
       const estrellas = n.estrellas ? "★".repeat(n.estrellas) : "";
-      con(a, el("b", null, String(n.numero)), el("span", "c4-nivel-titulo", n.nombre), estrellas ? el("span", "c4-nivel-estrellas", estrellas) : null);
-      a.setAttribute("aria-label", `Nivel ${n.numero}: ${n.nombre}${n.estrellas ? `, ${n.estrellas} estrellas` : ""}`);
-      con(nodos.niveles, a);
+      con(li, el("b", null, marca), el("span", "c4-nivel-titulo", `${n.numero}. ${n.nombre}`), estrellas ? el("span", "c4-nivel-estrellas", estrellas) : null);
+      const estado = { hecho: `resuelto con ${n.estrellas} estrellas`, actual: "el que sigue", pendiente: "todavía no" }[n.estado];
+      li.setAttribute("aria-label", `Nivel ${n.numero}, ${n.nombre}: ${estado}`);
+      if (viendo) li.setAttribute("aria-current", "step");
+      con(nodos.niveles, li);
     });
   }
 
@@ -497,9 +508,11 @@
     if (r.correcta) {
       s.fase = "exito";
       s.resultado = r.resultado;
+      s.ronda = r.ronda;
       s.seleccion = null;
       s.aviso = { tipo: "ok", ico: "✔", titulo: r.titulo, texto: r.mensaje };
       pintar();
+      pintarRonda();
       mostrarResultado(r.resultado, r.consola);
       return;
     }
@@ -577,17 +590,29 @@
       filaResumen("Ganas", `⭐ +${r.xp} XP`, "total")
     );
 
-    // «Otro programa» abre un intento nuevo del mismo nivel con otro programa al azar.
-    // «Ver mi programa» cierra la ventana; abajo quedan los mismos botones para seguir.
+    // «Ver mi programa» cierra la ventana; abajo quedan los mismos botones para seguir
     const ver = boton("book-btn", "Ver mi programa", cerrarVentana);
     const botones = con(el("div", "btn-row"), ver, ...accionesFinales());
 
     const salida = lineasConsola ? [el("p", "c4-consola-titulo", "Así corre tu programa:"), consola(lineasConsola, "corre")] : [];
+    const titulo = s.ronda.completa ? `¡Terminaste la ronda ${s.ronda.numero}!` : "¡Programa correcto!";
     const ventana = abrirVentana(
-      [el("h2", null, "¡Programa correcto!"), estrellas, ...salida, nota, resumen, botones],
+      [el("h2", null, titulo), estrellas, ...salida, nota, resumen, s.ronda.completa ? resumenRonda() : null, botones],
       () => nodos.acciones.querySelector(".siguiente")?.focus({ preventScroll: true })
     );
     ventana.classList.add("ancha");
+  }
+
+  // Al acabar el nivel 4: las estrellas de cada nivel y lo que se ganó en toda la ronda
+  function resumenRonda() {
+    const r = s.ronda;
+    const caja = con(el("div", "c4-ronda-resumen"), el("p", "c4-consola-titulo", "Tu ronda:"));
+    const lista = el("ol");
+    r.niveles.forEach((n) => {
+      con(lista, con(el("li"), el("span", null, `${n.numero}. ${n.nombre}`), el("span", "c4-nivel-estrellas", "★".repeat(n.estrellas) || "—")));
+    });
+    con(caja, lista, filaResumen(`${r.estrellas} de ${r.estrellas_max} estrellas`, `⭐ ${r.xp} XP en total`, "total"));
+    return caja;
   }
 
   // "¿Cómo se juega?"
@@ -614,13 +639,17 @@
       ),
       con(el("li"), el("b", null, "Comprueba: "), `si algo está mal se marca en rojo. Cada intento fallido baja tus estrellas y resta ${inicial.penalizacion_por_fallo}% de la XP (máximo ${inicial.penalizacion_maxima}%).`)
     );
+    const ronda = con(
+      el("p", "c4-ayuda-consejo"),
+      "🏁 Cada ronda tiene ",
+      el("b", null, `${s.ronda.niveles.length} niveles`),
+      ", del más fácil al más difícil. Al resolver uno pasas al siguiente; en cada ronda te tocan programas distintos al azar."
+    );
     const consejo = con(
       el("p", "c4-ayuda-consejo"),
       "💡 Hay ",
       el("b", null, "varias formas correctas"),
-      ": por ejemplo, puedes leer los datos en el orden que quieras. Y cada vez que juegas un nivel te puede tocar ",
-      el("b", null, "otro programa"),
-      " con otros valores."
+      ": por ejemplo, puedes leer los datos en el orden que quieras."
     );
     const sobran = nivel.distractores
       ? con(el("p", "c4-ayuda-consejo"), "⚠ Este nivel trae ", el("b", null, `${nivel.distractores} ${nivel.distractores === 1 ? "línea que sobra" : "líneas que sobran"}`), ": déjalas en el banco.")
@@ -628,7 +657,7 @@
     const atajos = con(el("p", "c4-ayuda-atajos"), "Con teclado: elige una línea de tu programa y usa Tab / Shift+Tab para la sangría, Alt+↑ / Alt+↓ para moverla y Supr para regresarla al banco.");
     const listo = boton("book-btn go", "¡Entendido!", cerrarVentana);
     const ventana = abrirVentana(
-      [el("h2", "tl-pregunta", "¿Cómo se juega?"), intro, pasos, consejo, sobran, atajos, con(el("div", "btn-row"), listo)],
+      [el("h2", "tl-pregunta", "¿Cómo se juega?"), intro, pasos, ronda, consejo, sobran, atajos, con(el("div", "btn-row"), listo)],
       () => nodos.ayuda.focus({ preventScroll: true })
     );
     ventana.classList.add("ancha");
@@ -661,7 +690,8 @@
   // ------------------------------------------------------------ inicio (paso 1)
   conNegritas(nodos.objetivo, nivel.objetivo);
   con(nodos.ejemplo, el("span", "c4-ejemplo-k", "Ejemplo"), consola(nivel.consola));
-  pintarNavegacion();
+  pintarLenguajes();
+  pintarRonda();
 
   // Al recargar, el servidor devuelve el último acomodo comprobado
   const guardado = (inicial.programa || []).filter((l) => CODIGO[l.id] !== undefined);
@@ -670,7 +700,8 @@
 
   if (inicial.estado === "resuelto" && inicial.resultado) {
     s.fase = "exito";
-    s.aviso = { tipo: "ok", ico: "✔", titulo: "Ya resolviste este nivel", texto: "Este es tu programa. Presiona «Otro programa» para jugar con uno nuevo." };
+    const sigue = s.ronda.completa ? "Terminaste la ronda: puedes jugar otra." : "Sigue con el siguiente nivel.";
+    s.aviso = { tipo: "ok", ico: "✔", titulo: "Ya resolviste este nivel", texto: `Este es tu programa. ${sigue}` };
     pintar();
     mostrarResultado(inicial.resultado, nivel.consola);
   } else {

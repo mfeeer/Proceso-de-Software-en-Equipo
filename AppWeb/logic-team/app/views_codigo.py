@@ -20,7 +20,7 @@ from django.views.decorators.http import require_GET, require_POST
 
 from .models import IntentoCodigo
 from .services import escenarios, minijuego_codigo, tecnicismos
-from .services.minijuego_codigo import ProgramaInvalido, ReglaCodigo
+from .services.minijuego_codigo import FueraDeOrden, ProgramaInvalido, ReglaCodigo
 
 
 def _cuerpo_json(request):
@@ -48,12 +48,13 @@ def _pagina_error(request, exc):
 # ---------------------------------------------------------------- páginas
 @require_GET
 def inicio(request):
-    """«Minijuego de código» en el menú de modos: abre el primer nivel que falta resolver.
+    """«Minijuego de código» en el menú de modos: abre el nivel donde va la ronda.
 
-    ?lenguaje=python|pseudocodigo elige el lenguaje; si no, se usa el último que jugó.
+    Si la ronda ya terminó, empieza otra. ?lenguaje=python|pseudocodigo elige el lenguaje;
+    si no, se usa el último que jugó.
     """
     try:
-        lenguaje, numero = minijuego_codigo.nivel_para(
+        lenguaje, numero = minijuego_codigo.empezar(
             tecnicismos.jugador_de(request), request.GET.get("lenguaje")
         )
     except escenarios.CatalogoError as exc:
@@ -74,25 +75,31 @@ def _version_archivos():
 
 
 def _enlaces(estado):
-    """Agrega al estado las direcciones de los niveles y del otro lenguaje."""
-    nivel_ = estado["nivel"]
-    for n in estado["niveles"]:
-        n["url"] = reverse("codigo_mesa", args=[nivel_["lenguaje"], n["numero"]])
+    """Agrega al estado las direcciones de los niveles, de otra ronda y del otro lenguaje."""
+    lenguaje = estado["nivel"]["lenguaje"]
+    inicio_ = reverse("codigo_inicio")
+    estado["urls"] = {
+        "niveles": {
+            n["numero"]: reverse("codigo_mesa", args=[lenguaje, n["numero"]])
+            for n in estado["ronda"]["niveles"]
+        },
+        "otra_ronda": f"{inicio_}?lenguaje={lenguaje}",
+    }
     for leng in estado["lenguajes"]:
-        leng["url"] = reverse("codigo_mesa", args=[leng["id"], nivel_["numero"]])
+        leng["url"] = f"{inicio_}?lenguaje={leng['id']}"
     return estado
 
 
 @ensure_csrf_cookie
 @require_GET
 def mesa(request, lenguaje, numero):
-    """Pasos 1 a 3: la mesa de trabajo del nivel. ?nuevo=1 es «Jugar otra vez» (otro programa)."""
+    """Pasos 1 a 3: la mesa de trabajo del nivel. Los niveles van en orden y no se saltan."""
     jugador = tecnicismos.jugador_de(request)
     try:
-        intento = minijuego_codigo.iniciar(
-            jugador, lenguaje, numero, nuevo=request.GET.get("nuevo") == "1"
-        )
-        estado = _enlaces(minijuego_codigo.estado_publico(intento, jugador))
+        intento = minijuego_codigo.iniciar(jugador, lenguaje, numero)
+        estado = _enlaces(minijuego_codigo.estado_publico(intento))
+    except FueraDeOrden as exc:
+        return redirect("codigo_mesa", lenguaje=lenguaje, numero=exc.numero)
     except ReglaCodigo as exc:
         raise Http404(str(exc)) from exc
     except escenarios.CatalogoError as exc:
@@ -100,11 +107,7 @@ def mesa(request, lenguaje, numero):
     return render(
         request,
         "minijuego_codigo.html",
-        {
-            "estado": estado,
-            "otra_vez": reverse("codigo_mesa", args=[lenguaje, numero]),
-            "version": _version_archivos(),
-        },
+        {"estado": estado, "version": _version_archivos()},
     )
 
 

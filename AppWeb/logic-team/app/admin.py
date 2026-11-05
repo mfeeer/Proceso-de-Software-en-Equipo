@@ -46,6 +46,7 @@ class IntentoCodigoAdmin(admin.ModelAdmin):
     list_display = (
         "nivel_id",
         "variante",
+        "ronda",
         "usuario",
         "sesion",
         "estado",

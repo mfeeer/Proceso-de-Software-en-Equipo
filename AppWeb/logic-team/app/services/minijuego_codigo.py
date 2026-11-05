@@ -17,8 +17,10 @@ asi cada quien puede programar a su manera (por ejemplo, leer b antes que a):
 
 Algunos programas traen distractores: lineas que no van en el programa.
 
-  iniciar()    -> pasos 1 a 3: retoma el intento del jugador en un nivel o abre uno nuevo con
-                  un programa y una variante al azar
+  empezar()    -> «Jugar minijuego»: el nivel donde va la ronda del jugador (1 a 4, en orden);
+                  si la ronda ya acabo, empieza otra
+  iniciar()    -> pasos 1 a 3: retoma el intento del nivel o abre uno nuevo con un programa y
+                  una variante al azar; un nivel que todavia no sigue no se puede abrir
   comprobar()  -> pasos 4 a 9: programa vacio (FE3) o incompleto (FE1) no cuentan como fallo;
                   si las reglas no se cumplen es un intento fallido (FE2, RN05) salvo que sea el
                   mismo acomodo que ya fallo (RN02); si se cumplen, califica (RN01, RN03, RN04)
@@ -35,6 +37,7 @@ import random
 import re
 
 from django.db import transaction
+from django.db.models import Max
 
 from app.models import IntentoCodigo
 
@@ -598,15 +601,6 @@ def lenguaje_para(jugador, pedido=None):
     return LENGUAJE_INICIAL
 
 
-def nivel_para(jugador, lenguaje=None):
-    """(lenguaje, numero) con que abre el modo: el primer nivel que falta resolver."""
-    lenguaje = lenguaje_para(jugador, lenguaje)
-    numeros = [n["numero"] for n in cargar()["niveles"]]
-    mejores = _mejores(jugador)
-    numero = next((n for n in numeros if (lenguaje, n) not in mejores), numeros[0])
-    return lenguaje, numero
-
-
 def resumen_jugador(jugador):
     """Para la tarjeta del menu de modos: niveles resueltos y mejores estrellas."""
     catalogo = cargar()
@@ -631,30 +625,120 @@ def _elegir(numero, lenguaje, ultimo):
     return f"{programa}-{lenguaje}", _azar.randrange(variantes)
 
 
-@transaction.atomic
-def iniciar(jugador, lenguaje, numero, nuevo=False):
-    """Pasos 1 a 3: retoma el intento del jugador en el nivel o abre uno nuevo al azar.
+# ---------------------------------------------------------------- rondas
+# Una ronda son los niveles en orden (1, 2, 3, 4), del mas facil al mas dificil. No se pueden
+# saltar: al resolver uno sigue el siguiente. Al terminar la ronda empieza otra con otros
+# programas al azar. Cada lenguaje lleva su propia ronda.
 
-    Recargar la pagina devuelve el mismo intento (mismo programa, variante y ultimo acomodo
-    comprobado). Si el ultimo intento ya se resolvio, se muestra su resultado hasta que el
-    jugador pida jugar otra vez; entonces le toca otro programa.
+
+class FueraDeOrden(ReglaCodigo):
+    """Se pidio un nivel que no es el que sigue en la ronda: la vista lleva al que sigue."""
+
+    def __init__(self, numero):
+        super().__init__(f"Primero resuelve el nivel {numero}.")
+        self.numero = numero
+
+
+def _del_dueno(intento):
+    """Intentos del mismo jugador que el intento (usuario o sesion del navegador)."""
+    if intento.usuario_id:
+        return IntentoCodigo.objects.filter(usuario_id=intento.usuario_id)
+    return IntentoCodigo.objects.filter(usuario__isnull=True, sesion=intento.sesion)
+
+
+def _numeros():
+    return [n["numero"] for n in cargar()["niveles"]]
+
+
+def _ids_del_nivel(numero, lenguaje):
+    return [f"{p}-{lenguaje}" for p in programas_del_nivel(numero)]
+
+
+def _ronda(intentos, lenguaje):
+    """(numero de la ronda en curso, {nivel: intento resuelto}, nivel que sigue o None)."""
+    ids = [i for i, (_, leng) in cargar()["ids"].items() if leng == lenguaje]
+    intentos = intentos.filter(nivel_id__in=ids)
+    ronda = intentos.aggregate(ultima=Max("ronda"))["ultima"] or 1
+    resueltos = {}
+    for intento in intentos.filter(ronda=ronda, estado=IntentoCodigo.RESUELTO):
+        resueltos.setdefault(_ubicar(intento.nivel_id)[1], intento)
+    siguiente = next((n for n in _numeros() if n not in resueltos), None)
+    return ronda, resueltos, siguiente
+
+
+def resumen_ronda(intentos, lenguaje):
+    """Avance de la ronda en curso: estado y estrellas de cada nivel, y totales."""
+    ronda, resueltos, siguiente = _ronda(intentos, lenguaje)
+    maximo = max(r["estrellas"] for r in cargar()["reglas"]["estrellas"])
+    niveles = []
+    for n in cargar()["niveles"]:
+        hecho = resueltos.get(n["numero"])
+        estado = "hecho" if hecho else ("actual" if n["numero"] == siguiente else "pendiente")
+        niveles.append(
+            {
+                "numero": n["numero"],
+                "nombre": n["nombre"],
+                "estado": estado,
+                "estrellas": (hecho.estrellas or 0) if hecho else 0,
+            }
+        )
+    return {
+        "numero": ronda,
+        "completa": siguiente is None,
+        "siguiente": siguiente,
+        "niveles": niveles,
+        "estrellas": sum(i.estrellas or 0 for i in resueltos.values()),
+        "estrellas_max": maximo * len(niveles),
+        "xp": sum(i.xp_obtenida for i in resueltos.values()),
+    }
+
+
+def _crear(jugador, lenguaje, numero, ronda):
+    """Intento nuevo con un programa y una variante al azar (sin repetir el ultimo programa)."""
+    ids = _ids_del_nivel(numero, lenguaje)
+    ultimo = _de_jugador(jugador).filter(nivel_id__in=ids).first()
+    nivel_id, variante = _elegir(numero, lenguaje, ultimo)
+    return IntentoCodigo.objects.create(
+        nivel_id=nivel_id, variante=variante, ronda=ronda, **jugador.campos()
+    )
+
+
+@transaction.atomic
+def empezar(jugador, lenguaje=None):
+    """«Jugar minijuego»: (lenguaje, nivel) donde sigue la ronda; si ya acabo, empieza otra."""
+    lenguaje = lenguaje_para(jugador, lenguaje)
+    ronda, _, siguiente = _ronda(_de_jugador(jugador), lenguaje)
+    if siguiente is None:
+        siguiente = _numeros()[0]
+        _crear(jugador, lenguaje, siguiente, ronda + 1)
+    return lenguaje, siguiente
+
+
+@transaction.atomic
+def iniciar(jugador, lenguaje, numero):
+    """Pasos 1 a 3: el intento del nivel en la ronda en curso.
+
+    Un nivel ya resuelto en la ronda muestra su resultado. El nivel que sigue retoma su intento
+    en curso (mismo programa, variante y ultimo acomodo comprobado) o abre uno nuevo al azar.
+    Un nivel mas adelante todavia no se puede jugar (FueraDeOrden).
     """
     if lenguaje not in LENGUAJES or _nivel_info(numero) is None:
         raise ReglaCodigo("Ese nivel no existe.")
-    ids = [f"{p}-{lenguaje}" for p in programas_del_nivel(numero)]
-    ultimo = _de_jugador(jugador).filter(nivel_id__in=ids).first()
-    if ultimo is not None and not nuevo and ultimo.estado != IntentoCodigo.ABANDONADO:
-        return ultimo
+    ronda, resueltos, siguiente = _ronda(_de_jugador(jugador), lenguaje)
+    if numero in resueltos:
+        return resueltos[numero]
+    if numero != siguiente:
+        raise FueraDeOrden(siguiente)
+    ids = _ids_del_nivel(numero, lenguaje)
+    ultimo = _de_jugador(jugador).filter(nivel_id__in=ids, ronda=ronda).first()
     if ultimo is not None and ultimo.estado == IntentoCodigo.EN_CURSO:
-        ultimo.estado = IntentoCodigo.ABANDONADO  # «Jugar otra vez» sin haber terminado
-        ultimo.save(update_fields=["estado", "actualizado"])
-    nivel_id, variante = _elegir(numero, lenguaje, ultimo)
-    return IntentoCodigo.objects.create(nivel_id=nivel_id, variante=variante, **jugador.campos())
+        return ultimo
+    return _crear(jugador, lenguaje, numero, ronda)
 
 
 def _en_curso(intento):
     if intento.estado == IntentoCodigo.RESUELTO:
-        raise ReglaCodigo("Ya resolviste este nivel. Presiona «Jugar otra vez» para repetirlo.")
+        raise ReglaCodigo("Ya resolviste este nivel. Sigue con el siguiente.")
     if intento.estado != IntentoCodigo.EN_CURSO:
         raise ReglaCodigo("Saliste de este intento. Vuelve a abrir el minijuego desde el menú.")
     nivel_ = nivel_de(intento)
@@ -679,12 +763,11 @@ def revolver(nivel_, semilla):
     return banco
 
 
-def estado_publico(intento, jugador):
+def estado_publico(intento):
     """Lo que necesita la mesa de trabajo (minijuego_codigo.html). Sin las reglas del nivel."""
     catalogo = cargar()
     nivel_ = nivel_de(intento)
     reglas = catalogo["reglas"]
-    mejores = _mejores(jugador)
     return {
         "intento_id": str(intento.id),
         "estado": intento.estado,
@@ -699,14 +782,7 @@ def estado_publico(intento, jugador):
             "lineas": revolver(nivel_, str(intento.id)),
             "consola": nivel_["consola"],
         },
-        "niveles": [
-            {
-                "numero": n["numero"],
-                "nombre": n["nombre"],
-                "estrellas": mejores.get((nivel_["lenguaje"], n["numero"]), 0),
-            }
-            for n in catalogo["niveles"]
-        ],
+        "ronda": resumen_ronda(_del_dueno(intento), nivel_["lenguaje"]),
         "lenguajes": [{"id": k, "nombre": v} for k, v in LENGUAJES.items()],
         "programa": intento.tablero or [],
         "intentos_fallidos": intento.intentos_fallidos,
@@ -745,6 +821,8 @@ def comprobar(intento, datos):
         "repetido": repetido,
         "resultado": calificacion,
         "consola": nivel_["consola"] if calificacion else None,
+        # Al resolver cambia el avance: el navegador pinta la barra y, si acabo, el resumen
+        "ronda": resumen_ronda(_del_dueno(intento), nivel_["lenguaje"]) if calificacion else None,
         "intentos_fallidos": intento.intentos_fallidos,
         "penalizacion": penalizacion(intento.intentos_fallidos, reglas),
     }

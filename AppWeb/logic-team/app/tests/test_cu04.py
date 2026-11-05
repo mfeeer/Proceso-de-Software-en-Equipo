@@ -275,7 +275,14 @@ def test_estrellas_y_xp(fallos, estrellas, xp):
     assert (r["estrellas"], r["xp"]) == (estrellas, xp)
 
 
-# ---------------------------------------------------------------- menú de modos y pasos 1 a 3
+# ---------------------------------------------------------------- menú de modos y rondas
+def _resolver(client, url):
+    """Abre el nivel y lo resuelve a la primera con la solución del programa que tocó."""
+    intento = _abrir(client, url)
+    solucion = _solucion(minijuego_codigo.nivel_de(intento))
+    return intento, _comprobar(client, intento, solucion).json()["codigo"]
+
+
 @pytest.mark.django_db
 def test_el_menu_de_modos_abre_el_minijuego(client):
     html = client.get("/jugar/").content.decode()
@@ -288,28 +295,54 @@ def test_el_menu_de_modos_abre_el_minijuego(client):
 
 @pytest.mark.django_db
 def test_se_recuerda_el_ultimo_lenguaje(client):
-    _abrir(client, "/jugar/codigo/pseudocodigo/3/")
+    _abrir(client, "/jugar/codigo/pseudocodigo/1/")
     assert client.get("/jugar/codigo/")["Location"] == "/jugar/codigo/pseudocodigo/1/"
 
 
 @pytest.mark.django_db
-def test_cada_intento_es_un_programa_y_variante_del_nivel(client):
+def test_los_niveles_no_se_pueden_saltar(client):
     assert client.get("/jugar/codigo/java/1/").status_code == 404
     assert client.get("/jugar/codigo/python/9/").status_code == 404
-    intento = _abrir(client, "/jugar/codigo/python/3/")
-    programas = minijuego_codigo.programas_del_nivel(3)
-    assert intento.nivel_id in {f"{p}-python" for p in programas}
-    assert 0 <= intento.variante < 3
+    respuesta = client.get("/jugar/codigo/python/3/")
+    assert respuesta.status_code == 302 and respuesta["Location"] == MESA
+    _resolver(client, MESA)
+    assert client.get("/jugar/codigo/python/3/")["Location"] == "/jugar/codigo/python/2/"
 
 
 @pytest.mark.django_db
-def test_otro_programa_nunca_repite_el_anterior(client):
-    anterior = _abrir(client).nivel_id
-    for _ in range(6):
-        nuevo = _abrir(client, MESA + "?nuevo=1").nivel_id
-        assert nuevo != anterior
-        anterior = nuevo
-    assert IntentoCodigo.objects.filter(estado=IntentoCodigo.EN_CURSO).count() == 1
+def test_cada_intento_es_un_programa_y_variante_del_nivel(client):
+    intento = _abrir(client)
+    programas = minijuego_codigo.programas_del_nivel(1)
+    assert intento.nivel_id in {f"{p}-python" for p in programas}
+    assert 0 <= intento.variante < 3 and intento.ronda == 1
+
+
+@pytest.mark.django_db
+def test_una_ronda_completa_y_la_siguiente_con_otros_programas(client):
+    primera = []
+    for numero in (1, 2, 3, 4):
+        # «Jugar minijuego» siempre lleva al nivel que sigue
+        url = f"/jugar/codigo/python/{numero}/"
+        assert client.get("/jugar/codigo/")["Location"] == url
+        intento, r = _resolver(client, url)
+        primera.append(intento.nivel_id)
+        assert r["correcta"] and r["ronda"]["completa"] == (numero == 4)
+        assert r["ronda"]["siguiente"] == (numero + 1 if numero < 4 else None)
+        # Un nivel ya resuelto de la ronda muestra su resultado
+        assert _abrir(client, url).id == intento.id
+
+    ronda = r["ronda"]
+    assert [n["estado"] for n in ronda["niveles"]] == ["hecho"] * 4
+    assert (ronda["estrellas"], ronda["estrellas_max"], ronda["xp"]) == (12, 12, 180)
+
+    # Al volver a jugar empieza la ronda 2 en el nivel 1, con otro programa
+    assert client.get("/jugar/codigo/")["Location"] == MESA
+    nuevo = _abrir(client)
+    assert nuevo.ronda == 2 and nuevo.estado == IntentoCodigo.EN_CURSO
+    assert nuevo.nivel_id != primera[0]
+    estado = _estado(client)
+    assert estado["ronda"]["numero"] == 2
+    assert [n["estado"] for n in estado["ronda"]["niveles"]] == ["actual"] + ["pendiente"] * 3
 
 
 @pytest.mark.django_db
@@ -317,6 +350,7 @@ def test_la_mesa_de_trabajo_carga_el_nivel_sin_sus_reglas(client):
     intento = _fijar(_abrir(client), "area-rectangulo", variante=1)
     html = client.get(MESA).content.decode()
     assert "Área de un rectángulo" in html and 'id="mj-ayuda"' in html
+    assert "RONDA 1 · NIVEL 1" in html
     assert "css/taller.css" in html and "js/minijuego_codigo.js" in html
     # La versión de los archivos va en la URL para que el navegador no use una copia vieja
     assert re.search(r"js/minijuego_codigo\.js\?v=[1-9]\d*\"", html)
@@ -329,10 +363,13 @@ def test_la_mesa_de_trabajo_carga_el_nivel_sin_sus_reglas(client):
     assert [ln["id"] for ln in lineas] != ["l1", "l2", "l3", "l4"]  # nunca en orden
     assert 'largo = float(input("Largo: "))' in [ln["codigo"] for ln in lineas]  # variante 2
     assert _estado(client)["nivel"]["lineas"] == lineas  # el mismo revuelto al recargar
-    assert [n["nombre"] for n in estado["niveles"]][0] == "Secuencia"
-    assert {n["numero"]: n["url"] for n in estado["niveles"]}[2] == "/jugar/codigo/python/2/"
+    niveles = estado["ronda"]["niveles"]
+    assert [n["nombre"] for n in niveles][0] == "Secuencia"
+    assert [n["estado"] for n in niveles] == ["actual", "pendiente", "pendiente", "pendiente"]
+    assert estado["urls"]["niveles"]["2"] == "/jugar/codigo/python/2/"
+    assert estado["urls"]["otra_ronda"] == "/jugar/codigo/?lenguaje=python"
     otro = {leng["id"]: leng["url"] for leng in estado["lenguajes"]}
-    assert otro == {"python": MESA, "pseudocodigo": "/jugar/codigo/pseudocodigo/1/"}
+    assert otro["pseudocodigo"] == "/jugar/codigo/?lenguaje=pseudocodigo"
 
 
 @pytest.mark.django_db
@@ -365,13 +402,20 @@ def test_rn02_el_mismo_acomodo_no_se_cobra_dos_veces(client):
 
 
 @pytest.mark.django_db
-def test_flujo_normal_resolver_y_volver_al_menu(client):
+def test_flujo_normal_resolver_y_pasar_al_siguiente_nivel(client):
     intento = _fijar(_abrir(client), "area-rectangulo")
     _comprobar(client, intento, AREA_MAL)  # 1 fallo
     r = _comprobar(client, intento, _p(("l2", 0), ("l1", 0), ("l3", 0), ("l4", 0))).json()
     r = r["codigo"]
     assert r["correcta"] and r["resultado"]["estrellas"] == 2 and r["resultado"]["xp"] == 21
     assert r["consola"][-1] == {"texto": "El área es 20.0"}
+    assert r["ronda"]["siguiente"] == 2 and not r["ronda"]["completa"]
+    assert r["ronda"]["niveles"][0] == {
+        "numero": 1,
+        "nombre": "Secuencia",
+        "estado": "hecho",
+        "estrellas": 2,
+    }
 
     intento.refresh_from_db()
     assert intento.estado == IntentoCodigo.RESUELTO
@@ -381,7 +425,6 @@ def test_flujo_normal_resolver_y_volver_al_menu(client):
     # El menú muestra las estrellas y el siguiente acceso abre el nivel 2
     assert "⭐ 2 de 24 estrellas" in client.get("/jugar/").content.decode()
     assert client.get("/jugar/codigo/")["Location"] == "/jugar/codigo/python/2/"
-    assert _estado(client)["niveles"][0]["estrellas"] == 2
 
 
 @pytest.mark.django_db
@@ -402,20 +445,11 @@ def test_fa3_salir_regresa_al_menu_sin_xp(client):
     intento.refresh_from_db()
     assert intento.estado == IntentoCodigo.ABANDONADO and intento.xp_obtenida == 0
     assert _comprobar(client, intento, AREA).status_code == 409
-    # Al volver a entrar empieza un intento nuevo
-    assert _abrir(client).id != intento.id
-
-
-@pytest.mark.django_db
-def test_otro_programa_despues_de_resolver(client):
-    intento = _fijar(_abrir(client), "area-rectangulo")
-    _comprobar(client, intento, AREA)
-    assert _abrir(client).id == intento.id  # sin «otro programa» se ve el resultado
-    nuevo = _abrir(client, MESA + "?nuevo=1")
-    assert nuevo.id != intento.id and nuevo.estado == IntentoCodigo.EN_CURSO
+    # Al volver sigue en el mismo nivel de la ronda, con otro programa
+    assert client.get("/jugar/codigo/")["Location"] == MESA
+    nuevo = _abrir(client)
+    assert nuevo.id != intento.id and nuevo.ronda == 1
     assert nuevo.nivel_id != "area-rectangulo-python"
-    intento.refresh_from_db()
-    assert intento.estado == IntentoCodigo.RESUELTO  # lo resuelto no se pierde
 
 
 @pytest.mark.django_db

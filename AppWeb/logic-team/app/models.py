@@ -203,6 +203,8 @@ class IntentoCodigo(models.Model):
     # Programa y lenguaje («area-rectangulo-python») y variante de valores que tocaron al azar
     nivel_id = models.CharField(max_length=60)
     variante = models.PositiveSmallIntegerField(default=0)
+    # Ronda del jugador en ese lenguaje: los niveles 1 a 4 en orden; al acabar empieza otra
+    ronda = models.PositiveIntegerField(default=1)
 
     # Último acomodo comprobado ([{id, sangria}, ...]) y su huella: el mismo acomodo no cuenta
     # dos veces como intento fallido (CU04-RN02). bloques_usados son las líneas del acomodo.

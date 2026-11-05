@@ -57,12 +57,15 @@ a.c4-lenguaje:hover {
   background: var(--gold-bright);
 }
 
-/* ===== Niveles ===== */
+/* ===== Avance de la ronda: niveles en orden, unidos por una línea ===== */
 .c4-niveles {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
-  margin-bottom: 12px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
 }
 
 .c4-nivel {
@@ -72,10 +75,18 @@ a.c4-lenguaje:hover {
   padding: 6px 12px;
   font-size: 0.88rem;
   color: #f4e7c9;
-  text-decoration: none;
   border-radius: 8px;
   background: rgba(0, 0, 0, 0.3);
   border: 1.5px solid rgba(214, 170, 70, 0.35);
+}
+
+.c4-nivel + .c4-nivel::before {
+  content: "";
+  order: -1;
+  width: 14px;
+  height: 1.5px;
+  margin-left: -21px;
+  background: rgba(214, 170, 70, 0.5);
 }
 
 .c4-nivel b {
@@ -84,25 +95,67 @@ a.c4-lenguaje:hover {
   width: 1.5rem;
   height: 1.5rem;
   font-family: 'Cinzel', serif;
+  font-size: 0.8rem;
   border-radius: 50%;
   border: 1.5px solid rgba(214, 170, 70, 0.6);
 }
 
-a.c4-nivel:hover {
-  border-color: var(--gold-bright);
+.c4-nivel.hecho b {
+  color: #fff;
+  background: #3f6b2a;
+  border-color: #a8d48a;
 }
 
-.c4-nivel.actual {
+.c4-nivel.pendiente {
+  opacity: 0.55;
+}
+
+.c4-nivel.pendiente b {
+  border-style: dashed;
+}
+
+/* El nivel que se está viendo */
+.c4-nivel.viendo {
   color: #2f1d10;
   background: var(--parchment);
   border-color: var(--gold-bright);
   box-shadow: 0 0 0 2px rgba(255, 217, 106, 0.35);
 }
 
-.c4-nivel.resuelto b {
-  color: #fff;
-  background: #3f6b2a;
-  border-color: #a8d48a;
+.c4-nivel.viendo.actual b {
+  color: #2f1d10;
+  background: var(--gold-bright);
+  border-color: var(--gold-bright);
+}
+
+/* Resumen al terminar la ronda */
+.c4-ronda-resumen {
+  margin: 0 0 14px;
+  text-align: left;
+}
+
+.c4-ronda-resumen ol {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 8px;
+  padding: 8px 12px;
+  list-style: none;
+  font-size: 0.95rem;
+  background: rgba(255, 250, 235, 0.6);
+  border-radius: 8px;
+}
+
+.c4-ronda-resumen li,
+.c4-ronda-resumen .total {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.c4-ronda-resumen .total {
+  padding: 6px 12px;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
 }
 
 .c4-nivel-estrellas {
