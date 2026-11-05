@@ -1,0 +1,61 @@
+{
+  "id": "contar-positivos",
+  "nivel": 4,
+  "titulo": "Contar positivos",
+  "objetivo": "Lee varios números y escribe **cuántos son positivos** (el cero no cuenta). Ojo: **sobran dos líneas**.",
+  "variantes": [
+    { "c": "positivos", "e1": "5", "e2": "-2", "e3": "7", "r": "2" },
+    { "c": "contador", "e1": "-1", "e2": "3", "e3": "0", "r": "1" },
+    { "c": "mayores_a_cero", "e1": "4", "e2": "6", "e3": "-5", "r": "2" }
+  ],
+  "lenguajes": {
+    "python": {
+      "lineas": [
+        { "id": "l1", "codigo": "cantidad = int(input(\"¿Cuántos números? \"))", "sangria": 0 },
+        { "id": "l2", "codigo": "{c} = 0", "sangria": 0 },
+        { "id": "l3", "codigo": "for i in range(cantidad):", "sangria": 0, "despues_de": ["l1", "l2"] },
+        { "id": "l4", "codigo": "numero = int(input(\"Número: \"))", "sangria": 1, "padre": "l3" },
+        { "id": "l5", "codigo": "if numero > 0:", "sangria": 1, "padre": "l3", "despues_de": ["l4"] },
+        { "id": "l6", "codigo": "{c} = {c} + 1", "sangria": 2, "padre": "l5" },
+        { "id": "l7", "codigo": "print(\"Positivos:\", {c})", "sangria": 0, "despues_de": ["l3"] }
+      ],
+      "distractores": [
+        { "id": "d1", "codigo": "{c} = {c} + numero" },
+        { "id": "d2", "codigo": "if numero >= 0:" }
+      ],
+      "consola": [
+        { "texto": "¿Cuántos números? ", "entrada": "3" },
+        { "texto": "Número: ", "entrada": "{e1}" },
+        { "texto": "Número: ", "entrada": "{e2}" },
+        { "texto": "Número: ", "entrada": "{e3}" },
+        { "texto": "Positivos: {r}" }
+      ]
+    },
+    "pseudocodigo": {
+      "lineas": [
+        { "id": "l1", "codigo": "Algoritmo ContarPositivos", "sangria": 0 },
+        { "id": "l2", "codigo": "Leer cantidad", "sangria": 1, "padre": "l1" },
+        { "id": "l3", "codigo": "{c} <- 0", "sangria": 1, "padre": "l1" },
+        { "id": "l4", "codigo": "Para i <- 1 Hasta cantidad Hacer", "sangria": 1, "padre": "l1", "despues_de": ["l2", "l3"] },
+        { "id": "l5", "codigo": "Leer numero", "sangria": 2, "padre": "l4" },
+        { "id": "l6", "codigo": "Si numero > 0 Entonces", "sangria": 2, "padre": "l4", "despues_de": ["l5"] },
+        { "id": "l7", "codigo": "{c} <- {c} + 1", "sangria": 3, "padre": "l6" },
+        { "id": "l8", "codigo": "FinSi", "sangria": 2, "padre": "l4", "sigue_a": "l6" },
+        { "id": "l9", "codigo": "FinPara", "sangria": 1, "padre": "l1", "sigue_a": "l4" },
+        { "id": "l10", "codigo": "Escribir \"Positivos: \", {c}", "sangria": 1, "padre": "l1", "despues_de": ["l9"] },
+        { "id": "l11", "codigo": "FinAlgoritmo", "sangria": 0, "sigue_a": "l1" }
+      ],
+      "distractores": [
+        { "id": "d1", "codigo": "{c} <- {c} + numero" },
+        { "id": "d2", "codigo": "Si numero >= 0 Entonces" }
+      ],
+      "consola": [
+        { "texto": "> ", "entrada": "3" },
+        { "texto": "> ", "entrada": "{e1}" },
+        { "texto": "> ", "entrada": "{e2}" },
+        { "texto": "> ", "entrada": "{e3}" },
+        { "texto": "Positivos: {r}" }
+      ]
+    }
+  }
+}

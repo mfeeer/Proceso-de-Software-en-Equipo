@@ -1,0 +1,48 @@
+{
+  "id": "factorial",
+  "nivel": 3,
+  "titulo": "Factorial",
+  "objetivo": "Lee un número **N** y escribe su **factorial**: 1 × 2 × ... × N. Ojo: **sobra una línea**.",
+  "variantes": [
+    { "n": "n", "f": "factorial", "e1": "4", "r": "24" },
+    { "n": "n", "f": "resultado", "e1": "5", "r": "120" },
+    { "n": "numero", "f": "producto", "e1": "3", "r": "6" }
+  ],
+  "lenguajes": {
+    "python": {
+      "lineas": [
+        { "id": "l1", "codigo": "{n} = int(input(\"N: \"))", "sangria": 0 },
+        { "id": "l2", "codigo": "{f} = 1", "sangria": 0 },
+        { "id": "l3", "codigo": "for i in range(1, {n} + 1):", "sangria": 0, "despues_de": ["l1", "l2"] },
+        { "id": "l4", "codigo": "{f} = {f} * i", "sangria": 1, "padre": "l3" },
+        { "id": "l5", "codigo": "print(\"Factorial:\", {f})", "sangria": 0, "despues_de": ["l3"] }
+      ],
+      "distractores": [
+        { "id": "d1", "codigo": "{f} = 0" }
+      ],
+      "consola": [
+        { "texto": "N: ", "entrada": "{e1}" },
+        { "texto": "Factorial: {r}" }
+      ]
+    },
+    "pseudocodigo": {
+      "lineas": [
+        { "id": "l1", "codigo": "Algoritmo Factorial", "sangria": 0 },
+        { "id": "l2", "codigo": "Leer {n}", "sangria": 1, "padre": "l1" },
+        { "id": "l3", "codigo": "{f} <- 1", "sangria": 1, "padre": "l1" },
+        { "id": "l4", "codigo": "Para i <- 1 Hasta {n} Hacer", "sangria": 1, "padre": "l1", "despues_de": ["l2", "l3"] },
+        { "id": "l5", "codigo": "{f} <- {f} * i", "sangria": 2, "padre": "l4" },
+        { "id": "l6", "codigo": "FinPara", "sangria": 1, "padre": "l1", "sigue_a": "l4" },
+        { "id": "l7", "codigo": "Escribir \"Factorial: \", {f}", "sangria": 1, "padre": "l1", "despues_de": ["l6"] },
+        { "id": "l8", "codigo": "FinAlgoritmo", "sangria": 0, "sigue_a": "l1" }
+      ],
+      "distractores": [
+        { "id": "d1", "codigo": "{f} <- 0" }
+      ],
+      "consola": [
+        { "texto": "> ", "entrada": "{e1}" },
+        { "texto": "Factorial: {r}" }
+      ]
+    }
+  }
+}

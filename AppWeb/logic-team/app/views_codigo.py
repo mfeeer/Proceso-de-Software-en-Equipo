@@ -1,12 +1,16 @@
 """CU04 — Resolver minijuego de código.
 
-Se abre desde el menú de modos de CU05 («Minijuego de código»). Mesa de trabajo donde se arma
-el algoritmo con bloques, mas la API JSON que usa js/minijuego_codigo.js. Las reglas viven en
-app/services/minijuego_codigo.py y el contenido en app/data (niveles e instrucciones).
+Se abre desde el menú de modos de CU05 («Minijuego de código»). Mesa de trabajo donde se
+acomodan las líneas revueltas de un programa en Python o pseudocódigo (en cada nivel toca un
+programa y una variante al azar), mas la API JSON que usa
+js/minijuego_codigo.js. Las reglas viven en app/services/minijuego_codigo.py y los programas en
+app/data/niveles_codigo.
 """
 
 import json
+import os
 
+from django.contrib.staticfiles import finders
 from django.db import transaction
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -16,7 +20,7 @@ from django.views.decorators.http import require_GET, require_POST
 
 from .models import IntentoCodigo
 from .services import escenarios, minijuego_codigo, tecnicismos
-from .services.minijuego_codigo import ReglaCodigo, TableroInvalido
+from .services.minijuego_codigo import FueraDeOrden, ProgramaInvalido, ReglaCodigo
 
 
 def _cuerpo_json(request):
@@ -44,23 +48,58 @@ def _pagina_error(request, exc):
 # ---------------------------------------------------------------- páginas
 @require_GET
 def inicio(request):
-    """«Minijuego de código» en el menú de modos: abre el primer nivel que falta resolver."""
+    """«Minijuego de código» en el menú de modos: abre el nivel donde va la ronda.
+
+    Si la ronda ya terminó, empieza otra. ?lenguaje=python|pseudocodigo elige el lenguaje;
+    si no, se usa el último que jugó.
+    """
     try:
-        nivel_id = minijuego_codigo.nivel_para(tecnicismos.jugador_de(request))
+        lenguaje, numero = minijuego_codigo.empezar(
+            tecnicismos.jugador_de(request), request.GET.get("lenguaje")
+        )
     except escenarios.CatalogoError as exc:
         return _pagina_error(request, exc)
-    return redirect("codigo_mesa", nivel_id=nivel_id)
+    return redirect("codigo_mesa", lenguaje=lenguaje, numero=numero)
+
+
+ARCHIVOS_MESA = ("js/minijuego_codigo.js", "css/minijuego_codigo.css")
+
+
+def _version_archivos():
+    """Cambia cada vez que se modifica el JS o el CSS de la mesa (?v= en la plantilla).
+
+    Así el navegador no se queda con una copia vieja guardada en caché.
+    """
+    rutas = [finders.find(archivo) for archivo in ARCHIVOS_MESA]
+    return max((int(os.path.getmtime(r)) for r in rutas if r), default=0)
+
+
+def _enlaces(estado):
+    """Agrega al estado las direcciones de los niveles, de otra ronda y del otro lenguaje."""
+    lenguaje = estado["nivel"]["lenguaje"]
+    inicio_ = reverse("codigo_inicio")
+    estado["urls"] = {
+        "niveles": {
+            n["numero"]: reverse("codigo_mesa", args=[lenguaje, n["numero"]])
+            for n in estado["ronda"]["niveles"]
+        },
+        "otra_ronda": f"{inicio_}?lenguaje={lenguaje}",
+    }
+    for leng in estado["lenguajes"]:
+        leng["url"] = f"{inicio_}?lenguaje={leng['id']}"
+    return estado
 
 
 @ensure_csrf_cookie
 @require_GET
-def mesa(request, nivel_id):
-    """Pasos 1 a 3: la mesa de trabajo del nivel. ?nuevo=1 es «Jugar otra vez»."""
+def mesa(request, lenguaje, numero):
+    """Pasos 1 a 3: la mesa de trabajo del nivel. Los niveles van en orden y no se saltan."""
+    jugador = tecnicismos.jugador_de(request)
     try:
-        intento = minijuego_codigo.iniciar(
-            tecnicismos.jugador_de(request), nivel_id, nuevo=request.GET.get("nuevo") == "1"
-        )
-        estado = minijuego_codigo.estado_publico(intento)
+        intento = minijuego_codigo.iniciar(jugador, lenguaje, numero)
+        estado = _enlaces(minijuego_codigo.estado_publico(intento))
+    except FueraDeOrden as exc:
+        return redirect("codigo_mesa", lenguaje=lenguaje, numero=exc.numero)
     except ReglaCodigo as exc:
         raise Http404(str(exc)) from exc
     except escenarios.CatalogoError as exc:
@@ -68,19 +107,19 @@ def mesa(request, nivel_id):
     return render(
         request,
         "minijuego_codigo.html",
-        {"estado": estado, "nivel_id": nivel_id},
+        {"estado": estado, "version": _version_archivos()},
     )
 
 
 # ---------------------------------------------------------------- API (js/minijuego_codigo.js)
-def _accion(request, intento_id, funcion, con_tablero=True):
+def _accion(request, intento_id, funcion, con_programa=True):
     try:
         with transaction.atomic():
             intento = _intento_del_jugador(request, intento_id, bloquear=True)
-            argumentos = [_cuerpo_json(request)] if con_tablero else []
+            argumentos = [_cuerpo_json(request)] if con_programa else []
             resultado = funcion(intento, *argumentos)
         return JsonResponse({"codigo": resultado})
-    except TableroInvalido as exc:
+    except ProgramaInvalido as exc:
         return _error(str(exc), 400)
     except ReglaCodigo as exc:
         return _error(str(exc), 409)
@@ -89,15 +128,9 @@ def _accion(request, intento_id, funcion, con_tablero=True):
 
 
 @require_POST
-def api_compilar(request, intento_id):
-    """Pasos 4 y 5, FE1 y FE3. Cuerpo: {"tablero": [...], "sueltos": [...]}."""
-    return _accion(request, intento_id, minijuego_codigo.compilar)
-
-
-@require_POST
-def api_ejecutar(request, intento_id):
-    """Pasos 6 a 9 y FE2. Recibe el mismo tablero que se compiló."""
-    return _accion(request, intento_id, minijuego_codigo.ejecutar)
+def api_comprobar(request, intento_id):
+    """Pasos 4 a 9, FE1 a FE3. Cuerpo: {"programa": [{"id": "l1", "sangria": 0}, ...]}."""
+    return _accion(request, intento_id, minijuego_codigo.comprobar)
 
 
 def _salir(intento):
@@ -108,4 +141,4 @@ def _salir(intento):
 @require_POST
 def api_salir(request, intento_id):
     """FA3: abandona el intento sin XP y regresa al menú de modos."""
-    return _accion(request, intento_id, _salir, con_tablero=False)
+    return _accion(request, intento_id, _salir, con_programa=False)

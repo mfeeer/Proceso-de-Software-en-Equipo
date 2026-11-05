@@ -1,0 +1,42 @@
+{
+  "id": "par-impar",
+  "nivel": 2,
+  "titulo": "¿Par o impar?",
+  "objetivo": "Lee un número entero y escribe si es **par** o **impar**.",
+  "variantes": [
+    { "n": "n", "e1": "7", "s": "impar" },
+    { "n": "numero", "e1": "10", "s": "par" },
+    { "n": "x", "e1": "3", "s": "impar" }
+  ],
+  "lenguajes": {
+    "python": {
+      "lineas": [
+        { "id": "l1", "codigo": "{n} = int(input(\"Número: \"))", "sangria": 0 },
+        { "id": "l2", "codigo": "if {n} % 2 == 0:", "sangria": 0, "despues_de": ["l1"] },
+        { "id": "l3", "codigo": "print({n}, \"es par\")", "sangria": 1, "padre": "l2" },
+        { "id": "l4", "codigo": "else:", "sangria": 0, "sigue_a": "l2" },
+        { "id": "l5", "codigo": "print({n}, \"es impar\")", "sangria": 1, "padre": "l4" }
+      ],
+      "consola": [
+        { "texto": "Número: ", "entrada": "{e1}" },
+        { "texto": "{e1} es {s}" }
+      ]
+    },
+    "pseudocodigo": {
+      "lineas": [
+        { "id": "l1", "codigo": "Algoritmo ParImpar", "sangria": 0 },
+        { "id": "l2", "codigo": "Leer {n}", "sangria": 1, "padre": "l1" },
+        { "id": "l3", "codigo": "Si {n} MOD 2 = 0 Entonces", "sangria": 1, "padre": "l1", "despues_de": ["l2"] },
+        { "id": "l4", "codigo": "Escribir {n}, \" es par\"", "sangria": 2, "padre": "l3" },
+        { "id": "l5", "codigo": "SiNo", "sangria": 1, "padre": "l1", "sigue_a": "l3" },
+        { "id": "l6", "codigo": "Escribir {n}, \" es impar\"", "sangria": 2, "padre": "l5" },
+        { "id": "l7", "codigo": "FinSi", "sangria": 1, "padre": "l1", "sigue_a": "l5" },
+        { "id": "l8", "codigo": "FinAlgoritmo", "sangria": 0, "sigue_a": "l1" }
+      ],
+      "consola": [
+        { "texto": "> ", "entrada": "{e1}" },
+        { "texto": "{e1} es {s}" }
+      ]
+    }
+  }
+}

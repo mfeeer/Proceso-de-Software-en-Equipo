@@ -1,0 +1,46 @@
+{
+  "id": "aprobado",
+  "nivel": 2,
+  "titulo": "¿Aprobó o reprobó?",
+  "objetivo": "Lee el **nombre** y la **calificación** de un alumno y escribe si **aprobó** (calificación mínima: **{min}**) o **reprobó**.",
+  "variantes": [
+    { "min": "6", "e1": "Ana", "e2": "8.5", "s": "aprobó" },
+    { "min": "7", "e1": "Luis", "e2": "6.5", "s": "reprobó" },
+    { "min": "8", "e1": "Sofía", "e2": "9", "s": "aprobó" }
+  ],
+  "lenguajes": {
+    "python": {
+      "lineas": [
+        { "id": "l1", "codigo": "nombre = input(\"Nombre: \")", "sangria": 0 },
+        { "id": "l2", "codigo": "calificacion = float(input(\"Calificación: \"))", "sangria": 0 },
+        { "id": "l3", "codigo": "if calificacion >= {min}:", "sangria": 0, "despues_de": ["l1", "l2"] },
+        { "id": "l4", "codigo": "print(nombre, \"aprobó\")", "sangria": 1, "padre": "l3" },
+        { "id": "l5", "codigo": "else:", "sangria": 0, "sigue_a": "l3" },
+        { "id": "l6", "codigo": "print(nombre, \"reprobó\")", "sangria": 1, "padre": "l5" }
+      ],
+      "consola": [
+        { "texto": "Nombre: ", "entrada": "{e1}" },
+        { "texto": "Calificación: ", "entrada": "{e2}" },
+        { "texto": "{e1} {s}" }
+      ]
+    },
+    "pseudocodigo": {
+      "lineas": [
+        { "id": "l1", "codigo": "Algoritmo Aprobado", "sangria": 0 },
+        { "id": "l2", "codigo": "Leer nombre", "sangria": 1, "padre": "l1" },
+        { "id": "l3", "codigo": "Leer calificacion", "sangria": 1, "padre": "l1" },
+        { "id": "l4", "codigo": "Si calificacion >= {min} Entonces", "sangria": 1, "padre": "l1", "despues_de": ["l2", "l3"] },
+        { "id": "l5", "codigo": "Escribir nombre, \" aprobó\"", "sangria": 2, "padre": "l4" },
+        { "id": "l6", "codigo": "SiNo", "sangria": 1, "padre": "l1", "sigue_a": "l4" },
+        { "id": "l7", "codigo": "Escribir nombre, \" reprobó\"", "sangria": 2, "padre": "l6" },
+        { "id": "l8", "codigo": "FinSi", "sangria": 1, "padre": "l1", "sigue_a": "l6" },
+        { "id": "l9", "codigo": "FinAlgoritmo", "sangria": 0, "sigue_a": "l1" }
+      ],
+      "consola": [
+        { "texto": "> ", "entrada": "{e1}" },
+        { "texto": "> ", "entrada": "{e2}" },
+        { "texto": "{e1} {s}" }
+      ]
+    }
+  }
+}

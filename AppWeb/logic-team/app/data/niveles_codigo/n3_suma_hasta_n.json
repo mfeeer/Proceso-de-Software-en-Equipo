@@ -1,0 +1,48 @@
+{
+  "id": "suma-hasta-n",
+  "nivel": 3,
+  "titulo": "Suma del 1 al N",
+  "objetivo": "Lee un número **N** y escribe la suma 1 + 2 + ... + N. Ojo: **sobra una línea**.",
+  "variantes": [
+    { "n": "n", "s": "suma", "e1": "4", "r": "10" },
+    { "n": "limite", "s": "total", "e1": "5", "r": "15" },
+    { "n": "n", "s": "acumulado", "e1": "6", "r": "21" }
+  ],
+  "lenguajes": {
+    "python": {
+      "lineas": [
+        { "id": "l1", "codigo": "{n} = int(input(\"N: \"))", "sangria": 0 },
+        { "id": "l2", "codigo": "{s} = 0", "sangria": 0 },
+        { "id": "l3", "codigo": "for i in range(1, {n} + 1):", "sangria": 0, "despues_de": ["l1", "l2"] },
+        { "id": "l4", "codigo": "{s} = {s} + i", "sangria": 1, "padre": "l3" },
+        { "id": "l5", "codigo": "print(\"La suma es\", {s})", "sangria": 0, "despues_de": ["l3"] }
+      ],
+      "distractores": [
+        { "id": "d1", "codigo": "for i in range(1, {n}):" }
+      ],
+      "consola": [
+        { "texto": "N: ", "entrada": "{e1}" },
+        { "texto": "La suma es {r}" }
+      ]
+    },
+    "pseudocodigo": {
+      "lineas": [
+        { "id": "l1", "codigo": "Algoritmo SumaHastaN", "sangria": 0 },
+        { "id": "l2", "codigo": "Leer {n}", "sangria": 1, "padre": "l1" },
+        { "id": "l3", "codigo": "{s} <- 0", "sangria": 1, "padre": "l1" },
+        { "id": "l4", "codigo": "Para i <- 1 Hasta {n} Hacer", "sangria": 1, "padre": "l1", "despues_de": ["l2", "l3"] },
+        { "id": "l5", "codigo": "{s} <- {s} + i", "sangria": 2, "padre": "l4" },
+        { "id": "l6", "codigo": "FinPara", "sangria": 1, "padre": "l1", "sigue_a": "l4" },
+        { "id": "l7", "codigo": "Escribir \"La suma es \", {s}", "sangria": 1, "padre": "l1", "despues_de": ["l6"] },
+        { "id": "l8", "codigo": "FinAlgoritmo", "sangria": 0, "sigue_a": "l1" }
+      ],
+      "distractores": [
+        { "id": "d1", "codigo": "Para i <- 1 Hasta {n} - 1 Hacer" }
+      ],
+      "consola": [
+        { "texto": "> ", "entrada": "{e1}" },
+        { "texto": "La suma es {r}" }
+      ]
+    }
+  }
+}

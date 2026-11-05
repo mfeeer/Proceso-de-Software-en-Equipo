@@ -1,63 +1,68 @@
 """Servicio de codigo del CU-04 Resolver minijuego de codigo (SDS 1.3.4 y 3.3.2).
 
-El minijuego se abre desde el menu de modos (CU-05) y no depende de una partida. El jugador
-arma un algoritmo con bloques: INBOX lee el siguiente dato y lo guarda en una variable con
-nombre (A, B), OUTBOX entrega una variable, COPY_TO copia una variable en otra y SI compara dos
-variables y sigue una de sus dos ramas.
+El minijuego se abre desde el menu de modos (CU-05) y no depende de una partida. Tiene 4 niveles
+por tema (secuencia, decisiones, ciclos, ciclos con decisiones), cada uno en Python y en
+pseudocodigo. Cada nivel tiene varios programas completos y cada programa varias variantes
+(otros nombres de variables, otros valores y otro ejemplo): al abrir un nivel se elige un
+programa y una variante al azar, y sus lineas salen revueltas. El jugador las acomoda en orden y
+con su sangria hasta que el programa quede como debe ir.
 
-  iniciar()   -> pasos 1 a 3: abre (o retoma) el IntentoCodigo del jugador para un nivel
-  compilar()  -> pasos 4 y 5: tablero vacio (FE3), bloques sueltos o incompletos (FE1, RN02);
-                 si compila, guarda el tablero y su huella
-  ejecutar()  -> pasos 6 a 9: solo el tablero compilado (RN02); corre todos los casos de prueba
-                 con limite de pasos (FE2) y califica: estrellas (RN01, RN03) y XP (RN04, RN05)
-  salir()     -> FA3: el intento queda abandonado, sin XP
+No hay una sola respuesta. Cada linea declara reglas y vale cualquier acomodo que las respete,
+asi cada quien puede programar a su manera (por ejemplo, leer b antes que a):
 
-El contenido vive en app/data (RNF-MAN-05, RNF-MAN-07): los bloques en
-instrucciones_codigo.json, los niveles en niveles_codigo/*.json y las reglas de estrellas y XP
-en config_juego.json > minijuego_codigo. Se vuelve a leer solo cuando cambia.
+  sangria     nivel de sangria de la linea (0, 1, 2...)
+  padre       la linea que la contiene (if, for, Si, Para, Algoritmo); sin padre va hasta afuera
+  sigue_a     la linea cuyo bloque debe terminar justo antes (else, SiNo, FinSi, FinPara...)
+  despues_de  lineas que deben aparecer antes, en cualquier lugar del programa
+
+Algunos programas traen distractores: lineas que no van en el programa.
+
+  empezar()    -> «Jugar minijuego»: el nivel donde va la ronda del jugador (1 a 4, en orden);
+                  si la ronda ya acabo, empieza otra
+  iniciar()    -> pasos 1 a 3: retoma el intento del nivel o abre uno nuevo con un programa y
+                  una variante al azar; un nivel que todavia no sigue no se puede abrir
+  comprobar()  -> pasos 4 a 9: programa vacio (FE3) o incompleto (FE1) no cuentan como fallo;
+                  si las reglas no se cumplen es un intento fallido (FE2, RN05) salvo que sea el
+                  mismo acomodo que ya fallo (RN02); si se cumplen, califica (RN01, RN03, RN04)
+  salir()      -> FA3: el intento queda abandonado, sin XP
+
+El contenido vive en app/data (RNF-MAN-05, RNF-MAN-07): los programas en niveles_codigo/*.json
+y los niveles, estrellas y XP en config_juego.json > minijuego_codigo. Se vuelve a leer solo
+cuando cambia.
 """
 
 import hashlib
 import json
-import operator
+import random
+import re
 
 from django.db import transaction
+from django.db.models import Max
 
 from app.models import IntentoCodigo
 
 from . import escenarios
 
-INSTRUCCIONES_PATH = escenarios.DATA_DIR / "instrucciones_codigo.json"
 NIVELES_DIR = escenarios.DATA_DIR / "niveles_codigo"
 
-TIPOS = {"entrada", "salida", "memoria", "condicion"}
-# Parametros que el tablero manda para cada tipo de instruccion
-PARAMETROS = {
-    "entrada": ("destino",),
-    "salida": ("valor",),
-    "memoria": ("origen", "destino"),
-    "condicion": ("izq", "op", "der"),
-}
-OPERADORES = {
-    ">": (operator.gt, ">"),
-    "<": (operator.lt, "<"),
-    "==": (operator.eq, "="),
-    "!=": (operator.ne, "≠"),
-    ">=": (operator.ge, "≥"),
-    "<=": (operator.le, "≤"),
-}
-MAX_PROFUNDIDAD = 4  # un SI dentro de otro, hasta 4 niveles
-MAX_BLOQUES_TABLERO = 60  # tope de lo que acepta el servidor, sea cual sea el nivel
+LENGUAJES = {"python": "Python", "pseudocodigo": "Pseudocódigo"}
+LENGUAJE_INICIAL = "python"
+MAX_SANGRIA = 6
+MAX_LINEAS = 40  # tope de lo que acepta el servidor, sea cual sea el nivel
+MAX_CODIGO = 80  # caracteres por linea
+ID_VALIDO = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+MARCADOR = re.compile(r"\{(\w+)\}")  # {b}, {min}... se cambian por los valores de la variante
 
 _cache = {"firma": None, "resultado": None}
+_azar = random.Random()  # eleccion de programa y variante (las pruebas lo pueden sembrar)
 
 
 class ReglaCodigo(Exception):
     """El jugador intento algo que las reglas no permiten (la API responde 409)."""
 
 
-class TableroInvalido(Exception):
-    """El tablero que mando el navegador no tiene la forma esperada (la API responde 400)."""
+class ProgramaInvalido(Exception):
+    """El programa que mando el navegador no tiene la forma esperada (la API responde 400)."""
 
 
 # ---------------------------------------------------------------- catalogo (contenido en JSON)
@@ -82,11 +87,12 @@ def _leer(ruta, errores):
 
 
 def _validar_reglas(config, errores):
+    """Devuelve los niveles validos de config_juego.json > minijuego_codigo."""
     donde = f"{escenarios.CONFIG_PATH.name} > minijuego_codigo"
     reglas = config.get("minijuego_codigo")
     if not isinstance(reglas, dict):
         errores.append(f"{escenarios.CONFIG_PATH.name}: falta la clave 'minijuego_codigo'")
-        return
+        return []
     estrellas = reglas.get("estrellas")
     if not isinstance(estrellas, list) or not estrellas:
         errores.append(f"{donde}: 'estrellas' debe ser una lista con al menos una regla")
@@ -96,84 +102,211 @@ def _validar_reglas(config, errores):
                 errores.append(f"{donde}: cada regla necesita 'estrellas' de 1 a 5")
             if not _entero(regla.get("porcentaje_xp"), 0, 100):
                 errores.append(f"{donde}: 'porcentaje_xp' debe ser de 0 a 100")
-            extra = regla.get("bloques_extra_max")
-            if extra is not None and not _entero(extra):
-                errores.append(f"{donde}: 'bloques_extra_max' debe ser un entero o null")
-        if estrellas[-1].get("bloques_extra_max", 0) is not None:
-            errores.append(f"{donde}: la ultima regla debe tener bloques_extra_max: null")
+            fallos = regla.get("fallos_max")
+            if fallos is not None and not _entero(fallos):
+                errores.append(f"{donde}: 'fallos_max' debe ser un entero o null")
+        if estrellas[-1].get("fallos_max", 0) is not None:
+            errores.append(f"{donde}: la ultima regla debe tener fallos_max: null")
     for clave in ("penalizacion_por_fallo", "penalizacion_maxima"):
         if not _entero(reglas.get(clave), 0, 100):
             errores.append(f"{donde}: '{clave}' debe ser de 0 a 100")
+    if not _entero(reglas.get("rondas_por_juego"), 1, 10):
+        errores.append(f"{donde}: 'rondas_por_juego' debe ser de 1 a 10")
 
-
-def _validar_instrucciones(datos, errores):
-    donde = INSTRUCCIONES_PATH.name
-    instrucciones = {}
-    for ins in (datos or {}).get("instrucciones") or []:
-        iid = ins.get("id")
-        if not _texto_ok(iid) or iid in instrucciones:
-            errores.append(f"{donde}: cada instruccion necesita un 'id' unico")
-            continue
-        if ins.get("tipo") not in TIPOS:
-            errores.append(f"{donde} > {iid}: 'tipo' debe ser uno de {', '.join(sorted(TIPOS))}")
-            continue
-        if list(ins.get("parametros") or []) != list(PARAMETROS[ins["tipo"]]):
-            esperados = ", ".join(PARAMETROS[ins["tipo"]])
-            errores.append(f"{donde} > {iid}: los parametros de '{ins['tipo']}' son {esperados}")
-        for campo in ("etiqueta", "descripcion"):
-            if not _texto_ok(ins.get(campo)):
-                errores.append(f"{donde} > {iid}: falta '{campo}'")
-        instrucciones[iid] = ins
-    if not instrucciones:
-        errores.append(f"{donde}: no hay instrucciones")
-    return instrucciones
-
-
-def _validar_nivel(nivel, nombre, instrucciones, errores):
-    donde = f"niveles_codigo/{nombre}"
-    if not _texto_ok(nivel.get("id")):
-        errores.append(f"{donde}: falta 'id'")
-    for campo in ("titulo", "objetivo"):
-        if not _texto_ok(nivel.get(campo)):
-            errores.append(f"{donde}: falta '{campo}'")
-    variables = nivel.get("variables")
-    if (
-        not isinstance(variables, list)
-        or not 1 <= len(variables) <= 4
-        or len(set(variables)) != len(variables)
-        or not all(_texto_ok(v) and len(v) <= 3 for v in variables)
-    ):
-        errores.append(f"{donde}: 'variables' debe tener de 1 a 4 nombres cortos sin repetir")
-    bloques = nivel.get("bloques_disponibles")
-    if not isinstance(bloques, list) or not bloques:
-        errores.append(f"{donde}: 'bloques_disponibles' no puede estar vacio")
-    else:
-        for bloque in bloques:
-            if bloque not in instrucciones:
-                errores.append(
-                    f"{donde}: el bloque '{bloque}' no existe en {INSTRUCCIONES_PATH.name}"
-                )
-    if not _entero(nivel.get("optimo"), 1):
-        errores.append(f"{donde}: 'optimo' debe ser un entero mayor a 0")
-    elif not _entero(nivel.get("max_bloques"), nivel["optimo"], MAX_BLOQUES_TABLERO):
-        errores.append(f"{donde}: 'max_bloques' debe ir del optimo a {MAX_BLOQUES_TABLERO}")
-    for clave, minimo in (("xp_base", 0), ("max_pasos", 1), ("orden", 0)):
-        if not _entero(nivel.get(clave, 0), minimo):
-            errores.append(f"{donde}: '{clave}' debe ser un entero de {minimo} en adelante")
-    casos = nivel.get("casos")
-    if not isinstance(casos, list) or not casos:
-        errores.append(f"{donde}: necesita al menos un caso de prueba")
-        return
-    for caso in casos:
-        listas = (caso.get("entradas"), caso.get("salida"))
-        if not all(isinstance(lista, list) and lista for lista in listas) or not all(
-            _entero(n, -999, 999) for lista in listas for n in lista
+    niveles = reglas.get("niveles")
+    if not isinstance(niveles, list) or not niveles:
+        errores.append(f"{donde}: 'niveles' debe ser una lista con al menos un nivel")
+        return []
+    validos = []
+    for nivel_ in niveles:
+        numero = nivel_.get("numero") if isinstance(nivel_, dict) else None
+        if (
+            not _entero(numero, 1)
+            or any(n["numero"] == numero for n in validos)
+            or not _texto_ok(nivel_.get("nombre"))
+            or not _entero(nivel_.get("xp_base"), 0)
         ):
-            errores.append(f"{donde}: cada caso necesita 'entradas' y 'salida' con enteros")
+            errores.append(f"{donde}: cada nivel necesita 'numero' unico, 'nombre' y 'xp_base'")
+            continue
+        validos.append(nivel_)
+    return sorted(validos, key=lambda n: n["numero"])
+
+
+def _validar_variante(variante, donde, errores):
+    """Lineas, distractores y consola de un programa en un lenguaje (ya con sus valores)."""
+    if not isinstance(variante, dict):
+        errores.append(f"{donde}: debe ser un objeto con 'lineas'")
+        return False
+    antes = len(errores)
+    lineas = variante.get("lineas")
+    distractores = variante.get("distractores", [])
+    if not isinstance(lineas, list) or not 2 <= len(lineas) <= MAX_LINEAS:
+        errores.append(f"{donde}: 'lineas' debe tener de 2 a {MAX_LINEAS} lineas")
+        return False
+    if not isinstance(distractores, list):
+        errores.append(f"{donde}: 'distractores' debe ser una lista")
+        return False
+    if len(lineas) + len(distractores) > MAX_LINEAS:
+        errores.append(f"{donde}: hay mas de {MAX_LINEAS} lineas contando los distractores")
+
+    ids, codigos = set(), set()
+    for linea in [*lineas, *distractores]:
+        lid, codigo = linea.get("id"), linea.get("codigo")
+        if not _texto_ok(lid) or lid in ids:
+            errores.append(f"{donde}: cada linea necesita un 'id' unico")
+            continue
+        ids.add(lid)
+        if not _texto_ok(codigo) or len(codigo) > MAX_CODIGO:
+            errores.append(f"{donde} > {lid}: 'codigo' debe tener de 1 a {MAX_CODIGO} caracteres")
+        elif codigo.strip() in codigos:
+            # Dos lineas iguales serian intercambiables y una contaria como mal puesta
+            errores.append(f"{donde} > {lid}: el codigo «{codigo}» se repite")
+        else:
+            codigos.add(codigo.strip())
+
+    reales = {linea.get("id"): linea for linea in lineas}
+    for linea in lineas:
+        lid = linea.get("id")
+        sangria, padre = linea.get("sangria"), linea.get("padre")
+        if not _entero(sangria, 0, MAX_SANGRIA):
+            errores.append(f"{donde} > {lid}: 'sangria' debe ser de 0 a {MAX_SANGRIA}")
+            continue
+        if padre is None and sangria != 0:
+            errores.append(f"{donde} > {lid}: con sangria {sangria} necesita un 'padre'")
+        elif padre is not None and (
+            padre not in reales or reales[padre].get("sangria") != sangria - 1
+        ):
+            errores.append(
+                f"{donde} > {lid}: 'padre' debe ser una linea con un nivel menos de sangria"
+            )
+        sigue = linea.get("sigue_a")
+        if sigue is not None and (sigue not in reales or reales[sigue].get("padre") != padre):
+            errores.append(f"{donde} > {lid}: 'sigue_a' debe ser una linea con el mismo padre")
+        previas = linea.get("despues_de", [])
+        if not isinstance(previas, list) or not all(p in reales and p != lid for p in previas):
+            errores.append(f"{donde} > {lid}: 'despues_de' debe listar ids de otras lineas")
+
+    consola = variante.get("consola")
+    if (
+        not isinstance(consola, list)
+        or not consola
+        or not all(
+            isinstance(c, dict)
+            and isinstance(c.get("texto"), str)
+            and isinstance(c.get("entrada", ""), str)
+            for c in consola
+        )
+    ):
+        errores.append(f"{donde}: 'consola' debe ser una lista de {{texto, entrada}}")
+    return len(errores) == antes
+
+
+def _textos(datos):
+    """Todos los textos de un programa donde puede haber {marcadores}."""
+    yield datos.get("titulo", "")
+    yield datos.get("objetivo", "")
+    for variante in (datos.get("lenguajes") or {}).values():
+        if not isinstance(variante, dict):
+            continue
+        for linea in [*(variante.get("lineas") or []), *(variante.get("distractores") or [])]:
+            if isinstance(linea, dict):
+                yield linea.get("codigo", "")
+        for c in variante.get("consola") or []:
+            if isinstance(c, dict):
+                yield c.get("texto", "")
+                yield c.get("entrada", "")
+
+
+def _poner(texto, valores):
+    return MARCADOR.sub(lambda m: valores[m.group(1)], texto)
+
+
+def _armar(datos, lenguaje, indice, xp_base=0, numero=0):
+    """El nivel listo para jugar: el programa en un lenguaje con los valores de una variante."""
+    valores = datos["variantes"][indice]
+    plantilla = datos["lenguajes"][lenguaje]
+
+    def lineas(lista):
+        return [{**ln, "codigo": _poner(ln["codigo"], valores)} for ln in lista]
+
+    return {
+        "id": f"{datos['id']}-{lenguaje}",
+        "programa": datos["id"],
+        "lenguaje": lenguaje,
+        "numero": numero,
+        "variante": indice,
+        "titulo": _poner(datos["titulo"], valores),
+        "objetivo": _poner(datos["objetivo"], valores),
+        "xp_base": xp_base,
+        "lineas": lineas(plantilla["lineas"]),
+        "distractores": lineas(plantilla.get("distractores", [])),
+        "consola": [
+            {k: _poner(v, valores) for k, v in c.items() if k in ("texto", "entrada")}
+            for c in plantilla["consola"]
+        ],
+    }
+
+
+def _validar_programa(datos, nombre, numeros, errores):
+    """Revisa un programa con todas sus variantes. Devuelve True si se puede jugar."""
+    donde = f"niveles_codigo/{nombre}"
+    antes = len(errores)
+    pid = datos.get("id")
+    if not _texto_ok(pid) or not ID_VALIDO.match(pid):
+        errores.append(f"{donde}: 'id' debe usar minusculas, numeros y guiones")
+    for campo in ("titulo", "objetivo"):
+        if not _texto_ok(datos.get(campo)):
+            errores.append(f"{donde}: falta '{campo}'")
+    if datos.get("nivel") not in numeros:
+        errores.append(f"{donde}: 'nivel' debe ser uno de {sorted(numeros)} (config_juego.json)")
+    variantes = datos.get("variantes")
+    if (
+        not isinstance(variantes, list)
+        or not variantes
+        or not all(
+            isinstance(v, dict) and all(isinstance(x, str) for x in v.values()) for v in variantes
+        )
+    ):
+        errores.append(f"{donde}: 'variantes' debe ser una lista de objetos con textos")
+        return False
+    lenguajes = datos.get("lenguajes")
+    if not isinstance(lenguajes, dict) or set(lenguajes) != set(LENGUAJES):
+        errores.append(f"{donde}: 'lenguajes' debe tener {' y '.join(LENGUAJES)}")
+        return False
+    if len(errores) != antes:
+        return False
+
+    usados = {
+        m for texto in _textos(datos) if isinstance(texto, str) for m in MARCADOR.findall(texto)
+    }
+    for i, valores in enumerate(variantes):
+        faltan = sorted(usados - set(valores))
+        if faltan:
+            errores.append(f"{donde} > variante {i + 1}: faltan los valores {', '.join(faltan)}")
+    if len(errores) != antes:
+        return False
+
+    for lenguaje in LENGUAJES:
+        for i in range(len(variantes)):
+            lugar = f"{donde} > {lenguaje} > variante {i + 1}"
+            if not _validar_variante(lenguajes[lenguaje], lugar, errores):
+                break  # un error de forma se repetiria en todas las variantes
+            nivel_ = _armar(datos, lenguaje, i)
+            if not _validar_variante(nivel_, lugar, errores):
+                break
+            # Las lineas, en el orden en que vienen, deben ser una solucion valida
+            solucion = [{"id": ln["id"], "sangria": ln["sangria"]} for ln in nivel_["lineas"]]
+            revision = revisar_programa(solucion, nivel_)
+            if not revision["correcta"]:
+                errores_ = revision["errores"]
+                motivo = errores_[0]["mensaje"] if errores_ else revision["mensaje"]
+                errores.append(f"{lugar}: las lineas en su orden no cumplen sus reglas ({motivo})")
+                break
+    return len(errores) == antes
 
 
 def _archivos():
-    return [escenarios.CONFIG_PATH, INSTRUCCIONES_PATH, *sorted(NIVELES_DIR.glob("*.json"))]
+    return [escenarios.CONFIG_PATH, *sorted(NIVELES_DIR.glob("*.json"))]
 
 
 def _firma():
@@ -183,38 +316,48 @@ def _firma():
 def _construir():
     errores = []
     config = _leer(escenarios.CONFIG_PATH, errores) or {}
-    _validar_reglas(config, errores)
-    instrucciones = _validar_instrucciones(_leer(INSTRUCCIONES_PATH, errores), errores)
+    niveles = _validar_reglas(config, errores)
+    numeros = {n["numero"] for n in niveles}
 
-    niveles = {}
+    programas = {}
     for ruta in sorted(NIVELES_DIR.glob("*.json")):
-        nivel = _leer(ruta, errores)
-        if nivel is None:
+        datos = _leer(ruta, errores)
+        if datos is None:
             continue
-        antes = len(errores)
-        _validar_nivel(nivel, ruta.name, instrucciones, errores)
-        if nivel.get("id") in niveles:
-            errores.append(f"niveles_codigo/{ruta.name}: id de nivel repetido")
-        if len(errores) == antes:
-            niveles[nivel["id"]] = nivel
-    if not niveles and not errores:
-        errores.append("No hay niveles en app/data/niveles_codigo/")
-    orden = sorted(niveles.values(), key=lambda n: (n.get("orden", 0), n["id"]))
+        if not isinstance(datos, dict):
+            errores.append(f"niveles_codigo/{ruta.name}: el archivo debe ser un objeto JSON")
+            continue
+        if datos.get("id") in programas:
+            errores.append(f"niveles_codigo/{ruta.name}: id de programa repetido")
+            continue
+        if _validar_programa(datos, ruta.name, numeros, errores):
+            programas[datos["id"]] = datos
+    rondas = (config.get("minijuego_codigo") or {}).get("rondas_por_juego")
+    for nivel_ in niveles:
+        cuantos = sum(1 for p in programas.values() if p["nivel"] == nivel_["numero"])
+        if not errores and isinstance(rondas, int) and cuantos < rondas:
+            # Para que en un juego no se repita ningun programa, cada ronda necesita uno distinto
+            errores.append(
+                f"El nivel {nivel_['numero']} tiene {cuantos} programa(s) en niveles_codigo/ y "
+                f"se necesitan al menos {rondas} (uno por ronda del juego)"
+            )
     catalogo = {
         "reglas": config.get("minijuego_codigo"),
-        "instrucciones": instrucciones,
-        "niveles": {n["id"]: n for n in orden},
+        "niveles": niveles,
+        "programas": programas,
+        # "area-rectangulo-python" -> ("area-rectangulo", "python"): asi se guarda en el intento
+        "ids": {f"{pid}-{leng}": (pid, leng) for pid in programas for leng in LENGUAJES},
     }
     return catalogo, errores
 
 
 def validar():
-    """Errores de las reglas, las instrucciones y los niveles (vacia si todo esta bien)."""
+    """Errores de las reglas y de los programas (vacia si todo esta bien)."""
     return _construir()[1]
 
 
 def cargar():
-    """Devuelve {"reglas", "instrucciones", "niveles"}. Lanza escenarios.CatalogoError."""
+    """Devuelve {"reglas", "niveles", "programas", "ids"}. Lanza escenarios.CatalogoError."""
     firma = _firma()
     if _cache["firma"] != firma:
         _cache["firma"] = firma
@@ -225,300 +368,180 @@ def cargar():
     return catalogo
 
 
-def nivel(nivel_id):
-    """El nivel o None si no existe."""
-    return cargar()["niveles"].get(nivel_id)
+def _nivel_info(numero):
+    return next((n for n in cargar()["niveles"] if n["numero"] == numero), None)
 
 
-# ---------------------------------------------------------------- tablero que manda el navegador
-def _texto_corto(valor):
-    return valor[:12] if isinstance(valor, str) else ""
+def programas_del_nivel(numero):
+    """Ids de los programas de un nivel, en orden."""
+    return sorted(p["id"] for p in cargar()["programas"].values() if p["nivel"] == numero)
 
 
-def _leer_lista(lista, contexto, profundidad):
-    if not isinstance(lista, list):
-        raise TableroInvalido("El tablero no tiene un formato válido.")
-    return [_leer_bloque(b, contexto, profundidad) for b in lista]
+def armar(programa, lenguaje, variante=0):
+    """El nivel listo para jugar de un programa, lenguaje y variante."""
+    datos = cargar()["programas"][programa]
+    info = _nivel_info(datos["nivel"])
+    variante = variante if 0 <= variante < len(datos["variantes"]) else 0
+    return _armar(datos, lenguaje, variante, info["xp_base"], info["numero"])
 
 
-def _leer_bloque(datos, contexto, profundidad):
-    nivel_, instrucciones, ids = contexto
-    if not isinstance(datos, dict):
-        raise TableroInvalido("El tablero no tiene un formato válido.")
-    tipo = datos.get("tipo")
-    if tipo not in nivel_["bloques_disponibles"]:
-        raise TableroInvalido("Ese bloque no está disponible en este nivel.")
-    bid = datos.get("id")
-    if not _texto_ok(bid) or len(bid) > 24 or bid in ids:
-        raise TableroInvalido("Cada bloque necesita un identificador único.")
-    ids.add(bid)
-    if len(ids) > MAX_BLOQUES_TABLERO:
-        raise TableroInvalido("El tablero tiene demasiados bloques.")
-
-    clase = instrucciones[tipo]["tipo"]
-    bloque = {"id": bid, "tipo": tipo}
-    if clase == "condicion":
-        if profundidad >= MAX_PROFUNDIDAD:
-            raise TableroInvalido("Hay demasiados SI uno dentro de otro.")
-        condicion = datos.get("condicion") if isinstance(datos.get("condicion"), dict) else {}
-        bloque["condicion"] = {c: _texto_corto(condicion.get(c)) for c in PARAMETROS[clase]}
-        bloque["si"] = _leer_lista(datos.get("si", []), contexto, profundidad + 1)
-        bloque["no"] = _leer_lista(datos.get("no", []), contexto, profundidad + 1)
-    else:
-        for campo in PARAMETROS[clase]:
-            bloque[campo] = _texto_corto(datos.get(campo))
-    return bloque
+def nivel_de(intento):
+    """El nivel que esta jugando un intento, o None si su programa ya no existe."""
+    ubicacion = cargar()["ids"].get(intento.nivel_id)
+    if ubicacion is None:
+        return None
+    return armar(*ubicacion, intento.variante)
 
 
-def leer_tablero(datos, nivel_, instrucciones):
-    """Convierte {"tablero": [...], "sueltos": [...]} en bloques limpios (SDS 3.3.2)."""
-    if not isinstance(datos, dict):
-        raise TableroInvalido("El tablero no tiene un formato válido.")
-    contexto = (nivel_, instrucciones, set())
-    tablero = _leer_lista(datos.get("tablero", []), contexto, 0)
-    sueltos = _leer_lista(datos.get("sueltos", []), contexto, 0)
-    return tablero, sueltos
+# ---------------------------------------------------------------- programa que manda el navegador
+def leer_programa(datos, nivel_):
+    """Convierte {"programa": [{"id", "sangria"}, ...]} en lineas limpias (SDS 3.3.2)."""
+    lista = datos.get("programa") if isinstance(datos, dict) else None
+    if not isinstance(lista, list) or len(lista) > MAX_LINEAS:
+        raise ProgramaInvalido("El programa no tiene un formato válido.")
+    conocidas = {ln["id"] for ln in [*nivel_["lineas"], *nivel_["distractores"]]}
+    programa, vistas = [], set()
+    for linea in lista:
+        if not isinstance(linea, dict):
+            raise ProgramaInvalido("El programa no tiene un formato válido.")
+        lid, sangria = linea.get("id"), linea.get("sangria")
+        if lid not in conocidas:
+            raise ProgramaInvalido("Esa línea no es de este nivel.")
+        if lid in vistas:
+            raise ProgramaInvalido("Cada línea solo se puede usar una vez.")
+        if not _entero(sangria, 0, MAX_SANGRIA):
+            raise ProgramaInvalido(f"La sangría debe ser de 0 a {MAX_SANGRIA}.")
+        vistas.add(lid)
+        programa.append({"id": lid, "sangria": sangria})
+    return programa
 
 
-def contar(bloques):
-    """Bloques usados (sin contar INICIO), incluidos los que estan dentro de un SI."""
-    return sum(1 + contar(b.get("si", [])) + contar(b.get("no", [])) for b in bloques)
-
-
-def huella(tablero):
-    """Huella del tablero compilado: si cambia un solo bloque, cambia la huella (RN02)."""
-    texto = json.dumps(tablero, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+def huella(programa):
+    """Huella del acomodo: si cambia una linea o su sangria, cambia la huella (RN02)."""
+    texto = json.dumps(programa, separators=(",", ":"))
     return hashlib.sha256(texto.encode("utf-8")).hexdigest()
 
 
-# ---------------------------------------------------------------- compilar (RN02, FE1, FE3)
-FRASES = {
-    "variable": "elige la variable de cada bloque",
-    "copia": "COPY TO necesita dos variables distintas",
-    "comparacion": "el bloque SI necesita una comparación (por ejemplo A > B)",
-    "rama": "la rama «se cumple» de un SI está vacía",
-}
+# ---------------------------------------------------------------- revisar el acomodo (FE1-FE3)
+def _cita(linea):
+    return f"«{linea['codigo'].strip()}»"
 
 
-def _revisar(bloques, nivel_, instrucciones, errores):
-    variables = nivel_["variables"]
-    for b in bloques:
-        clase = instrucciones[b["tipo"]]["tipo"]
-        if clase == "entrada" and b["destino"] not in variables:
-            errores.append((b["id"], "variable", "elige una variable"))
-        elif clase == "salida" and b["valor"] not in variables:
-            errores.append((b["id"], "variable", "elige una variable"))
-        elif clase == "memoria" and (
-            b["origen"] not in variables
-            or b["destino"] not in variables
-            or b["origen"] == b["destino"]
-        ):
-            errores.append((b["id"], "copia", "elige dos variables"))
-        elif clase == "condicion":
-            c = b["condicion"]
-            if c["izq"] not in variables or c["der"] not in variables or c["op"] not in OPERADORES:
-                errores.append((b["id"], "comparacion", "elige una comparación"))
-            if not b["si"]:
-                errores.append((b["id"], "rama", "su rama «se cumple» está vacía"))
-            _revisar(b["si"], nivel_, instrucciones, errores)
-            _revisar(b["no"], nivel_, instrucciones, errores)
+def revisar_programa(programa, nivel_):
+    """Revisa el acomodo contra las reglas de cada linea, de arriba hacia abajo.
 
+    Devuelve {"completo", "correcta", "errores", "titulo", "mensaje", "faltan"}. Cada error
+    trae la linea que se marca en rojo, una nota corta y el mensaje completo; el mensaje
+    principal es el del primer error para no abrumar.
+    """
+    reales = {ln["id"]: ln for ln in nivel_["lineas"]}
+    distractores = {d["id"]: d for d in nivel_["distractores"]}
+    usadas = {p["id"] for p in programa}
+    faltan = sum(1 for lid in reales if lid not in usadas)
+    base = {"completo": False, "correcta": False, "errores": [], "faltan": faltan}
 
-def _unir(frases):
-    if len(frases) > 1:
-        frases = [", ".join(frases[:-1]), frases[-1]]
-    texto = " y ".join(frases)
-    return texto[:1].upper() + texto[1:] + "."
-
-
-def revisar_tablero(tablero, sueltos, nivel_, instrucciones):
-    """Valida sintaxis y conexiones sin ejecutar nada."""
-    usados = contar(tablero) + contar(sueltos)
-    base = {"bloques_usados": usados, "optimo": nivel_["optimo"], "errores": []}
-    if usados == 0:  # FE3
+    if not programa:  # FE3
         return {
             **base,
-            "compilado": False,
             "vacio": True,
-            "titulo": "El tablero está vacío",
-            "mensaje": "Agrega bloques de instrucción antes de compilar.",
+            "titulo": "El programa está vacío",
+            "mensaje": "Pasa las líneas del banco al programa y acomódalas.",
+        }
+    if faltan:  # FE1: no se califica hasta que estén todas
+        return {
+            **base,
+            "vacio": False,
+            "titulo": "Te faltan líneas",
+            "mensaje": f"Todavía quedan {faltan} {'línea' if faltan == 1 else 'líneas'} "
+            "del programa en el banco.",
         }
 
     errores = []
-    _revisar(tablero, nivel_, instrucciones, errores)
-    errores += [(b["id"], "suelto", "no está conectado") for b in sueltos]
 
-    claves = list(dict.fromkeys(clave for _, clave, _ in errores))
-    frases = [FRASES[c] for c in claves if c in FRASES]
-    if "suelto" in claves:
-        cuantos = sum(1 for _, clave, _ in errores if clave == "suelto")
-        frases.append(
-            "hay un bloque sin conectar" if cuantos == 1 else f"hay {cuantos} bloques sin conectar"
-        )
-    if usados > nivel_["max_bloques"]:
-        frases.append(f"usaste {usados} bloques y el límite del nivel es {nivel_['max_bloques']}")
-    if not tablero and not frases:
-        frases.append("conecta los bloques debajo de INICIO")
+    def error(linea_id, nota, mensaje):
+        errores.append({"linea_id": linea_id, "nota": nota, "mensaje": mensaje})
 
-    ok = not frases
+    for p in programa:
+        if p["id"] in distractores:
+            d = distractores[p["id"]]
+            error(
+                d["id"],
+                "esta línea sobra",
+                f"{_cita(d)} no forma parte de la solución: regrésala al banco.",
+            )
+
+    # La estructura se revisa sin los distractores para no encadenar errores
+    acomodo = [p for p in programa if p["id"] in reales]
+    posicion = {p["id"]: i for i, p in enumerate(acomodo)}
+    ancestros = []  # por posicion: ids de las lineas que la contienen, segun la sangria
+    abiertas = []  # pila de (sangria, id) mientras se recorre
+    for i, p in enumerate(acomodo):
+        linea, sangria = reales[p["id"]], p["sangria"]
+        while abiertas and abiertas[-1][0] >= sangria:
+            abiertas.pop()
+        ancestros.append({lid for _, lid in abiertas})
+        padre = abiertas[-1][1] if abiertas else None
+        esperado = linea.get("padre")
+        if (abiertas and abiertas[-1][0] != sangria - 1) or (not abiertas and sangria != 0):
+            error(linea["id"], "sangría de más", f"{_cita(linea)} tiene sangría de más.")
+        elif padre != esperado:
+            if esperado is None:
+                error(
+                    linea["id"],
+                    "quítale sangría",
+                    f"{_cita(linea)} no va dentro de {_cita(reales[padre])}: quítale sangría.",
+                )
+            elif padre is None:
+                error(
+                    linea["id"],
+                    "dale sangría",
+                    f"{_cita(linea)} debe ir dentro de {_cita(reales[esperado])}: dale sangría.",
+                )
+            else:
+                error(
+                    linea["id"],
+                    "va dentro de otra línea",
+                    f"{_cita(linea)} debe ir dentro de {_cita(reales[esperado])}, "
+                    f"no de {_cita(reales[padre])}.",
+                )
+        abiertas.append((sangria, linea["id"]))
+
+        sigue = linea.get("sigue_a")
+        if sigue is not None:
+            anterior = acomodo[i - 1]["id"] if i else None
+            if anterior is None or (anterior != sigue and sigue not in ancestros[i - 1]):
+                error(
+                    linea["id"],
+                    "va justo después de otro bloque",
+                    f"{_cita(linea)} debe ir justo después de lo que está dentro de "
+                    f"{_cita(reales[sigue])}.",
+                )
+        for previa in linea.get("despues_de", []):
+            if posicion[previa] > i:
+                error(
+                    linea["id"],
+                    "está demasiado arriba",
+                    f"{_cita(linea)} debe ir después de {_cita(reales[previa])}.",
+                )
+                break
+
+    if errores:
+        # El primer error en el orden del programa es el que se explica
+        orden = {p["id"]: i for i, p in enumerate(programa)}
+        errores.sort(key=lambda e: orden[e["linea_id"]])
+        return {
+            **base,
+            "completo": True,
+            "errores": errores,
+            "titulo": "El programa todavía no funciona",
+            "mensaje": errores[0]["mensaje"],
+        }
     return {
         **base,
-        "compilado": ok,
-        "vacio": False,
-        "errores": [{"bloque_id": bid, "mensaje": nota} for bid, _, nota in errores],
-        "titulo": "Todo conectado" if ok else "No se pudo compilar",
-        "mensaje": "Tu algoritmo está listo. Presiona EJECUTAR para probarlo."
-        if ok
-        else _unir(frases),
-    }
-
-
-# ---------------------------------------------------------------- interprete (FE2)
-class _Alto(Exception):
-    """La ejecucion se detiene: dato equivocado, instruccion imposible o demasiados pasos."""
-
-    def __init__(self, bloque_id, nota, mensaje, caja_mal=False):
-        super().__init__(mensaje)
-        self.fallo = {
-            "bloque_id": bloque_id,
-            "nota": nota,
-            "mensaje": mensaje,
-            "caja_mal": caja_mal,
-        }
-
-
-def _registrar(estado, bloque, nota):
-    if len(estado["traza"]) >= estado["max_pasos"]:
-        raise _Alto(
-            bloque["id"],
-            "demasiados pasos",
-            "El algoritmo dio demasiados pasos sin terminar.",
-        )
-    estado["traza"].append(
-        {
-            "bloque_id": bloque["id"],
-            "inbox": list(estado["inbox"]),
-            "outbox": list(estado["outbox"]),
-            "variables": dict(estado["variables"]),
-            "nota": nota,
-        }
-    )
-
-
-def _valor(estado, bloque, variable):
-    valor = estado["variables"].get(variable)
-    if valor is None:
-        raise _Alto(
-            bloque["id"],
-            f"{variable} no tiene valor",
-            f"{variable} todavía no tiene valor: léelo de la INBOX antes de usarlo.",
-        )
-    return valor
-
-
-def _paso(bloque, estado, sis):
-    clase = estado["instrucciones"][bloque["tipo"]]["tipo"]
-    esperada = estado["esperada"]
-    if clase == "entrada":
-        if not estado["inbox"]:
-            raise _Alto(
-                bloque["id"],
-                "la INBOX está vacía",
-                "Intentaste leer de la INBOX, pero ya no quedan datos.",
-            )
-        valor = estado["inbox"].pop(0)
-        estado["variables"][bloque["destino"]] = valor
-        _registrar(estado, bloque, f"Entra {valor} → {bloque['destino']}")
-    elif clase == "memoria":
-        valor = _valor(estado, bloque, bloque["origen"])
-        estado["variables"][bloque["destino"]] = valor
-        _registrar(estado, bloque, f"{bloque['destino']} = {bloque['origen']} → {valor}")
-    elif clase == "salida":
-        valor = _valor(estado, bloque, bloque["valor"])
-        estado["outbox"].append(valor)
-        _registrar(estado, bloque, f"Se entrega {bloque['valor']} ({valor})")
-        posicion = len(estado["outbox"]) - 1
-        if posicion >= len(esperada):
-            raise _Alto(
-                bloque["id"],
-                "sobra este dato",
-                f"Llegó {valor} a la OUTBOX, pero ya no se esperaban más datos.",
-                caja_mal=True,
-            )
-        if valor != esperada[posicion]:
-            # Si la salida dependía de una condición, lo más probable es que el error esté ahí
-            if sis:
-                marca, nota = sis[-1], "revisa esta condición"
-            else:
-                marca, nota = bloque["id"], "revisa este bloque"
-            raise _Alto(
-                marca, nota, f"Se esperaba {esperada[posicion]} y llegó {valor}.", caja_mal=True
-            )
-    else:  # condicion
-        c = bloque["condicion"]
-        izq, der = _valor(estado, bloque, c["izq"]), _valor(estado, bloque, c["der"])
-        funcion, simbolo = OPERADORES[c["op"]]
-        cumple = funcion(izq, der)
-        rama = "se cumple" if cumple else "no se cumple"
-        nota = f"¿{izq} {simbolo} {der}? {'Sí' if cumple else 'No'} → rama «{rama}»"
-        _registrar(estado, bloque, nota)
-        _correr(bloque["si"] if cumple else bloque["no"], estado, (*sis, bloque["id"]))
-
-
-def _correr(bloques, estado, sis=()):
-    for bloque in bloques:
-        _paso(bloque, estado, sis)
-
-
-def _probar(tablero, nivel_, instrucciones, caso, numero):
-    estado = {
-        "instrucciones": instrucciones,
-        "variables": {v: None for v in nivel_["variables"]},
-        "inbox": list(caso["entradas"]),
-        "outbox": [],
-        "esperada": caso["salida"],
-        "traza": [],
-        "max_pasos": nivel_["max_pasos"],
-    }
-    fallo = None
-    try:
-        _correr(tablero, estado)
-    except _Alto as alto:
-        fallo = alto.fallo
-    if fallo is None and estado["outbox"] != caso["salida"]:
-        falta = caso["salida"][len(estado["outbox"])]
-        fallo = {
-            "bloque_id": None,
-            "nota": None,
-            "mensaje": f"Se esperaba {falta} en la OUTBOX y no llegó nada.",
-            "caja_mal": False,
-        }
-    return {
-        "numero": numero,
-        "correcta": fallo is None,
-        "entradas": caso["entradas"],
-        "salida_esperada": caso["salida"],
-        "salida": estado["outbox"],
-        "traza": estado["traza"],
-        "fallo": fallo,
-    }
-
-
-def correr_casos(tablero, nivel_, instrucciones):
-    """Simula INBOX -> logica -> OUTBOX con cada caso de prueba del nivel.
-
-    Para animar se manda el primer caso que falla o, si todos pasan, el ejemplo (caso 1).
-    De los demas casos solo viaja si pasaron, no sus datos.
-    """
-    resultados = [
-        _probar(tablero, nivel_, instrucciones, caso, i + 1)
-        for i, caso in enumerate(nivel_["casos"])
-    ]
-    fallido = next((r for r in resultados if not r["correcta"]), None)
-    return {
-        "correcta": fallido is None,
-        "caso": fallido or resultados[0],
-        "casos": [{"numero": r["numero"], "correcta": r["correcta"]} for r in resultados],
+        "completo": True,
+        "correcta": True,
+        "titulo": "¡El programa funciona!",
+        "mensaje": "Todas las líneas están en su lugar.",
     }
 
 
@@ -527,21 +550,17 @@ def penalizacion(fallos, reglas):
     return min(reglas["penalizacion_maxima"], fallos * reglas["penalizacion_por_fallo"])
 
 
-def calificar(usados, fallos, nivel_, reglas):
-    """Estrellas segun bloques usados contra el optimo y XP con penalizacion por fallos."""
-    extra = max(0, usados - nivel_["optimo"])
+def calificar(fallos, nivel_, reglas):
+    """Estrellas segun los intentos fallidos y XP con penalizacion por fallos."""
     regla = next(
-        r
-        for r in reglas["estrellas"]
-        if r["bloques_extra_max"] is None or extra <= r["bloques_extra_max"]
+        r for r in reglas["estrellas"] if r["fallos_max"] is None or fallos <= r["fallos_max"]
     )
     castigo = penalizacion(fallos, reglas)
     base = round(nivel_["xp_base"] * regla["porcentaje_xp"] / 100)
     return {
         "estrellas": regla["estrellas"],
         "estrellas_max": max(r["estrellas"] for r in reglas["estrellas"]),
-        "bloques_usados": usados,
-        "optimo": nivel_["optimo"],
+        "lineas": len(nivel_["lineas"]),
         "xp_base": base,
         "porcentaje_xp": regla["porcentaje_xp"],
         "intentos_fallidos": fallos,
@@ -555,97 +574,293 @@ def _de_jugador(jugador):
     return IntentoCodigo.objects.filter(**jugador.filtro())
 
 
-def nivel_para(jugador):
-    """Nivel con el que abre el modo: el primero que el jugador no ha resuelto."""
-    niveles = list(cargar()["niveles"])
-    resueltos = set(
-        _de_jugador(jugador)
-        .filter(estado=IntentoCodigo.RESUELTO)
-        .values_list("nivel_id", flat=True)
-    )
-    return next((n for n in niveles if n not in resueltos), niveles[0])
-
-
-def resumen_jugador(jugador):
-    """Para la tarjeta del menu de modos: niveles resueltos y mejores estrellas."""
+def _ubicar(nivel_id):
+    """("python", 3) del intento, o None si su programa ya no existe."""
     catalogo = cargar()
+    ubicacion = catalogo["ids"].get(nivel_id)
+    if ubicacion is None:
+        return None
+    programa, lenguaje = ubicacion
+    return lenguaje, catalogo["programas"][programa]["nivel"]
+
+
+def _mejores(jugador):
+    """Mejores estrellas del jugador en cada (lenguaje, nivel) resuelto."""
     mejores = {}
     for nivel_id, estrellas in (
         _de_jugador(jugador)
         .filter(estado=IntentoCodigo.RESUELTO)
         .values_list("nivel_id", "estrellas")
     ):
-        mejores[nivel_id] = max(mejores.get(nivel_id, 0), estrellas or 0)
+        clave = _ubicar(nivel_id)
+        if clave is not None:
+            mejores[clave] = max(mejores.get(clave, 0), estrellas or 0)
+    return mejores
+
+
+def lenguaje_para(jugador, pedido=None):
+    """El lenguaje que se pidio o, si no, el del ultimo intento del jugador."""
+    if pedido in LENGUAJES:
+        return pedido
+    for nivel_id in _de_jugador(jugador).values_list("nivel_id", flat=True)[:20]:
+        ubicacion = _ubicar(nivel_id)
+        if ubicacion is not None:
+            return ubicacion[0]
+    return LENGUAJE_INICIAL
+
+
+def resumen_jugador(jugador):
+    """Para la tarjeta del menu de modos: niveles resueltos y mejores estrellas."""
+    catalogo = cargar()
+    mejores = _mejores(jugador)
     maximo = max(r["estrellas"] for r in catalogo["reglas"]["estrellas"])
+    niveles = len(catalogo["niveles"]) * len(LENGUAJES)
     return {
-        "niveles": len(catalogo["niveles"]),
+        "niveles": niveles,
         "resueltos": len(mejores),
         "estrellas": sum(mejores.values()),
-        "estrellas_max": maximo * len(catalogo["niveles"]),
+        "estrellas_max": maximo * niveles,
     }
 
 
-@transaction.atomic
-def iniciar(jugador, nivel_id, nuevo=False):
-    """Pasos 1 a 3: retoma el intento en curso del nivel o abre uno nuevo.
+def _programa_de(intento):
+    return cargar()["ids"][intento.nivel_id][0]
 
-    Recargar la pagina devuelve el mismo intento con su ultimo tablero compilado. Si el ultimo
-    intento ya se resolvio, se muestra su resultado hasta que el jugador pida jugar otra vez.
+
+def _rondas_por_juego():
+    return cargar()["reglas"]["rondas_por_juego"]
+
+
+def _rondas_del_juego(ronda):
+    """Las rondas del mismo juego que la ronda: 1-3, 4-6, 7-9... (con 3 rondas por juego)."""
+    por_juego = _rondas_por_juego()
+    inicio = (ronda - 1) // por_juego * por_juego + 1
+    return range(inicio, inicio + por_juego)
+
+
+def _elegir(jugador, numero, lenguaje, ronda):
+    """Programa y variante al azar para un intento nuevo.
+
+    Programa: en un juego ninguno se repite; se elige entre los que el jugador no ha resuelto
+    en las otras rondas del juego (y, si sale a la mitad y vuelve, otro distinto al que dejo).
+    Variante: una distinta a la que le toco a ese programa en el juego anterior.
     """
-    if nivel(nivel_id) is None:
+    programas = programas_del_nivel(numero)
+    intentos = _de_jugador(jugador).filter(nivel_id__in=_ids_del_nivel(numero, lenguaje))
+    juego = _rondas_del_juego(ronda)
+    usados = {
+        _programa_de(i)
+        for i in intentos.filter(ronda__in=juego, estado=IntentoCodigo.RESUELTO).exclude(
+            ronda=ronda
+        )
+    }
+    opciones = [p for p in programas if p not in usados] or programas
+    dejados = {_programa_de(i) for i in intentos.filter(ronda=ronda)}
+    opciones = [p for p in opciones if p not in dejados] or opciones
+    programa = _azar.choice(opciones)
+
+    nivel_id = f"{programa}-{lenguaje}"
+    juego_anterior = range(juego.start - len(juego), juego.start)
+    vistas = set(
+        intentos.filter(nivel_id=nivel_id, ronda__in=juego_anterior).values_list(
+            "variante", flat=True
+        )
+    )
+    total = len(cargar()["programas"][programa]["variantes"])
+    variantes = [v for v in range(total) if v not in vistas] or list(range(total))
+    return nivel_id, _azar.choice(variantes)
+
+
+# ---------------------------------------------------------------- rondas
+# Una ronda son los niveles en orden (1, 2, 3, 4), del mas facil al mas dificil. No se pueden
+# saltar: al resolver uno sigue el siguiente. Un juego son 3 rondas (rondas_por_juego) y en un
+# juego no se repite ningun programa; al volver a jugar salen con otra variante. Las rondas se
+# numeran seguidas (1-3 primer juego, 4-6 segundo...). Cada lenguaje lleva sus propias rondas.
+
+
+class FueraDeOrden(ReglaCodigo):
+    """Se pidio un nivel que no es el que sigue en la ronda: la vista lleva al que sigue."""
+
+    def __init__(self, numero):
+        super().__init__(f"Primero resuelve el nivel {numero}.")
+        self.numero = numero
+
+
+def _del_dueno(intento):
+    """Intentos del mismo jugador que el intento (usuario o sesion del navegador)."""
+    if intento.usuario_id:
+        return IntentoCodigo.objects.filter(usuario_id=intento.usuario_id)
+    return IntentoCodigo.objects.filter(usuario__isnull=True, sesion=intento.sesion)
+
+
+def _numeros():
+    return [n["numero"] for n in cargar()["niveles"]]
+
+
+def _ids_del_nivel(numero, lenguaje):
+    return [f"{p}-{lenguaje}" for p in programas_del_nivel(numero)]
+
+
+def _ronda(intentos, lenguaje):
+    """(numero de la ronda en curso, {nivel: intento resuelto}, nivel que sigue o None)."""
+    ids = [i for i, (_, leng) in cargar()["ids"].items() if leng == lenguaje]
+    intentos = intentos.filter(nivel_id__in=ids)
+    ronda = intentos.aggregate(ultima=Max("ronda"))["ultima"] or 1
+    resueltos = {}
+    for intento in intentos.filter(ronda=ronda, estado=IntentoCodigo.RESUELTO):
+        resueltos.setdefault(_ubicar(intento.nivel_id)[1], intento)
+    siguiente = next((n for n in _numeros() if n not in resueltos), None)
+    return ronda, resueltos, siguiente
+
+
+def resumen_ronda(intentos, lenguaje):
+    """Avance de la ronda en curso: estado y estrellas de cada nivel, y totales."""
+    ronda, resueltos, siguiente = _ronda(intentos, lenguaje)
+    maximo = max(r["estrellas"] for r in cargar()["reglas"]["estrellas"])
+    niveles = []
+    for n in cargar()["niveles"]:
+        hecho = resueltos.get(n["numero"])
+        estado = "hecho" if hecho else ("actual" if n["numero"] == siguiente else "pendiente")
+        niveles.append(
+            {
+                "numero": n["numero"],
+                "nombre": n["nombre"],
+                "estado": estado,
+                "estrellas": (hecho.estrellas or 0) if hecho else 0,
+            }
+        )
+    juego = _rondas_del_juego(ronda)
+    en_juego = ronda - juego.start + 1
+    resumen = {
+        "numero": ronda,
+        "en_juego": en_juego,  # «Ronda 2 de 3»
+        "de": len(juego),
+        "ultima": en_juego == len(juego),
+        "completa": siguiente is None,
+        "siguiente": siguiente,
+        "niveles": niveles,
+        "estrellas": sum(i.estrellas or 0 for i in resueltos.values()),
+        "estrellas_max": maximo * len(niveles),
+        "xp": sum(i.xp_obtenida for i in resueltos.values()),
+        "juego": None,
+    }
+    if resumen["completa"] and resumen["ultima"]:
+        # Fin del juego: estrellas y XP de cada una de sus rondas
+        ids = [i for i, (_, leng) in cargar()["ids"].items() if leng == lenguaje]
+        hechos = intentos.filter(
+            nivel_id__in=ids, ronda__in=juego, estado=IntentoCodigo.RESUELTO
+        ).order_by("ronda", "creado")
+        rondas = {}
+        for intento in hechos:
+            r = rondas.setdefault(intento.ronda, {"estrellas": 0, "xp": 0, "niveles": set()})
+            numero = _ubicar(intento.nivel_id)[1]
+            if numero not in r["niveles"]:  # por si un nivel se resolvio dos veces
+                r["niveles"].add(numero)
+                r["estrellas"] += intento.estrellas or 0
+                r["xp"] += intento.xp_obtenida
+        lista = [
+            {"numero": n - juego.start + 1, "estrellas": r["estrellas"], "xp": r["xp"]}
+            for n, r in sorted(rondas.items())
+        ]
+        resumen["juego"] = {
+            "rondas": lista,
+            "estrellas": sum(r["estrellas"] for r in lista),
+            "estrellas_max": resumen["estrellas_max"] * len(juego),
+            "xp": sum(r["xp"] for r in lista),
+        }
+    return resumen
+
+
+def _crear(jugador, lenguaje, numero, ronda):
+    """Intento nuevo con un programa y una variante al azar (ver _elegir)."""
+    nivel_id, variante = _elegir(jugador, numero, lenguaje, ronda)
+    return IntentoCodigo.objects.create(
+        nivel_id=nivel_id, variante=variante, ronda=ronda, **jugador.campos()
+    )
+
+
+@transaction.atomic
+def empezar(jugador, lenguaje=None):
+    """«Jugar minijuego»: (lenguaje, nivel) donde sigue la ronda; si ya acabo, empieza otra."""
+    lenguaje = lenguaje_para(jugador, lenguaje)
+    ronda, _, siguiente = _ronda(_de_jugador(jugador), lenguaje)
+    if siguiente is None:
+        siguiente = _numeros()[0]
+        _crear(jugador, lenguaje, siguiente, ronda + 1)
+    return lenguaje, siguiente
+
+
+@transaction.atomic
+def iniciar(jugador, lenguaje, numero):
+    """Pasos 1 a 3: el intento del nivel en la ronda en curso.
+
+    Un nivel ya resuelto en la ronda muestra su resultado. El nivel que sigue retoma su intento
+    en curso (mismo programa, variante y ultimo acomodo comprobado) o abre uno nuevo al azar.
+    Un nivel mas adelante todavia no se puede jugar (FueraDeOrden).
+    """
+    if lenguaje not in LENGUAJES or _nivel_info(numero) is None:
         raise ReglaCodigo("Ese nivel no existe.")
-    ultimo = _de_jugador(jugador).filter(nivel_id=nivel_id).first()
-    if ultimo is not None and not nuevo and ultimo.estado != IntentoCodigo.ABANDONADO:
-        return ultimo
+    ronda, resueltos, siguiente = _ronda(_de_jugador(jugador), lenguaje)
+    if numero in resueltos:
+        return resueltos[numero]
+    if numero != siguiente:
+        raise FueraDeOrden(siguiente)
+    ids = _ids_del_nivel(numero, lenguaje)
+    ultimo = _de_jugador(jugador).filter(nivel_id__in=ids, ronda=ronda).first()
     if ultimo is not None and ultimo.estado == IntentoCodigo.EN_CURSO:
-        ultimo.estado = IntentoCodigo.ABANDONADO  # «Jugar otra vez» sin haber terminado
-        ultimo.save(update_fields=["estado", "actualizado"])
-    return IntentoCodigo.objects.create(nivel_id=nivel_id, **jugador.campos())
+        return ultimo
+    return _crear(jugador, lenguaje, numero, ronda)
 
 
 def _en_curso(intento):
     if intento.estado == IntentoCodigo.RESUELTO:
-        raise ReglaCodigo("Ya resolviste este nivel. Presiona «Jugar otra vez» para repetirlo.")
+        raise ReglaCodigo("Ya resolviste este nivel. Sigue con el siguiente.")
     if intento.estado != IntentoCodigo.EN_CURSO:
         raise ReglaCodigo("Saliste de este intento. Vuelve a abrir el minijuego desde el menú.")
-    catalogo = cargar()
-    nivel_ = catalogo["niveles"].get(intento.nivel_id)
+    nivel_ = nivel_de(intento)
     if nivel_ is None:
         raise ReglaCodigo("Este nivel ya no existe.")
-    return catalogo, nivel_
+    return cargar(), nivel_
+
+
+def revolver(nivel_, semilla):
+    """Lineas y distractores revueltos, siempre igual para el mismo intento.
+
+    Nunca salen en el orden de la solucion.
+    """
+    banco = [
+        {"id": ln["id"], "codigo": ln["codigo"]}
+        for ln in [*nivel_["lineas"], *nivel_["distractores"]]
+    ]
+    solucion = [ln["id"] for ln in nivel_["lineas"]]
+    random.Random(semilla).shuffle(banco)
+    if [b["id"] for b in banco[: len(solucion)]] == solucion:
+        banco.append(banco.pop(0))
+    return banco
 
 
 def estado_publico(intento):
-    """Lo que necesita la mesa de trabajo (minijuego_codigo.html). Sin las salidas ocultas."""
+    """Lo que necesita la mesa de trabajo (minijuego_codigo.html). Sin las reglas del nivel."""
     catalogo = cargar()
-    nivel_ = catalogo["niveles"][intento.nivel_id]
+    nivel_ = nivel_de(intento)
     reglas = catalogo["reglas"]
     return {
         "intento_id": str(intento.id),
         "estado": intento.estado,
         "nivel": {
-            "id": nivel_["id"],
+            "numero": nivel_["numero"],
             "titulo": nivel_["titulo"],
             "objetivo": nivel_["objetivo"],
-            "variables": nivel_["variables"],
-            "bloques": [
-                {
-                    k: catalogo["instrucciones"][b][k]
-                    for k in ("id", "etiqueta", "tipo", "descripcion")
-                }
-                for b in nivel_["bloques_disponibles"]
-            ],
-            "operadores": [{"id": k, "simbolo": v[1]} for k, v in OPERADORES.items()],
-            "optimo": nivel_["optimo"],
-            "max_bloques": nivel_["max_bloques"],
+            "lenguaje": nivel_["lenguaje"],
+            "lenguaje_nombre": LENGUAJES[nivel_["lenguaje"]],
             "xp_base": nivel_["xp_base"],
-            "ejemplo": {
-                "entradas": nivel_["casos"][0]["entradas"],
-                "salida": nivel_["casos"][0]["salida"],
-            },
+            "distractores": len(nivel_["distractores"]),
+            "lineas": revolver(nivel_, str(intento.id)),
+            "consola": nivel_["consola"],
         },
-        "tablero": intento.tablero,
-        "compilado": bool(intento.huella),
+        "ronda": resumen_ronda(_del_dueno(intento), nivel_["lenguaje"]),
+        "lenguajes": [{"id": k, "nombre": v} for k, v in LENGUAJES.items()],
+        "programa": intento.tablero or [],
         "intentos_fallidos": intento.intentos_fallidos,
         "penalizacion": penalizacion(intento.intentos_fallidos, reglas),
         "penalizacion_por_fallo": reglas["penalizacion_por_fallo"],
@@ -654,44 +869,36 @@ def estado_publico(intento):
     }
 
 
-def compilar(intento, datos):
-    """Pasos 4 y 5. Compilar no cuenta como intento fallido."""
+def comprobar(intento, datos):
+    """Pasos 4 a 9: revisa el acomodo y, si funciona, califica."""
     catalogo, nivel_ = _en_curso(intento)
-    tablero, sueltos = leer_tablero(datos, nivel_, catalogo["instrucciones"])
-    resultado = revisar_tablero(tablero, sueltos, nivel_, catalogo["instrucciones"])
-    if resultado["compilado"]:
-        intento.tablero = tablero
-        intento.huella = huella(tablero)
-        intento.bloques_usados = resultado["bloques_usados"]
-    else:
-        intento.huella = ""  # lo que estaba compilado ya no es lo que hay en el tablero
-    intento.save(update_fields=["tablero", "huella", "bloques_usados", "actualizado"])
-    return resultado
-
-
-def ejecutar(intento, datos):
-    """Pasos 6 a 9: corre el tablero compilado con todos los casos y califica."""
-    catalogo, nivel_ = _en_curso(intento)
-    tablero, sueltos = leer_tablero(datos, nivel_, catalogo["instrucciones"])
-    if sueltos or not intento.huella or huella(tablero) != intento.huella:
-        raise ReglaCodigo("Vuelve a compilar el tablero: solo se ejecuta el tablero compilado.")
-
     reglas = catalogo["reglas"]
-    prueba = correr_casos(tablero, nivel_, catalogo["instrucciones"])
+    programa = leer_programa(datos, nivel_)
+    revision = revisar_programa(programa, nivel_)
     calificacion = None
-    if not prueba["correcta"]:  # FE2
-        intento.intentos_fallidos += 1  # RN05
-        intento.save(update_fields=["intentos_fallidos", "actualizado"])
-    else:
-        calificacion = calificar(contar(tablero), intento.intentos_fallidos, nivel_, reglas)
-        intento.estado = IntentoCodigo.RESUELTO
-        intento.estrellas = calificacion["estrellas"]
-        intento.xp_obtenida = calificacion["xp"]
-        intento.resultado = calificacion
+    repetido = False
+    if revision["completo"]:
+        marca = huella(programa)
+        repetido = not revision["correcta"] and marca == intento.huella
+        intento.tablero = programa
+        intento.huella = marca
+        intento.bloques_usados = len(programa)
+        if revision["correcta"]:
+            calificacion = calificar(intento.intentos_fallidos, nivel_, reglas)
+            intento.estado = IntentoCodigo.RESUELTO
+            intento.estrellas = calificacion["estrellas"]
+            intento.xp_obtenida = calificacion["xp"]
+            intento.resultado = calificacion
+        elif not repetido:  # FE2, RN05; el mismo acomodo no se cobra dos veces (RN02)
+            intento.intentos_fallidos += 1
         intento.save()
     return {
-        **prueba,
+        **revision,
+        "repetido": repetido,
         "resultado": calificacion,
+        "consola": nivel_["consola"] if calificacion else None,
+        # Al resolver cambia el avance: el navegador pinta la barra y, si acabo, el resumen
+        "ronda": resumen_ronda(_del_dueno(intento), nivel_["lenguaje"]) if calificacion else None,
         "intentos_fallidos": intento.intentos_fallidos,
         "penalizacion": penalizacion(intento.intentos_fallidos, reglas),
     }
