@@ -334,6 +334,7 @@ def test_una_ronda_completa_y_la_siguiente_con_otros_programas(client):
     ronda = r["ronda"]
     assert [n["estado"] for n in ronda["niveles"]] == ["hecho"] * 4
     assert (ronda["estrellas"], ronda["estrellas_max"], ronda["xp"]) == (12, 12, 180)
+    assert (ronda["en_juego"], ronda["de"], ronda["ultima"], ronda["juego"]) == (1, 3, False, None)
 
     # Al volver a jugar empieza la ronda 2 en el nivel 1, con otro programa
     assert client.get("/jugar/codigo/")["Location"] == MESA
@@ -341,8 +342,45 @@ def test_una_ronda_completa_y_la_siguiente_con_otros_programas(client):
     assert nuevo.ronda == 2 and nuevo.estado == IntentoCodigo.EN_CURSO
     assert nuevo.nivel_id != primera[0]
     estado = _estado(client)
-    assert estado["ronda"]["numero"] == 2
+    assert (estado["ronda"]["numero"], estado["ronda"]["en_juego"]) == (2, 2)
     assert [n["estado"] for n in estado["ronda"]["niveles"]] == ["actual"] + ["pendiente"] * 3
+
+
+def _jugar_ronda(client):
+    """Resuelve los 4 niveles de la ronda en curso. Devuelve {nivel: (programa, variante)}."""
+    tocaron = {}
+    for _ in range(4):
+        url = client.get("/jugar/codigo/")["Location"]
+        intento, r = _resolver(client, url)
+        tocaron[int(url.rstrip("/").split("/")[-1])] = (intento.nivel_id, intento.variante)
+    return tocaron, r["ronda"]
+
+
+@pytest.mark.django_db
+def test_un_juego_son_3_rondas_sin_repetir_programas(client):
+    rondas = []
+    for numero in (1, 2, 3):
+        tocaron, ronda = _jugar_ronda(client)
+        rondas.append(tocaron)
+        assert ronda["en_juego"] == numero and ronda["completa"]
+        assert ronda["ultima"] == (numero == 3)
+
+    # En cada nivel, las 3 rondas usaron sus 3 programas, sin repetir ninguno
+    for nivel in (1, 2, 3, 4):
+        programas = {rondas[i][nivel][0] for i in range(3)}
+        assert programas == {f"{p}-python" for p in minijuego_codigo.programas_del_nivel(nivel)}
+
+    # Al terminar la ronda 3 se acaba el juego, con el resumen de sus 3 rondas
+    juego = ronda["juego"]
+    assert [r["numero"] for r in juego["rondas"]] == [1, 2, 3]
+    assert (juego["estrellas"], juego["estrellas_max"], juego["xp"]) == (36, 36, 540)
+
+    # Volver a jugar empieza otro juego: sus programas vuelven a salir, pero con otra variante
+    variantes_antes = {p: v for tocaron in rondas for p, v in tocaron.values()}
+    tocaron, ronda = _jugar_ronda(client)
+    assert ronda["numero"] == 4 and ronda["en_juego"] == 1 and not ronda["ultima"]
+    for programa, variante in tocaron.values():
+        assert variante != variantes_antes[programa]
 
 
 @pytest.mark.django_db
@@ -350,7 +388,7 @@ def test_la_mesa_de_trabajo_carga_el_nivel_sin_sus_reglas(client):
     intento = _fijar(_abrir(client), "area-rectangulo", variante=1)
     html = client.get(MESA).content.decode()
     assert "Área de un rectángulo" in html and 'id="mj-ayuda"' in html
-    assert "RONDA 1 · NIVEL 1" in html
+    assert "RONDA 1 DE 3 · NIVEL 1" in html
     assert "css/taller.css" in html and "js/minijuego_codigo.js" in html
     # La versión de los archivos va en la URL para que el navegador no use una copia vieja
     assert re.search(r"js/minijuego_codigo\.js\?v=[1-9]\d*\"", html)

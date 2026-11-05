@@ -412,13 +412,14 @@
   }
 
   // Con el nivel resuelto se sigue desde aquí aunque se cierre la ventana del resultado:
-  // al siguiente nivel de la ronda o, si la ronda acabó, a otra ronda
+  // al siguiente nivel, a la siguiente ronda o, si acabó el juego (ronda 3 de 3), a jugar de nuevo
   function accionesFinales() {
     const r = s.ronda;
     if (r.completa) {
+      const texto = r.ultima ? "🔁 Volver a jugar" : "Siguiente ronda ➔";
       return [
         enlace("book-btn", "Volver al menú", rutas.menu),
-        enlace("book-btn go siguiente", "🔁 Jugar otra ronda", inicial.urls.otra_ronda),
+        enlace("book-btn go siguiente", texto, inicial.urls.otra_ronda),
       ];
     }
     return [
@@ -595,7 +596,10 @@
     const botones = con(el("div", "btn-row"), ver, ...accionesFinales());
 
     const salida = lineasConsola ? [el("p", "c4-consola-titulo", "Así corre tu programa:"), consola(lineasConsola, "corre")] : [];
-    const titulo = s.ronda.completa ? `¡Terminaste la ronda ${s.ronda.numero}!` : "¡Programa correcto!";
+    let titulo = "¡Programa correcto!";
+    if (s.ronda.completa) {
+      titulo = s.ronda.ultima ? "¡Terminaste el minijuego!" : `¡Terminaste la ronda ${s.ronda.en_juego} de ${s.ronda.de}!`;
+    }
     const ventana = abrirVentana(
       [el("h2", null, titulo), estrellas, ...salida, nota, resumen, s.ronda.completa ? resumenRonda() : null, botones],
       () => nodos.acciones.querySelector(".siguiente")?.focus({ preventScroll: true })
@@ -603,15 +607,25 @@
     ventana.classList.add("ancha");
   }
 
-  // Al acabar el nivel 4: las estrellas de cada nivel y lo que se ganó en toda la ronda
+  // Al acabar el nivel 4: las estrellas de cada nivel y lo que se ganó en la ronda.
+  // Al acabar la última ronda: lo de cada ronda y el total del juego.
   function resumenRonda() {
     const r = s.ronda;
-    const caja = con(el("div", "c4-ronda-resumen"), el("p", "c4-consola-titulo", "Tu ronda:"));
+    const caja = el("div", "c4-ronda-resumen");
     const lista = el("ol");
+    if (r.juego) {
+      con(caja, el("p", "c4-consola-titulo", "Tu juego:"));
+      r.juego.rondas.forEach((ronda) => {
+        con(lista, con(el("li"), el("span", null, `Ronda ${ronda.numero}`), el("span", null, `★ ${ronda.estrellas} · ${ronda.xp} XP`)));
+      });
+      con(caja, lista, filaResumen(`${r.juego.estrellas} de ${r.juego.estrellas_max} estrellas`, `⭐ ${r.juego.xp} XP en total`, "total"));
+      return caja;
+    }
+    con(caja, el("p", "c4-consola-titulo", `Tu ronda ${r.en_juego} de ${r.de}:`));
     r.niveles.forEach((n) => {
       con(lista, con(el("li"), el("span", null, `${n.numero}. ${n.nombre}`), el("span", "c4-nivel-estrellas", "★".repeat(n.estrellas) || "—")));
     });
-    con(caja, lista, filaResumen(`${r.estrellas} de ${r.estrellas_max} estrellas`, `⭐ ${r.xp} XP en total`, "total"));
+    con(caja, lista, filaResumen(`${r.estrellas} de ${r.estrellas_max} estrellas`, `⭐ ${r.xp} XP en la ronda`, "total"));
     return caja;
   }
 
@@ -641,9 +655,9 @@
     );
     const ronda = con(
       el("p", "c4-ayuda-consejo"),
-      "🏁 Cada ronda tiene ",
-      el("b", null, `${s.ronda.niveles.length} niveles`),
-      ", del más fácil al más difícil. Al resolver uno pasas al siguiente; en cada ronda te tocan programas distintos al azar."
+      "🏁 El minijuego tiene ",
+      el("b", null, `${s.ronda.de} rondas`),
+      ` de ${s.ronda.niveles.length} niveles cada una, del más fácil al más difícil. Al resolver un nivel pasas al siguiente, y en cada ronda te tocan programas distintos: ninguno se repite.`
     );
     const consejo = con(
       el("p", "c4-ayuda-consejo"),
@@ -700,7 +714,8 @@
 
   if (inicial.estado === "resuelto" && inicial.resultado) {
     s.fase = "exito";
-    const sigue = s.ronda.completa ? "Terminaste la ronda: puedes jugar otra." : "Sigue con el siguiente nivel.";
+    let sigue = "Sigue con el siguiente nivel.";
+    if (s.ronda.completa) sigue = s.ronda.ultima ? "Terminaste el minijuego: puedes volver a jugar." : "Terminaste la ronda: sigue con la siguiente.";
     s.aviso = { tipo: "ok", ico: "✔", titulo: "Ya resolviste este nivel", texto: `Este es tu programa. ${sigue}` };
     pintar();
     mostrarResultado(inicial.resultado, nivel.consola);

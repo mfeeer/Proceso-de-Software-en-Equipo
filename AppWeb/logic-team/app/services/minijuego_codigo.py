@@ -110,6 +110,8 @@ def _validar_reglas(config, errores):
     for clave in ("penalizacion_por_fallo", "penalizacion_maxima"):
         if not _entero(reglas.get(clave), 0, 100):
             errores.append(f"{donde}: '{clave}' debe ser de 0 a 100")
+    if not _entero(reglas.get("rondas_por_juego"), 1, 10):
+        errores.append(f"{donde}: 'rondas_por_juego' debe ser de 1 a 10")
 
     niveles = reglas.get("niveles")
     if not isinstance(niveles, list) or not niveles:
@@ -330,9 +332,15 @@ def _construir():
             continue
         if _validar_programa(datos, ruta.name, numeros, errores):
             programas[datos["id"]] = datos
+    rondas = (config.get("minijuego_codigo") or {}).get("rondas_por_juego")
     for nivel_ in niveles:
-        if not any(p["nivel"] == nivel_["numero"] for p in programas.values()) and not errores:
-            errores.append(f"El nivel {nivel_['numero']} no tiene programas en niveles_codigo/")
+        cuantos = sum(1 for p in programas.values() if p["nivel"] == nivel_["numero"])
+        if not errores and isinstance(rondas, int) and cuantos < rondas:
+            # Para que en un juego no se repita ningun programa, cada ronda necesita uno distinto
+            errores.append(
+                f"El nivel {nivel_['numero']} tiene {cuantos} programa(s) en niveles_codigo/ y "
+                f"se necesitan al menos {rondas} (uno por ronda del juego)"
+            )
     catalogo = {
         "reglas": config.get("minijuego_codigo"),
         "niveles": niveles,
@@ -615,20 +623,59 @@ def resumen_jugador(jugador):
     }
 
 
-def _elegir(numero, lenguaje, ultimo):
-    """Programa y variante al azar para un intento nuevo, sin repetir el ultimo programa."""
+def _programa_de(intento):
+    return cargar()["ids"][intento.nivel_id][0]
+
+
+def _rondas_por_juego():
+    return cargar()["reglas"]["rondas_por_juego"]
+
+
+def _rondas_del_juego(ronda):
+    """Las rondas del mismo juego que la ronda: 1-3, 4-6, 7-9... (con 3 rondas por juego)."""
+    por_juego = _rondas_por_juego()
+    inicio = (ronda - 1) // por_juego * por_juego + 1
+    return range(inicio, inicio + por_juego)
+
+
+def _elegir(jugador, numero, lenguaje, ronda):
+    """Programa y variante al azar para un intento nuevo.
+
+    Programa: en un juego ninguno se repite; se elige entre los que el jugador no ha resuelto
+    en las otras rondas del juego (y, si sale a la mitad y vuelve, otro distinto al que dejo).
+    Variante: una distinta a la que le toco a ese programa en el juego anterior.
+    """
     programas = programas_del_nivel(numero)
-    anterior = cargar()["ids"].get(ultimo.nivel_id, (None,))[0] if ultimo else None
-    opciones = [p for p in programas if p != anterior] or programas
+    intentos = _de_jugador(jugador).filter(nivel_id__in=_ids_del_nivel(numero, lenguaje))
+    juego = _rondas_del_juego(ronda)
+    usados = {
+        _programa_de(i)
+        for i in intentos.filter(ronda__in=juego, estado=IntentoCodigo.RESUELTO).exclude(
+            ronda=ronda
+        )
+    }
+    opciones = [p for p in programas if p not in usados] or programas
+    dejados = {_programa_de(i) for i in intentos.filter(ronda=ronda)}
+    opciones = [p for p in opciones if p not in dejados] or opciones
     programa = _azar.choice(opciones)
-    variantes = len(cargar()["programas"][programa]["variantes"])
-    return f"{programa}-{lenguaje}", _azar.randrange(variantes)
+
+    nivel_id = f"{programa}-{lenguaje}"
+    juego_anterior = range(juego.start - len(juego), juego.start)
+    vistas = set(
+        intentos.filter(nivel_id=nivel_id, ronda__in=juego_anterior).values_list(
+            "variante", flat=True
+        )
+    )
+    total = len(cargar()["programas"][programa]["variantes"])
+    variantes = [v for v in range(total) if v not in vistas] or list(range(total))
+    return nivel_id, _azar.choice(variantes)
 
 
 # ---------------------------------------------------------------- rondas
 # Una ronda son los niveles en orden (1, 2, 3, 4), del mas facil al mas dificil. No se pueden
-# saltar: al resolver uno sigue el siguiente. Al terminar la ronda empieza otra con otros
-# programas al azar. Cada lenguaje lleva su propia ronda.
+# saltar: al resolver uno sigue el siguiente. Un juego son 3 rondas (rondas_por_juego) y en un
+# juego no se repite ningun programa; al volver a jugar salen con otra variante. Las rondas se
+# numeran seguidas (1-3 primer juego, 4-6 segundo...). Cada lenguaje lleva sus propias rondas.
 
 
 class FueraDeOrden(ReglaCodigo):
@@ -682,22 +729,51 @@ def resumen_ronda(intentos, lenguaje):
                 "estrellas": (hecho.estrellas or 0) if hecho else 0,
             }
         )
-    return {
+    juego = _rondas_del_juego(ronda)
+    en_juego = ronda - juego.start + 1
+    resumen = {
         "numero": ronda,
+        "en_juego": en_juego,  # «Ronda 2 de 3»
+        "de": len(juego),
+        "ultima": en_juego == len(juego),
         "completa": siguiente is None,
         "siguiente": siguiente,
         "niveles": niveles,
         "estrellas": sum(i.estrellas or 0 for i in resueltos.values()),
         "estrellas_max": maximo * len(niveles),
         "xp": sum(i.xp_obtenida for i in resueltos.values()),
+        "juego": None,
     }
+    if resumen["completa"] and resumen["ultima"]:
+        # Fin del juego: estrellas y XP de cada una de sus rondas
+        ids = [i for i, (_, leng) in cargar()["ids"].items() if leng == lenguaje]
+        hechos = intentos.filter(
+            nivel_id__in=ids, ronda__in=juego, estado=IntentoCodigo.RESUELTO
+        ).order_by("ronda", "creado")
+        rondas = {}
+        for intento in hechos:
+            r = rondas.setdefault(intento.ronda, {"estrellas": 0, "xp": 0, "niveles": set()})
+            numero = _ubicar(intento.nivel_id)[1]
+            if numero not in r["niveles"]:  # por si un nivel se resolvio dos veces
+                r["niveles"].add(numero)
+                r["estrellas"] += intento.estrellas or 0
+                r["xp"] += intento.xp_obtenida
+        lista = [
+            {"numero": n - juego.start + 1, "estrellas": r["estrellas"], "xp": r["xp"]}
+            for n, r in sorted(rondas.items())
+        ]
+        resumen["juego"] = {
+            "rondas": lista,
+            "estrellas": sum(r["estrellas"] for r in lista),
+            "estrellas_max": resumen["estrellas_max"] * len(juego),
+            "xp": sum(r["xp"] for r in lista),
+        }
+    return resumen
 
 
 def _crear(jugador, lenguaje, numero, ronda):
-    """Intento nuevo con un programa y una variante al azar (sin repetir el ultimo programa)."""
-    ids = _ids_del_nivel(numero, lenguaje)
-    ultimo = _de_jugador(jugador).filter(nivel_id__in=ids).first()
-    nivel_id, variante = _elegir(numero, lenguaje, ultimo)
+    """Intento nuevo con un programa y una variante al azar (ver _elegir)."""
+    nivel_id, variante = _elegir(jugador, numero, lenguaje, ronda)
     return IntentoCodigo.objects.create(
         nivel_id=nivel_id, variante=variante, ronda=ronda, **jugador.campos()
     )
