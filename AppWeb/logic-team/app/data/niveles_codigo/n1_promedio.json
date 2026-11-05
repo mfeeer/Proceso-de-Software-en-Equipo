@@ -1,0 +1,47 @@
+{
+  "id": "promedio",
+  "nivel": 1,
+  "titulo": "Promedio de tres calificaciones",
+  "objetivo": "Lee tres calificaciones y escribe su **promedio**.",
+  "variantes": [
+    { "c1": "c1", "c2": "c2", "c3": "c3", "e1": "8", "e2": "9", "e3": "10", "s_py": "9.0", "s": "9" },
+    { "c1": "mate", "c2": "fisica", "c3": "quimica", "e1": "7", "e2": "8", "e3": "6", "s_py": "7.0", "s": "7" },
+    { "c1": "parcial1", "c2": "parcial2", "c3": "final", "e1": "10", "e2": "6", "e3": "8", "s_py": "8.0", "s": "8" }
+  ],
+  "lenguajes": {
+    "python": {
+      "lineas": [
+        { "id": "l1", "codigo": "{c1} = float(input(\"Calificación: \"))", "sangria": 0 },
+        { "id": "l2", "codigo": "{c2} = float(input(\"Calificación: \"))", "sangria": 0 },
+        { "id": "l3", "codigo": "{c3} = float(input(\"Calificación: \"))", "sangria": 0 },
+        { "id": "l4", "codigo": "suma = {c1} + {c2} + {c3}", "sangria": 0, "despues_de": ["l1", "l2", "l3"] },
+        { "id": "l5", "codigo": "promedio = suma / 3", "sangria": 0, "despues_de": ["l4"] },
+        { "id": "l6", "codigo": "print(\"Promedio:\", promedio)", "sangria": 0, "despues_de": ["l5"] }
+      ],
+      "consola": [
+        { "texto": "Calificación: ", "entrada": "{e1}" },
+        { "texto": "Calificación: ", "entrada": "{e2}" },
+        { "texto": "Calificación: ", "entrada": "{e3}" },
+        { "texto": "Promedio: {s_py}" }
+      ]
+    },
+    "pseudocodigo": {
+      "lineas": [
+        { "id": "l1", "codigo": "Algoritmo Promedio", "sangria": 0 },
+        { "id": "l2", "codigo": "Leer {c1}", "sangria": 1, "padre": "l1" },
+        { "id": "l3", "codigo": "Leer {c2}", "sangria": 1, "padre": "l1" },
+        { "id": "l4", "codigo": "Leer {c3}", "sangria": 1, "padre": "l1" },
+        { "id": "l5", "codigo": "suma <- {c1} + {c2} + {c3}", "sangria": 1, "padre": "l1", "despues_de": ["l2", "l3", "l4"] },
+        { "id": "l6", "codigo": "promedio <- suma / 3", "sangria": 1, "padre": "l1", "despues_de": ["l5"] },
+        { "id": "l7", "codigo": "Escribir \"Promedio: \", promedio", "sangria": 1, "padre": "l1", "despues_de": ["l6"] },
+        { "id": "l8", "codigo": "FinAlgoritmo", "sangria": 0, "sigue_a": "l1" }
+      ],
+      "consola": [
+        { "texto": "> ", "entrada": "{e1}" },
+        { "texto": "> ", "entrada": "{e2}" },
+        { "texto": "> ", "entrada": "{e3}" },
+        { "texto": "Promedio: {s}" }
+      ]
+    }
+  }
+}

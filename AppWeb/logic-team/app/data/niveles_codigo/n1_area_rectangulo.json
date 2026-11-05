@@ -1,0 +1,42 @@
+{
+  "_ayuda": "CU-04. Cada archivo es un programa de un nivel (1 a 4, ver config_juego.json > minijuego_codigo > niveles) escrito en Python y en pseudocódigo, con sus líneas en el orden de una solución. 'sangria' es el nivel de sangría (0, 1, 2...), 'padre' la línea que la contiene (if, for, Si, Para, Algoritmo), 'sigue_a' la línea cuyo bloque debe cerrar justo antes (else, SiNo, FinSi, FinPara, FinAlgoritmo) y 'despues_de' las líneas que deben aparecer antes. Vale cualquier orden que respete esas reglas. 'distractores' son líneas que no van. Cada variante cambia los {marcadores} del título, el objetivo, el código y la consola: al jugar se elige un programa y una variante al azar. Valida con: python manage.py validar_escenarios.",
+  "id": "area-rectangulo",
+  "nivel": 1,
+  "titulo": "Área de un rectángulo",
+  "objetivo": "Lee las medidas de un rectángulo (**{b}** y **{h}**) y escribe su **área**.",
+  "variantes": [
+    { "b": "base", "h": "altura", "B": "Base", "H": "Altura", "e1": "4", "e2": "5", "s_py": "20.0", "s": "20" },
+    { "b": "largo", "h": "ancho", "B": "Largo", "H": "Ancho", "e1": "6", "e2": "3", "s_py": "18.0", "s": "18" },
+    { "b": "lado1", "h": "lado2", "B": "Lado 1", "H": "Lado 2", "e1": "7", "e2": "2", "s_py": "14.0", "s": "14" }
+  ],
+  "lenguajes": {
+    "python": {
+      "lineas": [
+        { "id": "l1", "codigo": "{b} = float(input(\"{B}: \"))", "sangria": 0 },
+        { "id": "l2", "codigo": "{h} = float(input(\"{H}: \"))", "sangria": 0 },
+        { "id": "l3", "codigo": "area = {b} * {h}", "sangria": 0, "despues_de": ["l1", "l2"] },
+        { "id": "l4", "codigo": "print(\"El área es\", area)", "sangria": 0, "despues_de": ["l3"] }
+      ],
+      "consola": [
+        { "texto": "{B}: ", "entrada": "{e1}" },
+        { "texto": "{H}: ", "entrada": "{e2}" },
+        { "texto": "El área es {s_py}" }
+      ]
+    },
+    "pseudocodigo": {
+      "lineas": [
+        { "id": "l1", "codigo": "Algoritmo AreaRectangulo", "sangria": 0 },
+        { "id": "l2", "codigo": "Leer {b}", "sangria": 1, "padre": "l1" },
+        { "id": "l3", "codigo": "Leer {h}", "sangria": 1, "padre": "l1" },
+        { "id": "l4", "codigo": "area <- {b} * {h}", "sangria": 1, "padre": "l1", "despues_de": ["l2", "l3"] },
+        { "id": "l5", "codigo": "Escribir \"El área es \", area", "sangria": 1, "padre": "l1", "despues_de": ["l4"] },
+        { "id": "l6", "codigo": "FinAlgoritmo", "sangria": 0, "sigue_a": "l1" }
+      ],
+      "consola": [
+        { "texto": "> ", "entrada": "{e1}" },
+        { "texto": "> ", "entrada": "{e2}" },
+        { "texto": "El área es {s}" }
+      ]
+    }
+  }
+}

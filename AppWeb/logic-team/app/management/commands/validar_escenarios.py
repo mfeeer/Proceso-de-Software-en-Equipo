@@ -38,10 +38,11 @@ class Command(BaseCommand):
             )
         )
         codigo = minijuego_codigo.cargar()
-        lenguajes = {n["lenguaje"] for n in codigo["niveles"].values()}
+        variantes = sum(len(p["variantes"]) for p in codigo["programas"].values())
         self.stdout.write(
             self.style.SUCCESS(
-                f"Minijuego de código válido: {codigo['programas']} programa(s) en "
-                f"{len(lenguajes)} lenguaje(s), {len(codigo['niveles'])} niveles."
+                f"Minijuego de código válido: {len(codigo['niveles'])} niveles con "
+                f"{len(codigo['programas'])} programas y {variantes} variantes, en "
+                f"{len(minijuego_codigo.LENGUAJES)} lenguajes."
             )
         )

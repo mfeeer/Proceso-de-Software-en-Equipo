@@ -1,0 +1,46 @@
+{
+  "id": "mayor-de-dos",
+  "nivel": 2,
+  "titulo": "El mayor de dos números",
+  "objetivo": "Lee dos números y escribe **cuál es el mayor**.",
+  "variantes": [
+    { "a": "a", "b": "b", "e1": "3", "e2": "8", "s": "8" },
+    { "a": "x", "b": "y", "e1": "9", "e2": "2", "s": "9" },
+    { "a": "num1", "b": "num2", "e1": "4", "e2": "7", "s": "7" }
+  ],
+  "lenguajes": {
+    "python": {
+      "lineas": [
+        { "id": "l1", "codigo": "{a} = int(input(\"Número: \"))", "sangria": 0 },
+        { "id": "l2", "codigo": "{b} = int(input(\"Número: \"))", "sangria": 0 },
+        { "id": "l3", "codigo": "if {a} > {b}:", "sangria": 0, "despues_de": ["l1", "l2"] },
+        { "id": "l4", "codigo": "print(\"El mayor es\", {a})", "sangria": 1, "padre": "l3" },
+        { "id": "l5", "codigo": "else:", "sangria": 0, "sigue_a": "l3" },
+        { "id": "l6", "codigo": "print(\"El mayor es\", {b})", "sangria": 1, "padre": "l5" }
+      ],
+      "consola": [
+        { "texto": "Número: ", "entrada": "{e1}" },
+        { "texto": "Número: ", "entrada": "{e2}" },
+        { "texto": "El mayor es {s}" }
+      ]
+    },
+    "pseudocodigo": {
+      "lineas": [
+        { "id": "l1", "codigo": "Algoritmo MayorDeDos", "sangria": 0 },
+        { "id": "l2", "codigo": "Leer {a}", "sangria": 1, "padre": "l1" },
+        { "id": "l3", "codigo": "Leer {b}", "sangria": 1, "padre": "l1" },
+        { "id": "l4", "codigo": "Si {a} > {b} Entonces", "sangria": 1, "padre": "l1", "despues_de": ["l2", "l3"] },
+        { "id": "l5", "codigo": "Escribir \"El mayor es \", {a}", "sangria": 2, "padre": "l4" },
+        { "id": "l6", "codigo": "SiNo", "sangria": 1, "padre": "l1", "sigue_a": "l4" },
+        { "id": "l7", "codigo": "Escribir \"El mayor es \", {b}", "sangria": 2, "padre": "l6" },
+        { "id": "l8", "codigo": "FinSi", "sangria": 1, "padre": "l1", "sigue_a": "l6" },
+        { "id": "l9", "codigo": "FinAlgoritmo", "sangria": 0, "sigue_a": "l1" }
+      ],
+      "consola": [
+        { "texto": "> ", "entrada": "{e1}" },
+        { "texto": "> ", "entrada": "{e2}" },
+        { "texto": "El mayor es {s}" }
+      ]
+    }
+  }
+}

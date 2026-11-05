@@ -1,7 +1,8 @@
 """CU04 — Resolver minijuego de código.
 
 Se abre desde el menú de modos de CU05 («Minijuego de código»). Mesa de trabajo donde se
-acomodan las líneas revueltas de un programa en Python o pseudocódigo, mas la API JSON que usa
+acomodan las líneas revueltas de un programa en Python o pseudocódigo (en cada nivel toca un
+programa y una variante al azar), mas la API JSON que usa
 js/minijuego_codigo.js. Las reglas viven en app/services/minijuego_codigo.py y los programas en
 app/data/niveles_codigo.
 """
@@ -50,22 +51,34 @@ def inicio(request):
     ?lenguaje=python|pseudocodigo elige el lenguaje; si no, se usa el último que jugó.
     """
     try:
-        nivel_id = minijuego_codigo.nivel_para(
+        lenguaje, numero = minijuego_codigo.nivel_para(
             tecnicismos.jugador_de(request), request.GET.get("lenguaje")
         )
     except escenarios.CatalogoError as exc:
         return _pagina_error(request, exc)
-    return redirect("codigo_mesa", nivel_id=nivel_id)
+    return redirect("codigo_mesa", lenguaje=lenguaje, numero=numero)
+
+
+def _enlaces(estado):
+    """Agrega al estado las direcciones de los niveles y del otro lenguaje."""
+    nivel_ = estado["nivel"]
+    for n in estado["niveles"]:
+        n["url"] = reverse("codigo_mesa", args=[nivel_["lenguaje"], n["numero"]])
+    for leng in estado["lenguajes"]:
+        leng["url"] = reverse("codigo_mesa", args=[leng["id"], nivel_["numero"]])
+    return estado
 
 
 @ensure_csrf_cookie
 @require_GET
-def mesa(request, nivel_id):
-    """Pasos 1 a 3: la mesa de trabajo del nivel. ?nuevo=1 es «Jugar otra vez»."""
+def mesa(request, lenguaje, numero):
+    """Pasos 1 a 3: la mesa de trabajo del nivel. ?nuevo=1 es «Jugar otra vez» (otro programa)."""
     jugador = tecnicismos.jugador_de(request)
     try:
-        intento = minijuego_codigo.iniciar(jugador, nivel_id, nuevo=request.GET.get("nuevo") == "1")
-        estado = minijuego_codigo.estado_publico(intento, jugador)
+        intento = minijuego_codigo.iniciar(
+            jugador, lenguaje, numero, nuevo=request.GET.get("nuevo") == "1"
+        )
+        estado = _enlaces(minijuego_codigo.estado_publico(intento, jugador))
     except ReglaCodigo as exc:
         raise Http404(str(exc)) from exc
     except escenarios.CatalogoError as exc:
@@ -73,7 +86,7 @@ def mesa(request, nivel_id):
     return render(
         request,
         "minijuego_codigo.html",
-        {"estado": estado, "nivel_id": nivel_id},
+        {"estado": estado, "otra_vez": reverse("codigo_mesa", args=[lenguaje, numero])},
     )
 
 

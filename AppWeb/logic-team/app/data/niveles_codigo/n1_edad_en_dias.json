@@ -1,0 +1,41 @@
+{
+  "id": "edad-en-dias",
+  "nivel": 1,
+  "titulo": "¿Cuánto tiempo has vivido?",
+  "objetivo": "Lee el **nombre** y la **edad** de una persona y escribe cuántos **{unidad}** ha vivido (aproximadamente, {factor} por año).",
+  "variantes": [
+    { "unidad": "días", "factor": "365", "d": "dias", "e1": "Ana", "e2": "18", "s": "6570" },
+    { "unidad": "semanas", "factor": "52", "d": "semanas", "e1": "Luis", "e2": "20", "s": "1040" },
+    { "unidad": "meses", "factor": "12", "d": "meses", "e1": "Sofía", "e2": "19", "s": "228" }
+  ],
+  "lenguajes": {
+    "python": {
+      "lineas": [
+        { "id": "l1", "codigo": "nombre = input(\"Nombre: \")", "sangria": 0 },
+        { "id": "l2", "codigo": "edad = int(input(\"Edad: \"))", "sangria": 0 },
+        { "id": "l3", "codigo": "{d} = edad * {factor}", "sangria": 0, "despues_de": ["l2"] },
+        { "id": "l4", "codigo": "print(nombre, \"ha vivido unos\", {d}, \"{unidad}\")", "sangria": 0, "despues_de": ["l1", "l3"] }
+      ],
+      "consola": [
+        { "texto": "Nombre: ", "entrada": "{e1}" },
+        { "texto": "Edad: ", "entrada": "{e2}" },
+        { "texto": "{e1} ha vivido unos {s} {unidad}" }
+      ]
+    },
+    "pseudocodigo": {
+      "lineas": [
+        { "id": "l1", "codigo": "Algoritmo TiempoVivido", "sangria": 0 },
+        { "id": "l2", "codigo": "Leer nombre", "sangria": 1, "padre": "l1" },
+        { "id": "l3", "codigo": "Leer edad", "sangria": 1, "padre": "l1" },
+        { "id": "l4", "codigo": "{d} <- edad * {factor}", "sangria": 1, "padre": "l1", "despues_de": ["l3"] },
+        { "id": "l5", "codigo": "Escribir nombre, \" ha vivido unos \", {d}, \" {unidad}\"", "sangria": 1, "padre": "l1", "despues_de": ["l2", "l4"] },
+        { "id": "l6", "codigo": "FinAlgoritmo", "sangria": 0, "sigue_a": "l1" }
+      ],
+      "consola": [
+        { "texto": "> ", "entrada": "{e1}" },
+        { "texto": "> ", "entrada": "{e2}" },
+        { "texto": "{e1} ha vivido unos {s} {unidad}" }
+      ]
+    }
+  }
+}

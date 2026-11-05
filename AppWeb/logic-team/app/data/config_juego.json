@@ -115,7 +115,13 @@
     "eventos_para_sugerencia": 5
   },
   "minijuego_codigo": {
-    "_ayuda": "CU-04. Estrellas según los intentos fallidos al comprobar el programa (RN01, RN03): la primera regla que se cumpla, y la última debe tener fallos_max: null (sin límite). porcentaje_xp es la parte de xp_base que se gana con esas estrellas (RN04). Además, cada intento fallido resta penalizacion_por_fallo % de la XP, hasta penalizacion_maxima % (RN05). Los programas viven en niveles_codigo/*.json, cada uno en Python y en pseudocódigo.",
+    "_ayuda": "CU-04. Estrellas según los intentos fallidos al comprobar el programa (RN01, RN03): la primera regla que se cumpla, y la última debe tener fallos_max: null (sin límite). porcentaje_xp es la parte de xp_base que se gana con esas estrellas (RN04). Además, cada intento fallido resta penalizacion_por_fallo % de la XP, hasta penalizacion_maxima % (RN05). Los programas viven en niveles_codigo/*.json, cada uno en Python y en pseudocódigo; 'niveles' agrupa los programas por tema y define su XP (al jugar un nivel se elige uno de sus programas al azar).",
+    "niveles": [
+      { "numero": 1, "nombre": "Secuencia", "xp_base": 30 },
+      { "numero": 2, "nombre": "Decisiones", "xp_base": 40 },
+      { "numero": 3, "nombre": "Ciclos", "xp_base": 50 },
+      { "numero": 4, "nombre": "Ciclos con decisiones", "xp_base": 60 }
+    ],
     "estrellas": [
       { "estrellas": 3, "fallos_max": 0, "porcentaje_xp": 100 },
       { "estrellas": 2, "fallos_max": 2, "porcentaje_xp": 75 },

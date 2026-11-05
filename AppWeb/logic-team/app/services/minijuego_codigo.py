@@ -1,27 +1,31 @@
 """Servicio de codigo del CU-04 Resolver minijuego de codigo (SDS 1.3.4 y 3.3.2).
 
-El minijuego se abre desde el menu de modos (CU-05) y no depende de una partida. Cada nivel es
-un programa completo, en Python o en pseudocodigo, con sus lineas revueltas: el jugador las
-acomoda en orden y con su sangria hasta que el programa quede como debe ir.
+El minijuego se abre desde el menu de modos (CU-05) y no depende de una partida. Tiene 4 niveles
+por tema (secuencia, decisiones, ciclos, ciclos con decisiones), cada uno en Python y en
+pseudocodigo. Cada nivel tiene varios programas completos y cada programa varias variantes
+(otros nombres de variables, otros valores y otro ejemplo): al abrir un nivel se elige un
+programa y una variante al azar, y sus lineas salen revueltas. El jugador las acomoda en orden y
+con su sangria hasta que el programa quede como debe ir.
 
-No hay una sola respuesta. Cada linea del nivel declara reglas y vale cualquier acomodo que las
-respete, asi cada quien puede programar a su manera (por ejemplo, leer b antes que a):
+No hay una sola respuesta. Cada linea declara reglas y vale cualquier acomodo que las respete,
+asi cada quien puede programar a su manera (por ejemplo, leer b antes que a):
 
   sangria     nivel de sangria de la linea (0, 1, 2...)
   padre       la linea que la contiene (if, for, Si, Para, Algoritmo); sin padre va hasta afuera
   sigue_a     la linea cuyo bloque debe terminar justo antes (else, SiNo, FinSi, FinPara...)
   despues_de  lineas que deben aparecer antes, en cualquier lugar del programa
 
-Algunos niveles traen distractores: lineas que no van en el programa.
+Algunos programas traen distractores: lineas que no van en el programa.
 
-  iniciar()    -> pasos 1 a 3: abre (o retoma) el IntentoCodigo del jugador para un nivel
+  iniciar()    -> pasos 1 a 3: retoma el intento del jugador en un nivel o abre uno nuevo con
+                  un programa y una variante al azar
   comprobar()  -> pasos 4 a 9: programa vacio (FE3) o incompleto (FE1) no cuentan como fallo;
                   si las reglas no se cumplen es un intento fallido (FE2, RN05) salvo que sea el
                   mismo acomodo que ya fallo (RN02); si se cumplen, califica (RN01, RN03, RN04)
   salir()      -> FA3: el intento queda abandonado, sin XP
 
-El contenido vive en app/data (RNF-MAN-05, RNF-MAN-07): los niveles en niveles_codigo/*.json y
-las reglas de estrellas y XP en config_juego.json > minijuego_codigo. Se vuelve a leer solo
+El contenido vive en app/data (RNF-MAN-05, RNF-MAN-07): los programas en niveles_codigo/*.json
+y los niveles, estrellas y XP en config_juego.json > minijuego_codigo. Se vuelve a leer solo
 cuando cambia.
 """
 
@@ -44,8 +48,10 @@ MAX_SANGRIA = 6
 MAX_LINEAS = 40  # tope de lo que acepta el servidor, sea cual sea el nivel
 MAX_CODIGO = 80  # caracteres por linea
 ID_VALIDO = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+MARCADOR = re.compile(r"\{(\w+)\}")  # {b}, {min}... se cambian por los valores de la variante
 
 _cache = {"firma": None, "resultado": None}
+_azar = random.Random()  # eleccion de programa y variante (las pruebas lo pueden sembrar)
 
 
 class ReglaCodigo(Exception):
@@ -78,11 +84,12 @@ def _leer(ruta, errores):
 
 
 def _validar_reglas(config, errores):
+    """Devuelve los niveles validos de config_juego.json > minijuego_codigo."""
     donde = f"{escenarios.CONFIG_PATH.name} > minijuego_codigo"
     reglas = config.get("minijuego_codigo")
     if not isinstance(reglas, dict):
         errores.append(f"{escenarios.CONFIG_PATH.name}: falta la clave 'minijuego_codigo'")
-        return
+        return []
     estrellas = reglas.get("estrellas")
     if not isinstance(estrellas, list) or not estrellas:
         errores.append(f"{donde}: 'estrellas' debe ser una lista con al menos una regla")
@@ -101,9 +108,27 @@ def _validar_reglas(config, errores):
         if not _entero(reglas.get(clave), 0, 100):
             errores.append(f"{donde}: '{clave}' debe ser de 0 a 100")
 
+    niveles = reglas.get("niveles")
+    if not isinstance(niveles, list) or not niveles:
+        errores.append(f"{donde}: 'niveles' debe ser una lista con al menos un nivel")
+        return []
+    validos = []
+    for nivel_ in niveles:
+        numero = nivel_.get("numero") if isinstance(nivel_, dict) else None
+        if (
+            not _entero(numero, 1)
+            or any(n["numero"] == numero for n in validos)
+            or not _texto_ok(nivel_.get("nombre"))
+            or not _entero(nivel_.get("xp_base"), 0)
+        ):
+            errores.append(f"{donde}: cada nivel necesita 'numero' unico, 'nombre' y 'xp_base'")
+            continue
+        validos.append(nivel_)
+    return sorted(validos, key=lambda n: n["numero"])
+
 
 def _validar_variante(variante, donde, errores):
-    """Lineas, distractores y consola de un programa en un lenguaje."""
+    """Lineas, distractores y consola de un programa en un lenguaje (ya con sus valores)."""
     if not isinstance(variante, dict):
         errores.append(f"{donde}: debe ser un objeto con 'lineas'")
         return False
@@ -171,8 +196,54 @@ def _validar_variante(variante, donde, errores):
     return len(errores) == antes
 
 
-def _validar_nivel(datos, nombre, errores):
-    """Devuelve los niveles (uno por lenguaje) del programa o [] si tiene errores."""
+def _textos(datos):
+    """Todos los textos de un programa donde puede haber {marcadores}."""
+    yield datos.get("titulo", "")
+    yield datos.get("objetivo", "")
+    for variante in (datos.get("lenguajes") or {}).values():
+        if not isinstance(variante, dict):
+            continue
+        for linea in [*(variante.get("lineas") or []), *(variante.get("distractores") or [])]:
+            if isinstance(linea, dict):
+                yield linea.get("codigo", "")
+        for c in variante.get("consola") or []:
+            if isinstance(c, dict):
+                yield c.get("texto", "")
+                yield c.get("entrada", "")
+
+
+def _poner(texto, valores):
+    return MARCADOR.sub(lambda m: valores[m.group(1)], texto)
+
+
+def _armar(datos, lenguaje, indice, xp_base=0, numero=0):
+    """El nivel listo para jugar: el programa en un lenguaje con los valores de una variante."""
+    valores = datos["variantes"][indice]
+    plantilla = datos["lenguajes"][lenguaje]
+
+    def lineas(lista):
+        return [{**ln, "codigo": _poner(ln["codigo"], valores)} for ln in lista]
+
+    return {
+        "id": f"{datos['id']}-{lenguaje}",
+        "programa": datos["id"],
+        "lenguaje": lenguaje,
+        "numero": numero,
+        "variante": indice,
+        "titulo": _poner(datos["titulo"], valores),
+        "objetivo": _poner(datos["objetivo"], valores),
+        "xp_base": xp_base,
+        "lineas": lineas(plantilla["lineas"]),
+        "distractores": lineas(plantilla.get("distractores", [])),
+        "consola": [
+            {k: _poner(v, valores) for k, v in c.items() if k in ("texto", "entrada")}
+            for c in plantilla["consola"]
+        ],
+    }
+
+
+def _validar_programa(datos, nombre, numeros, errores):
+    """Revisa un programa con todas sus variantes. Devuelve True si se puede jugar."""
     donde = f"niveles_codigo/{nombre}"
     antes = len(errores)
     pid = datos.get("id")
@@ -181,47 +252,52 @@ def _validar_nivel(datos, nombre, errores):
     for campo in ("titulo", "objetivo"):
         if not _texto_ok(datos.get(campo)):
             errores.append(f"{donde}: falta '{campo}'")
-    for clave in ("xp_base", "orden"):
-        if not _entero(datos.get(clave, 0), 0):
-            errores.append(f"{donde}: '{clave}' debe ser un entero de 0 en adelante")
-    variantes = datos.get("lenguajes")
-    if not isinstance(variantes, dict) or not variantes:
-        errores.append(f"{donde}: 'lenguajes' necesita al menos {' o '.join(LENGUAJES)}")
-        return []
-    for lenguaje in variantes:
-        if lenguaje not in LENGUAJES:
-            errores.append(f"{donde}: el lenguaje '{lenguaje}' no existe ({', '.join(LENGUAJES)})")
+    if datos.get("nivel") not in numeros:
+        errores.append(f"{donde}: 'nivel' debe ser uno de {sorted(numeros)} (config_juego.json)")
+    variantes = datos.get("variantes")
+    if (
+        not isinstance(variantes, list)
+        or not variantes
+        or not all(
+            isinstance(v, dict) and all(isinstance(x, str) for x in v.values()) for v in variantes
+        )
+    ):
+        errores.append(f"{donde}: 'variantes' debe ser una lista de objetos con textos")
+        return False
+    lenguajes = datos.get("lenguajes")
+    if not isinstance(lenguajes, dict) or set(lenguajes) != set(LENGUAJES):
+        errores.append(f"{donde}: 'lenguajes' debe tener {' y '.join(LENGUAJES)}")
+        return False
     if len(errores) != antes:
-        return []
+        return False
 
-    niveles = []
-    for lenguaje, variante in variantes.items():
-        lugar = f"{donde} > {lenguaje}"
-        if not _validar_variante(variante, lugar, errores):
-            continue
-        nivel_ = {
-            "id": f"{pid}-{lenguaje}",
-            "programa": pid,
-            "lenguaje": lenguaje,
-            "orden": datos.get("orden", 0),
-            "titulo": datos["titulo"],
-            "objetivo": datos["objetivo"],
-            "xp_base": datos["xp_base"],
-            "lineas": variante["lineas"],
-            "distractores": variante.get("distractores", []),
-            "consola": variante["consola"],
-        }
-        # Las lineas, en el orden en que vienen, deben ser una solucion valida
-        solucion = [{"id": ln["id"], "sangria": ln["sangria"]} for ln in nivel_["lineas"]]
-        revision = revisar_programa(solucion, nivel_)
-        if not revision["correcta"]:
-            motivo = (
-                revision["errores"][0]["mensaje"] if revision["errores"] else revision["mensaje"]
-            )
-            errores.append(f"{lugar}: las lineas en su orden no cumplen sus reglas ({motivo})")
-            continue
-        niveles.append(nivel_)
-    return niveles
+    usados = {
+        m for texto in _textos(datos) if isinstance(texto, str) for m in MARCADOR.findall(texto)
+    }
+    for i, valores in enumerate(variantes):
+        faltan = sorted(usados - set(valores))
+        if faltan:
+            errores.append(f"{donde} > variante {i + 1}: faltan los valores {', '.join(faltan)}")
+    if len(errores) != antes:
+        return False
+
+    for lenguaje in LENGUAJES:
+        for i in range(len(variantes)):
+            lugar = f"{donde} > {lenguaje} > variante {i + 1}"
+            if not _validar_variante(lenguajes[lenguaje], lugar, errores):
+                break  # un error de forma se repetiria en todas las variantes
+            nivel_ = _armar(datos, lenguaje, i)
+            if not _validar_variante(nivel_, lugar, errores):
+                break
+            # Las lineas, en el orden en que vienen, deben ser una solucion valida
+            solucion = [{"id": ln["id"], "sangria": ln["sangria"]} for ln in nivel_["lineas"]]
+            revision = revisar_programa(solucion, nivel_)
+            if not revision["correcta"]:
+                errores_ = revision["errores"]
+                motivo = errores_[0]["mensaje"] if errores_ else revision["mensaje"]
+                errores.append(f"{lugar}: las lineas en su orden no cumplen sus reglas ({motivo})")
+                break
+    return len(errores) == antes
 
 
 def _archivos():
@@ -235,9 +311,10 @@ def _firma():
 def _construir():
     errores = []
     config = _leer(escenarios.CONFIG_PATH, errores) or {}
-    _validar_reglas(config, errores)
+    niveles = _validar_reglas(config, errores)
+    numeros = {n["numero"] for n in niveles}
 
-    niveles, programas = [], set()
+    programas = {}
     for ruta in sorted(NIVELES_DIR.glob("*.json")):
         datos = _leer(ruta, errores)
         if datos is None:
@@ -248,27 +325,28 @@ def _construir():
         if datos.get("id") in programas:
             errores.append(f"niveles_codigo/{ruta.name}: id de programa repetido")
             continue
-        programas.add(datos.get("id"))
-        niveles += _validar_nivel(datos, ruta.name, errores)
-    if not niveles and not errores:
-        errores.append("No hay niveles en app/data/niveles_codigo/")
-    orden = list(LENGUAJES)
-    niveles.sort(key=lambda n: (orden.index(n["lenguaje"]), n["orden"], n["programa"]))
+        if _validar_programa(datos, ruta.name, numeros, errores):
+            programas[datos["id"]] = datos
+    for nivel_ in niveles:
+        if not any(p["nivel"] == nivel_["numero"] for p in programas.values()) and not errores:
+            errores.append(f"El nivel {nivel_['numero']} no tiene programas en niveles_codigo/")
     catalogo = {
         "reglas": config.get("minijuego_codigo"),
-        "programas": len(programas),
-        "niveles": {n["id"]: n for n in niveles},
+        "niveles": niveles,
+        "programas": programas,
+        # "area-rectangulo-python" -> ("area-rectangulo", "python"): asi se guarda en el intento
+        "ids": {f"{pid}-{leng}": (pid, leng) for pid in programas for leng in LENGUAJES},
     }
     return catalogo, errores
 
 
 def validar():
-    """Errores de las reglas y de los niveles (vacia si todo esta bien)."""
+    """Errores de las reglas y de los programas (vacia si todo esta bien)."""
     return _construir()[1]
 
 
 def cargar():
-    """Devuelve {"reglas", "programas", "niveles"}. Lanza escenarios.CatalogoError."""
+    """Devuelve {"reglas", "niveles", "programas", "ids"}. Lanza escenarios.CatalogoError."""
     firma = _firma()
     if _cache["firma"] != firma:
         _cache["firma"] = firma
@@ -279,14 +357,29 @@ def cargar():
     return catalogo
 
 
-def nivel(nivel_id):
-    """El nivel o None si no existe."""
-    return cargar()["niveles"].get(nivel_id)
+def _nivel_info(numero):
+    return next((n for n in cargar()["niveles"] if n["numero"] == numero), None)
 
 
-def niveles_de(lenguaje):
-    """Niveles de un lenguaje, en orden."""
-    return [n for n in cargar()["niveles"].values() if n["lenguaje"] == lenguaje]
+def programas_del_nivel(numero):
+    """Ids de los programas de un nivel, en orden."""
+    return sorted(p["id"] for p in cargar()["programas"].values() if p["nivel"] == numero)
+
+
+def armar(programa, lenguaje, variante=0):
+    """El nivel listo para jugar de un programa, lenguaje y variante."""
+    datos = cargar()["programas"][programa]
+    info = _nivel_info(datos["nivel"])
+    variante = variante if 0 <= variante < len(datos["variantes"]) else 0
+    return _armar(datos, lenguaje, variante, info["xp_base"], info["numero"])
+
+
+def nivel_de(intento):
+    """El nivel que esta jugando un intento, o None si su programa ya no existe."""
+    ubicacion = cargar()["ids"].get(intento.nivel_id)
+    if ubicacion is None:
+        return None
+    return armar(*ubicacion, intento.variante)
 
 
 # ---------------------------------------------------------------- programa que manda el navegador
@@ -470,15 +563,27 @@ def _de_jugador(jugador):
     return IntentoCodigo.objects.filter(**jugador.filtro())
 
 
+def _ubicar(nivel_id):
+    """("python", 3) del intento, o None si su programa ya no existe."""
+    catalogo = cargar()
+    ubicacion = catalogo["ids"].get(nivel_id)
+    if ubicacion is None:
+        return None
+    programa, lenguaje = ubicacion
+    return lenguaje, catalogo["programas"][programa]["nivel"]
+
+
 def _mejores(jugador):
-    """Mejores estrellas del jugador en cada nivel resuelto."""
+    """Mejores estrellas del jugador en cada (lenguaje, nivel) resuelto."""
     mejores = {}
     for nivel_id, estrellas in (
         _de_jugador(jugador)
         .filter(estado=IntentoCodigo.RESUELTO)
         .values_list("nivel_id", "estrellas")
     ):
-        mejores[nivel_id] = max(mejores.get(nivel_id, 0), estrellas or 0)
+        clave = _ubicar(nivel_id)
+        if clave is not None:
+            mejores[clave] = max(mejores.get(clave, 0), estrellas or 0)
     return mejores
 
 
@@ -486,50 +591,65 @@ def lenguaje_para(jugador, pedido=None):
     """El lenguaje que se pidio o, si no, el del ultimo intento del jugador."""
     if pedido in LENGUAJES:
         return pedido
-    niveles = cargar()["niveles"]
     for nivel_id in _de_jugador(jugador).values_list("nivel_id", flat=True)[:20]:
-        if nivel_id in niveles:
-            return niveles[nivel_id]["lenguaje"]
+        ubicacion = _ubicar(nivel_id)
+        if ubicacion is not None:
+            return ubicacion[0]
     return LENGUAJE_INICIAL
 
 
 def nivel_para(jugador, lenguaje=None):
-    """Nivel con el que abre el modo: el primero que el jugador no ha resuelto en ese lenguaje."""
+    """(lenguaje, numero) con que abre el modo: el primer nivel que falta resolver."""
     lenguaje = lenguaje_para(jugador, lenguaje)
-    niveles = niveles_de(lenguaje) or list(cargar()["niveles"].values())
-    resueltos = _mejores(jugador)
-    return next((n["id"] for n in niveles if n["id"] not in resueltos), niveles[0]["id"])
+    numeros = [n["numero"] for n in cargar()["niveles"]]
+    mejores = _mejores(jugador)
+    numero = next((n for n in numeros if (lenguaje, n) not in mejores), numeros[0])
+    return lenguaje, numero
 
 
 def resumen_jugador(jugador):
     """Para la tarjeta del menu de modos: niveles resueltos y mejores estrellas."""
     catalogo = cargar()
-    mejores = {k: v for k, v in _mejores(jugador).items() if k in catalogo["niveles"]}
+    mejores = _mejores(jugador)
     maximo = max(r["estrellas"] for r in catalogo["reglas"]["estrellas"])
+    niveles = len(catalogo["niveles"]) * len(LENGUAJES)
     return {
-        "niveles": len(catalogo["niveles"]),
+        "niveles": niveles,
         "resueltos": len(mejores),
         "estrellas": sum(mejores.values()),
-        "estrellas_max": maximo * len(catalogo["niveles"]),
+        "estrellas_max": maximo * niveles,
     }
 
 
-@transaction.atomic
-def iniciar(jugador, nivel_id, nuevo=False):
-    """Pasos 1 a 3: retoma el intento en curso del nivel o abre uno nuevo.
+def _elegir(numero, lenguaje, ultimo):
+    """Programa y variante al azar para un intento nuevo, sin repetir el ultimo programa."""
+    programas = programas_del_nivel(numero)
+    anterior = cargar()["ids"].get(ultimo.nivel_id, (None,))[0] if ultimo else None
+    opciones = [p for p in programas if p != anterior] or programas
+    programa = _azar.choice(opciones)
+    variantes = len(cargar()["programas"][programa]["variantes"])
+    return f"{programa}-{lenguaje}", _azar.randrange(variantes)
 
-    Recargar la pagina devuelve el mismo intento con su ultimo acomodo comprobado. Si el ultimo
-    intento ya se resolvio, se muestra su resultado hasta que el jugador pida jugar otra vez.
+
+@transaction.atomic
+def iniciar(jugador, lenguaje, numero, nuevo=False):
+    """Pasos 1 a 3: retoma el intento del jugador en el nivel o abre uno nuevo al azar.
+
+    Recargar la pagina devuelve el mismo intento (mismo programa, variante y ultimo acomodo
+    comprobado). Si el ultimo intento ya se resolvio, se muestra su resultado hasta que el
+    jugador pida jugar otra vez; entonces le toca otro programa.
     """
-    if nivel(nivel_id) is None:
+    if lenguaje not in LENGUAJES or _nivel_info(numero) is None:
         raise ReglaCodigo("Ese nivel no existe.")
-    ultimo = _de_jugador(jugador).filter(nivel_id=nivel_id).first()
+    ids = [f"{p}-{lenguaje}" for p in programas_del_nivel(numero)]
+    ultimo = _de_jugador(jugador).filter(nivel_id__in=ids).first()
     if ultimo is not None and not nuevo and ultimo.estado != IntentoCodigo.ABANDONADO:
         return ultimo
     if ultimo is not None and ultimo.estado == IntentoCodigo.EN_CURSO:
         ultimo.estado = IntentoCodigo.ABANDONADO  # «Jugar otra vez» sin haber terminado
         ultimo.save(update_fields=["estado", "actualizado"])
-    return IntentoCodigo.objects.create(nivel_id=nivel_id, **jugador.campos())
+    nivel_id, variante = _elegir(numero, lenguaje, ultimo)
+    return IntentoCodigo.objects.create(nivel_id=nivel_id, variante=variante, **jugador.campos())
 
 
 def _en_curso(intento):
@@ -537,11 +657,10 @@ def _en_curso(intento):
         raise ReglaCodigo("Ya resolviste este nivel. Presiona «Jugar otra vez» para repetirlo.")
     if intento.estado != IntentoCodigo.EN_CURSO:
         raise ReglaCodigo("Saliste de este intento. Vuelve a abrir el minijuego desde el menú.")
-    catalogo = cargar()
-    nivel_ = catalogo["niveles"].get(intento.nivel_id)
+    nivel_ = nivel_de(intento)
     if nivel_ is None:
         raise ReglaCodigo("Este nivel ya no existe.")
-    return catalogo, nivel_
+    return cargar(), nivel_
 
 
 def revolver(nivel_, semilla):
@@ -563,19 +682,14 @@ def revolver(nivel_, semilla):
 def estado_publico(intento, jugador):
     """Lo que necesita la mesa de trabajo (minijuego_codigo.html). Sin las reglas del nivel."""
     catalogo = cargar()
-    nivel_ = catalogo["niveles"][intento.nivel_id]
+    nivel_ = nivel_de(intento)
     reglas = catalogo["reglas"]
     mejores = _mejores(jugador)
-    otros = {
-        n["programa"]: n["id"]
-        for n in catalogo["niveles"].values()
-        if n["lenguaje"] != nivel_["lenguaje"]
-    }
     return {
         "intento_id": str(intento.id),
         "estado": intento.estado,
         "nivel": {
-            "id": nivel_["id"],
+            "numero": nivel_["numero"],
             "titulo": nivel_["titulo"],
             "objetivo": nivel_["objetivo"],
             "lenguaje": nivel_["lenguaje"],
@@ -585,26 +699,15 @@ def estado_publico(intento, jugador):
             "lineas": revolver(nivel_, str(intento.id)),
             "consola": nivel_["consola"],
         },
-        # Selector de niveles del mismo lenguaje y el mismo programa en el otro lenguaje
         "niveles": [
             {
-                "id": n["id"],
-                "numero": i + 1,
-                "titulo": n["titulo"],
-                "estrellas": mejores.get(n["id"], 0),
+                "numero": n["numero"],
+                "nombre": n["nombre"],
+                "estrellas": mejores.get((nivel_["lenguaje"], n["numero"]), 0),
             }
-            for i, n in enumerate(niveles_de(nivel_["lenguaje"]))
+            for n in catalogo["niveles"]
         ],
-        "lenguajes": [
-            {
-                "id": lenguaje,
-                "nombre": nombre,
-                "nivel_id": nivel_["id"]
-                if lenguaje == nivel_["lenguaje"]
-                else otros.get(nivel_["programa"]),
-            }
-            for lenguaje, nombre in LENGUAJES.items()
-        ],
+        "lenguajes": [{"id": k, "nombre": v} for k, v in LENGUAJES.items()],
         "programa": intento.tablero or [],
         "intentos_fallidos": intento.intentos_fallidos,
         "penalizacion": penalizacion(intento.intentos_fallidos, reglas),

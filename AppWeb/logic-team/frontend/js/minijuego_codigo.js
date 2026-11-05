@@ -123,8 +123,6 @@
     return datos.codigo;
   }
 
-  function urlNivel(id) { return rutas.nivel.replace("NIVEL", id); }
-
   // Colorea palabras clave, funciones, textos y números (todo con textContent)
   function resaltar(codigo) {
     const frag = document.createDocumentFragment();
@@ -423,26 +421,26 @@
     pintarAcciones();
   }
 
-  // Selector de lenguaje y de niveles (enlaces a la mesa de cada nivel)
+  // Selector de lenguaje y de niveles (enlaces a la mesa de cada nivel; el servidor da las URL)
   function pintarNavegacion() {
     vaciar(nodos.lenguajes);
     inicial.lenguajes.forEach((l) => {
       const actual = l.id === nivel.lenguaje;
-      const a = el(l.nivel_id && !actual ? "a" : "span", `c4-lenguaje${actual ? " actual" : ""}`, l.nombre);
-      if (a.tagName === "A") a.href = urlNivel(l.nivel_id);
+      const a = el(actual ? "span" : "a", `c4-lenguaje${actual ? " actual" : ""}`, l.nombre);
       if (actual) a.setAttribute("aria-current", "true");
+      else a.href = l.url;
       con(nodos.lenguajes, a);
     });
 
     vaciar(nodos.niveles);
     inicial.niveles.forEach((n) => {
-      const actual = n.id === nivel.id;
+      const actual = n.numero === nivel.numero;
       const a = el(actual ? "span" : "a", `c4-nivel${actual ? " actual" : ""}${n.estrellas ? " resuelto" : ""}`);
-      if (!actual) a.href = urlNivel(n.id);
-      else a.setAttribute("aria-current", "page");
+      if (actual) a.setAttribute("aria-current", "page");
+      else a.href = n.url;
       const estrellas = n.estrellas ? "★".repeat(n.estrellas) : "";
-      con(a, el("b", null, String(n.numero)), el("span", "c4-nivel-titulo", n.titulo), estrellas ? el("span", "c4-nivel-estrellas", estrellas) : null);
-      a.setAttribute("aria-label", `Nivel ${n.numero}: ${n.titulo}${n.estrellas ? `, ${n.estrellas} estrellas` : ""}`);
+      con(a, el("b", null, String(n.numero)), el("span", "c4-nivel-titulo", n.nombre), estrellas ? el("span", "c4-nivel-estrellas", estrellas) : null);
+      a.setAttribute("aria-label", `Nivel ${n.numero}: ${n.nombre}${n.estrellas ? `, ${n.estrellas} estrellas` : ""}`);
       con(nodos.niveles, a);
     });
   }
@@ -559,17 +557,17 @@
     );
 
     const botones = el("div", "btn-row");
-    const otraVez = el("a", "book-btn", "↺ Jugar otra vez");
+    // «Otro programa» abre un intento nuevo del mismo nivel con otro programa al azar
+    const otraVez = el("a", "book-btn", "🎲 Otro programa");
     otraVez.href = rutas.otraVez;
     con(botones, otraVez);
-    const indice = inicial.niveles.findIndex((n) => n.id === nivel.id);
-    const siguiente = inicial.niveles[indice + 1];
+    const siguiente = inicial.niveles.find((n) => n.numero > nivel.numero);
     const menu = el("a", siguiente ? "book-btn" : "book-btn go", "Volver al menú");
     menu.href = rutas.menu;
     con(botones, menu);
     if (siguiente) {
       const ir = el("a", "book-btn go", "Siguiente nivel ➔");
-      ir.href = urlNivel(siguiente.id);
+      ir.href = siguiente.url;
       con(botones, ir);
     }
 
@@ -606,7 +604,9 @@
       el("p", "c4-ayuda-consejo"),
       "💡 Hay ",
       el("b", null, "varias formas correctas"),
-      ": por ejemplo, puedes leer los datos en el orden que quieras."
+      ": por ejemplo, puedes leer los datos en el orden que quieras. Y cada vez que juegas un nivel te puede tocar ",
+      el("b", null, "otro programa"),
+      " con otros valores."
     );
     const sobran = nivel.distractores
       ? con(el("p", "c4-ayuda-consejo"), "⚠ Este nivel trae ", el("b", null, `${nivel.distractores} ${nivel.distractores === 1 ? "línea que sobra" : "líneas que sobran"}`), ": déjalas en el banco.")
@@ -656,7 +656,7 @@
 
   if (inicial.estado === "resuelto" && inicial.resultado) {
     s.fase = "exito";
-    s.aviso = { tipo: "ok", ico: "✔", titulo: "Ya resolviste este nivel", texto: "Este es tu programa. Presiona «Jugar otra vez» para repetirlo." };
+    s.aviso = { tipo: "ok", ico: "✔", titulo: "Ya resolviste este nivel", texto: "Este es tu programa. Presiona «Otro programa» para jugar con uno nuevo." };
     pintar();
     mostrarResultado(inicial.resultado, nivel.consola);
   } else {
