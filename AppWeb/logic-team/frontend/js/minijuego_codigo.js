@@ -404,8 +404,29 @@
     nodos.salir.disabled = s.fase === "exito";
   }
 
+  function enlace(clase, texto, url) {
+    const a = el("a", clase, texto);
+    a.href = url;
+    return a;
+  }
+
+  // Con el nivel resuelto se sigue desde aquí aunque se cierre la ventana del resultado
+  function accionesFinales() {
+    const siguiente = inicial.niveles.find((n) => n.numero > nivel.numero);
+    return [
+      enlace("book-btn", "🎲 Otro programa", rutas.otraVez),
+      siguiente
+        ? enlace("book-btn go siguiente", "Siguiente nivel ➔", siguiente.url)
+        : enlace("book-btn go siguiente", "Volver al menú ➔", rutas.menu),
+    ];
+  }
+
   function pintarAcciones() {
     vaciar(nodos.acciones);
+    if (s.fase === "exito") {
+      con(nodos.acciones, ...accionesFinales());
+      return;
+    }
     const limpiar = boton("book-btn", "↺ Regresar todo", reiniciar);
     limpiar.disabled = !editable() || !s.programa.length;
     const comprobar = boton(`book-btn go${s.programa.length ? " siguiente" : ""}`, "▶ Comprobar", comprobarPrograma);
@@ -556,23 +577,16 @@
       filaResumen("Ganas", `⭐ +${r.xp} XP`, "total")
     );
 
-    const botones = el("div", "btn-row");
-    // «Otro programa» abre un intento nuevo del mismo nivel con otro programa al azar
-    const otraVez = el("a", "book-btn", "🎲 Otro programa");
-    otraVez.href = rutas.otraVez;
-    con(botones, otraVez);
-    const siguiente = inicial.niveles.find((n) => n.numero > nivel.numero);
-    const menu = el("a", siguiente ? "book-btn" : "book-btn go", "Volver al menú");
-    menu.href = rutas.menu;
-    con(botones, menu);
-    if (siguiente) {
-      const ir = el("a", "book-btn go", "Siguiente nivel ➔");
-      ir.href = siguiente.url;
-      con(botones, ir);
-    }
+    // «Otro programa» abre un intento nuevo del mismo nivel con otro programa al azar.
+    // «Ver mi programa» cierra la ventana; abajo quedan los mismos botones para seguir.
+    const ver = boton("book-btn", "Ver mi programa", cerrarVentana);
+    const botones = con(el("div", "btn-row"), ver, ...accionesFinales());
 
     const salida = lineasConsola ? [el("p", "c4-consola-titulo", "Así corre tu programa:"), consola(lineasConsola, "corre")] : [];
-    const ventana = abrirVentana([el("h2", null, "¡Programa correcto!"), estrellas, ...salida, nota, resumen, botones]);
+    const ventana = abrirVentana(
+      [el("h2", null, "¡Programa correcto!"), estrellas, ...salida, nota, resumen, botones],
+      () => nodos.acciones.querySelector(".siguiente")?.focus({ preventScroll: true })
+    );
     ventana.classList.add("ancha");
   }
 

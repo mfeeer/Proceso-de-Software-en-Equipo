@@ -8,7 +8,9 @@ app/data/niveles_codigo.
 """
 
 import json
+import os
 
+from django.contrib.staticfiles import finders
 from django.db import transaction
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -59,6 +61,18 @@ def inicio(request):
     return redirect("codigo_mesa", lenguaje=lenguaje, numero=numero)
 
 
+ARCHIVOS_MESA = ("js/minijuego_codigo.js", "css/minijuego_codigo.css")
+
+
+def _version_archivos():
+    """Cambia cada vez que se modifica el JS o el CSS de la mesa (?v= en la plantilla).
+
+    Así el navegador no se queda con una copia vieja guardada en caché.
+    """
+    rutas = [finders.find(archivo) for archivo in ARCHIVOS_MESA]
+    return max((int(os.path.getmtime(r)) for r in rutas if r), default=0)
+
+
 def _enlaces(estado):
     """Agrega al estado las direcciones de los niveles y del otro lenguaje."""
     nivel_ = estado["nivel"]
@@ -86,7 +100,11 @@ def mesa(request, lenguaje, numero):
     return render(
         request,
         "minijuego_codigo.html",
-        {"estado": estado, "otra_vez": reverse("codigo_mesa", args=[lenguaje, numero])},
+        {
+            "estado": estado,
+            "otra_vez": reverse("codigo_mesa", args=[lenguaje, numero]),
+            "version": _version_archivos(),
+        },
     )
 
 

@@ -7,7 +7,8 @@
 {% block extra_head %}
   <link rel="stylesheet" href="{% static 'css/taller.css' %}">
   <link rel="stylesheet" href="{% static 'css/cuestionario.css' %}">
-  <link rel="stylesheet" href="{% static 'css/minijuego_codigo.css' %}">
+  {# ?v= cambia cada vez que se modifica el CSS o el JS (views_codigo.py), así el navegador no usa una copia vieja #}
+  <link rel="stylesheet" href="{% static 'css/minijuego_codigo.css' %}?v={{ version }}">
 {% endblock %}
 
 {% block loader %}{% endblock %}
@@ -67,5 +68,5 @@
 {% endblock %}
 
 {% block extra_js %}
-  <script src="{% static 'js/minijuego_codigo.js' %}"></script>
+  <script src="{% static 'js/minijuego_codigo.js' %}?v={{ version }}"></script>
 {% endblock %}

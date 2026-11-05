@@ -7,6 +7,7 @@ elige uno al azar y sus líneas salen revueltas. Cubre el contenido, la revisió
 """
 
 import json
+import re
 
 import pytest
 from django.core.management import call_command
@@ -317,6 +318,9 @@ def test_la_mesa_de_trabajo_carga_el_nivel_sin_sus_reglas(client):
     html = client.get(MESA).content.decode()
     assert "Área de un rectángulo" in html and 'id="mj-ayuda"' in html
     assert "css/taller.css" in html and "js/minijuego_codigo.js" in html
+    # La versión de los archivos va en la URL para que el navegador no use una copia vieja
+    assert re.search(r"js/minijuego_codigo\.js\?v=[1-9]\d*\"", html)
+    assert re.search(r"css/minijuego_codigo\.css\?v=[1-9]\d*\"", html)
 
     estado = _estado(client)
     assert estado["intento_id"] == str(intento.id)
